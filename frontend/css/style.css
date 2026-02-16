@@ -489,8 +489,24 @@ main.app-main.dashboard {
 .leaderboard-list .name { flex: 1; }
 .leaderboard-list .points { color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
-/* ---------- Admin ---------- */
-.admin-main { max-width: 960px; padding: 1.5rem 2rem; margin: 0 auto; }
+/* ---------- Admin (desktop dashboard) ---------- */
+.admin-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  max-width: 1200px;
+  padding: 1.5rem 2rem;
+  margin: 0 auto;
+}
+.admin-main .card:last-child { grid-column: 1 / -1; }
+@media (max-width: 768px) {
+  .admin-main { grid-template-columns: 1fr; }
+  .admin-main .card:last-child { grid-column: 1; }
+}
+.admin-main .card {
+  margin-bottom: 0;
+  min-width: 0;
+}
 .admin-main .card form input,
 .admin-main .card form select {
   width: 100%;
