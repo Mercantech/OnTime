@@ -346,6 +346,14 @@ main.app-main.dashboard {
 .badge-item.earned.badge--month_top .badge-icon { filter: none; }
 .badge-item.earned.badge--april_20 { border-color: #22c55e; background: rgba(34, 197, 94, 0.15); }
 .badge-item.earned.badge--april_20 .badge-icon { filter: none; }
+.badge-item.earned.badge--midnight { border-color: #6366f1; background: rgba(99, 102, 241, 0.12); }
+.badge-item.earned.badge--exactly_1234 { border-color: #8b5cf6; background: rgba(139, 92, 246, 0.12); }
+.badge-item.earned.badge--date_13 { border-color: #22c55e; background: rgba(34, 197, 94, 0.12); }
+.badge-item.earned.badge--pi_day { border-color: #f59e0b; background: rgba(245, 158, 11, 0.12); }
+.badge-item.earned.badge--agent_007 { border-color: #1e293b; background: rgba(30, 41, 59, 0.2); }
+.badge-item.earned.badge--programmer_day { border-color: #0ea5e9; background: rgba(14, 165, 233, 0.12); }
+.badge-item.earned.badge--nytaarsdag { border-color: #eab308; background: rgba(234, 179, 8, 0.15); }
+.badge-item.earned.badge--syden { border-color: #a855f7; background: rgba(168, 85, 247, 0.12); }
 
 /* Klasse-highlights (klassedashboard) */
 .class-highlights {

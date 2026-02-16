@@ -325,6 +325,14 @@ const BADGE_ICONS = {
   exactly_8: '8️⃣',
   month_top: '👑',
   april_20: '🌿',
+  midnight: '🌙',
+  exactly_1234: '🔢',
+  date_13: '🍀',
+  pi_day: '🥧',
+  agent_007: '🕵️',
+  programmer_day: '💻',
+  nytaarsdag: '🎉',
+  syden: '🪄',
 };
 
 async function loadBadges() {
@@ -338,12 +346,16 @@ async function loadBadges() {
       ? '<p class="muted">Ingen badges endnu.</p>'
       : badges.map((b) => {
           const earned = !!b.earnedAt;
+          const secret = !!b.secret;
           const icon = BADGE_ICONS[b.key] || '•';
+          const title = secret ? (earned ? (b.name + ' – ' + (b.description || '')) : '') : (b.description || '');
+          const nameHtml = secret ? '' : ('<span class="badge-name">' + escapeHtml(b.name) + '</span>');
+          const dateHtml = (!secret && earned) ? ('<span class="badge-date">' + (b.earnedAt || '') + '</span>') : '';
           return (
-            '<div class="badge-item ' + (earned ? 'earned badge--' + b.key : 'locked') + '" title="' + escapeHtml(b.description || '') + '">' +
+            '<div class="badge-item ' + (earned ? 'earned badge--' + b.key : 'locked') + (secret ? ' badge-secret' : '') + '" title="' + escapeHtml(title) + '">' +
             '<span class="badge-icon">' + icon + '</span>' +
-            '<span class="badge-name">' + escapeHtml(b.name) + '</span>' +
-            (earned ? '<span class="badge-date">' + (b.earnedAt || '') + '</span>' : '') +
+            nameHtml +
+            dateHtml +
             '</div>'
           );
         }).join('');

@@ -8,14 +8,22 @@ const BADGE_DEFS = [
   { key: 'first_checkin', name: 'Første gang', description: 'Din allerførste indstempling' },
   { key: 'streak_3', name: 'Streak 3', description: '3 hverdage i træk med indstempling' },
   { key: 'streak_5', name: 'Streak 5', description: '5 hverdage i træk' },
-  { key: 'streak_7', name: 'Seks-syv', description: '7 dages streak – 6-7? Nej, 7! 😏' },
+  { key: 'streak_7', name: 'Seks-syv', description: '7 dages streak – 6-7? Nej, 7! 😏 🥚', secret: true },
   { key: 'streak_10', name: 'Streak 10', description: '10 hverdage i træk' },
   { key: 'perfect_week', name: 'Perfekt uge', description: '5/5 hverdage med 45 point i én uge' },
   { key: 'early_bird', name: 'Tidlig fugl', description: '5 indstemplinger før kl. 08:15' },
-  { key: 'before_7', name: 'Før kl. 7', description: 'Kom inden kl. 7 om morgenen' },
-  { key: 'exactly_8', name: 'Præcis 8', description: 'Stemplet ind præcis kl. 08:00' },
+  { key: 'before_7', name: 'Før kl. 7', description: 'Kom inden kl. 7 om morgenen 🥚', secret: true },
+  { key: 'exactly_8', name: 'Præcis 8', description: 'Stemplet ind præcis kl. 08:00 🥚', secret: true },
   { key: 'month_top', name: 'Månedens mester', description: 'Flest point i klassen denne måned' },
-  { key: 'april_20', name: '4/20', description: 'Stemplet ind den 20. april 🌿' },
+  { key: 'april_20', name: '4/20', description: 'Stemplet ind den 20. april 🌿 🥚', secret: true },
+  { key: 'midnight', name: 'Midnat', description: 'Stemplet ind ved midnat 🌙', secret: true },
+  { key: 'exactly_1234', name: '12:34', description: 'Stemplet ind kl. 12:34 🥚', secret: true },
+  { key: 'date_13', name: '13.', description: 'Stemplet ind en 13. 🍀', secret: true },
+  { key: 'pi_day', name: 'π-dag', description: 'Stemplet ind den 14. marts (π-dag) 🥧', secret: true },
+  { key: 'agent_007', name: '007', description: 'Stemplet ind kl. 07:07 🕵️', secret: true },
+  { key: 'programmer_day', name: '256', description: 'Stemplet ind på programmerens dag (256) 💻', secret: true },
+  { key: 'nytaarsdag', name: 'Nytårsdag', description: 'Stemplet ind 1. januar 🎉', secret: true },
+  { key: 'syden', name: 'Kl. 11:11', description: 'Stemplet ind kl. 11:11 – ønske dig noget 🪄', secret: true },
 ];
 
 /** Returnerer brugerens badges; beregner og gemmer nye præstationer. */
@@ -88,6 +96,57 @@ router.get('/me', auth, async (req, res) => {
     });
     if (april20 && !earned.has('april_20')) toAward.push('april_20');
 
+    const midnight = checkIns.some((c) => {
+      const t = new Date(c.checked_at);
+      return t.getHours() === 0 && t.getMinutes() === 0;
+    });
+    if (midnight && !earned.has('midnight')) toAward.push('midnight');
+
+    const exactly1234 = checkIns.some((c) => {
+      const t = new Date(c.checked_at);
+      return t.getHours() === 12 && t.getMinutes() === 34;
+    });
+    if (exactly1234 && !earned.has('exactly_1234')) toAward.push('exactly_1234');
+
+    const date13 = checkIns.some((c) => {
+      const d = c.check_date instanceof Date ? c.check_date : new Date(c.check_date);
+      return d.getDate() === 13;
+    });
+    if (date13 && !earned.has('date_13')) toAward.push('date_13');
+
+    const piDay = checkIns.some((c) => {
+      const d = c.check_date instanceof Date ? c.check_date : new Date(c.check_date);
+      return d.getMonth() === 2 && d.getDate() === 14;
+    });
+    if (piDay && !earned.has('pi_day')) toAward.push('pi_day');
+
+    const agent007 = checkIns.some((c) => {
+      const t = new Date(c.checked_at);
+      return t.getHours() === 7 && t.getMinutes() === 7;
+    });
+    if (agent007 && !earned.has('agent_007')) toAward.push('agent_007');
+
+    const programmerDay = checkIns.some((c) => {
+      const d = c.check_date instanceof Date ? c.check_date : new Date(c.check_date);
+      const start = new Date(d.getFullYear(), 0, 0);
+      const diff = d - start;
+      const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+      return dayOfYear === 256;
+    });
+    if (programmerDay && !earned.has('programmer_day')) toAward.push('programmer_day');
+
+    const nytaarsdag = checkIns.some((c) => {
+      const d = c.check_date instanceof Date ? c.check_date : new Date(c.check_date);
+      return d.getMonth() === 0 && d.getDate() === 1;
+    });
+    if (nytaarsdag && !earned.has('nytaarsdag')) toAward.push('nytaarsdag');
+
+    const syden = checkIns.some((c) => {
+      const t = new Date(c.checked_at);
+      return t.getHours() === 11 && t.getMinutes() === 11;
+    });
+    if (syden && !earned.has('syden')) toAward.push('syden');
+
     const earlyCount = checkIns.filter((c) => {
       const t = new Date(c.checked_at);
       return t.getHours() < 8 || (t.getHours() === 8 && t.getMinutes() < 15);
@@ -131,6 +190,7 @@ router.get('/me', auth, async (req, res) => {
       name: b.name,
       description: b.description,
       earnedAt: earned.get(b.key) || null,
+      secret: !!b.secret,
     }));
 
     res.json({ badges: list });
