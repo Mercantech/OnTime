@@ -286,6 +286,56 @@ main.app-main.dashboard {
   50% { text-shadow: 0 0 18px rgba(34, 197, 94, 0.5); }
 }
 
+/* Badges */
+.badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 5.5rem;
+  padding: 0.75rem 0.5rem;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--surface-2);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.badge-item.locked {
+  opacity: 0.55;
+}
+.badge-item.locked .badge-icon { filter: grayscale(1); }
+.badge-item .badge-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+  margin-bottom: 0.35rem;
+}
+.badge-item .badge-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  color: var(--text-muted);
+}
+.badge-item.earned .badge-name { color: var(--text); }
+.badge-item .badge-date {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+.badge-item.earned.badge--first_checkin { border-color: #eab308; background: rgba(234, 179, 8, 0.12); }
+.badge-item.earned.badge--first_checkin .badge-icon { filter: none; }
+.badge-item.earned.badge--streak_3 { border-color: var(--accent); background: rgba(34, 197, 94, 0.12); }
+.badge-item.earned.badge--streak_5 { border-color: #16a34a; background: rgba(22, 163, 74, 0.15); }
+.badge-item.earned.badge--streak_10 { border-color: #15803d; background: rgba(21, 128, 61, 0.18); }
+.badge-item.earned.badge--perfect_week { border-color: var(--accent); background: rgba(34, 197, 94, 0.12); }
+.badge-item.earned.badge--early_bird { border-color: #f59e0b; background: rgba(245, 158, 11, 0.12); }
+.badge-item.earned.badge--month_top { border-color: #eab308; background: rgba(234, 179, 8, 0.15); }
+.badge-item.earned.badge--month_top .badge-icon { filter: none; }
+
 /* Klasse-highlights (klassedashboard) */
 .class-highlights {
   margin-bottom: 1.5rem;

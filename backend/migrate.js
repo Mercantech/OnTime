@@ -32,6 +32,17 @@ const MIGRATIONS = [
       );
     `,
   },
+  {
+    name: 'user_badges',
+    sql: `
+      CREATE TABLE IF NOT EXISTS user_badges (
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        badge_key TEXT NOT NULL,
+        earned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (user_id, badge_key)
+      );
+    `,
+  },
 ];
 
 async function run() {

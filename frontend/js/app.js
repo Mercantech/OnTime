@@ -313,6 +313,41 @@ function drawBurndownChart(canvas, data) {
   }
 }
 
+const BADGE_ICONS = {
+  first_checkin: '⭐',
+  streak_3: '🔥',
+  streak_5: '🔥',
+  streak_10: '🏆',
+  perfect_week: '✓',
+  early_bird: '🌅',
+  month_top: '👑',
+};
+
+async function loadBadges() {
+  const el = document.getElementById('badges-row');
+  if (!el) return;
+  try {
+    const res = await api('/api/badges/me');
+    const data = await res.json().catch(() => ({}));
+    const badges = Array.isArray(data.badges) ? data.badges : [];
+    el.innerHTML = badges.length === 0
+      ? '<p class="muted">Ingen badges endnu.</p>'
+      : badges.map((b) => {
+          const earned = !!b.earnedAt;
+          const icon = BADGE_ICONS[b.key] || '•';
+          return (
+            '<div class="badge-item ' + (earned ? 'earned badge--' + b.key : 'locked') + '" title="' + escapeHtml(b.description || '') + '">' +
+            '<span class="badge-icon">' + icon + '</span>' +
+            '<span class="badge-name">' + escapeHtml(b.name) + '</span>' +
+            (earned ? '<span class="badge-date">' + (b.earnedAt || '') + '</span>' : '') +
+            '</div>'
+          );
+        }).join('');
+  } catch (e) {
+    el.innerHTML = '<p class="muted">Kunne ikke hente badges.</p>';
+  }
+}
+
 let lastBurndownData = null;
 async function loadBurndown() {
   try {
@@ -475,6 +510,7 @@ document.getElementById('checkin-btn').addEventListener('click', async () => {
   loadMyStats();
   loadStreak();
   loadLeaderboard();
+  loadBadges();
   loadBurndown();
   loadRecent();
   loadCalendar();
@@ -521,6 +557,7 @@ async function init() {
     await loadMyStats();
     await loadStreak();
     await loadLeaderboard();
+    await loadBadges();
     await loadBurndown();
     await loadRecent();
     await loadCalendar();
