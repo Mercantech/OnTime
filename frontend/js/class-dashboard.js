@@ -115,10 +115,27 @@
       }
 
       const totalEl = document.getElementById('leaderboard-total');
+      const podiumEl = document.getElementById('leaderboard-podium');
       const listEl = document.getElementById('leaderboard');
+      const students = data.students || [];
       if (totalEl) totalEl.innerHTML = '<strong>Klasse total:</strong> ' + data.classTotal + ' / ' + data.maxPossibleClass + ' point (' + data.classPercentage + '%)';
+      if (podiumEl) {
+        const top3 = students.slice(0, 3);
+        if (top3.length >= 3) {
+          const order = [top3[1], top3[0], top3[2]];
+          const places = ['place-2', 'place-1', 'place-3'];
+          podiumEl.innerHTML = order.map((s, i) =>
+            '<div class="podium-place ' + places[i] + '">' +
+            '<span class="podium-avatar">' + s.rank + '</span>' +
+            '<span class="podium-name">' + escapeHtml(s.name) + '</span>' +
+            '<span class="podium-points">' + s.totalPoints + ' pt</span>' +
+            '<div class="podium-step">' + s.rank + '. plads</div></div>'
+          ).join('');
+        } else {
+          podiumEl.innerHTML = '';
+        }
+      }
       if (listEl) {
-        const students = data.students || [];
         listEl.innerHTML = students.length
           ? '<ul class="leaderboard-list">' + students.map(s => '<li><span class="rank">' + s.rank + '</span><span class="name">' + s.name + '</span><span class="points">' + s.totalPoints + ' pt (' + s.percentage + '%)</span></li>').join('') + '</ul>'
           : '<p class="muted">Ingen data</p>';

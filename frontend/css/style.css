@@ -226,7 +226,7 @@ main.app-main.dashboard {
   margin-top: 0.15rem;
 }
 
-/* Streak-flamme (grøn, sort tema) */
+/* Streak-flamme (grøn, sort tema) – flerlag + animation */
 .stat-card-streak .streak-flame-wrap {
   display: inline-flex;
   align-items: center;
@@ -236,14 +236,28 @@ main.app-main.dashboard {
 }
 .streak-flame-icon {
   display: inline-flex;
-  color: var(--accent);
-  opacity: 0.9;
   line-height: 0;
 }
-.stat-card-streak .streak-flame-icon svg {
+.stat-card-streak .streak-flame-icon .flame-svg {
   display: block;
-  width: 1.75rem;
+  width: 1.85rem;
   height: auto;
+}
+.stat-card-streak .streak-flame-icon .flame-outer {
+  filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.3));
+  animation: flame-flicker 2.2s ease-in-out infinite;
+}
+.stat-card-streak .streak-flame-icon .flame-mid {
+  animation: flame-flicker 1.8s ease-in-out infinite 0.15s;
+}
+.stat-card-streak .streak-flame-icon .flame-inner {
+  animation: flame-flicker 1.5s ease-in-out infinite 0.3s;
+}
+@keyframes flame-flicker {
+  0%, 100% { opacity: 1; transform: scale(1) translateY(0); }
+  25% { opacity: 0.92; transform: scale(1.03) translateY(-0.5px); }
+  50% { opacity: 1; transform: scale(0.98) translateY(0.5px); }
+  75% { opacity: 0.96; transform: scale(1.02) translateY(-0.3px); }
 }
 .stat-card-streak .streak-value {
   font-size: 1.75rem;
@@ -251,12 +265,25 @@ main.app-main.dashboard {
   color: var(--accent);
   font-variant-numeric: tabular-nums;
 }
-.stat-card-streak.has-streak .streak-flame-icon {
-  opacity: 1;
-  filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.4));
+.stat-card-streak.has-streak .streak-flame-icon .flame-outer {
+  animation: flame-flicker 2.2s ease-in-out infinite, flame-glow 2s ease-in-out infinite;
+}
+.stat-card-streak.has-streak .streak-flame-icon .flame-mid {
+  animation: flame-flicker 1.8s ease-in-out infinite 0.15s, flame-glow 2s ease-in-out infinite 0.1s;
+}
+.stat-card-streak.has-streak .streak-flame-icon .flame-inner {
+  animation: flame-flicker 1.5s ease-in-out infinite 0.3s, flame-glow 2s ease-in-out infinite 0.2s;
+}
+@keyframes flame-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.45)) drop-shadow(0 0 12px rgba(34, 197, 94, 0.15)); }
+  50% { filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.6)) drop-shadow(0 0 20px rgba(34, 197, 94, 0.25)); }
 }
 .stat-card-streak.has-streak .streak-value {
-  text-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
+  animation: streak-value-glow 2s ease-in-out infinite;
+}
+@keyframes streak-value-glow {
+  0%, 100% { text-shadow: 0 0 12px rgba(34, 197, 94, 0.35); }
+  50% { text-shadow: 0 0 18px rgba(34, 197, 94, 0.5); }
 }
 
 /* Klasse-highlights (klassedashboard) */
@@ -591,6 +618,72 @@ main.app-main.dashboard {
 
 .leaderboard-list .name { flex: 1; }
 .leaderboard-list .points { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* Podium top 3 */
+.leaderboard-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  min-height: 160px;
+}
+.leaderboard-podium:empty { display: none; }
+.podium-place {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 140px;
+}
+.podium-place .podium-avatar {
+  order: 1;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
+}
+.podium-place.place-1 .podium-avatar { background: var(--accent); }
+.podium-place.place-2 .podium-avatar { background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); }
+.podium-place.place-3 .podium-avatar { background: linear-gradient(135deg, #78716c 0%, #57534e 100%); }
+.podium-place .podium-name {
+  order: 2;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-align: center;
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+}
+.podium-place .podium-points {
+  order: 3;
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.podium-place .podium-step {
+  order: 4;
+  width: 100%;
+  margin-top: auto;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: rgba(255,255,255,0.9);
+  padding: 0.5rem 0;
+}
+.podium-place.place-1 .podium-step { height: 72px; background: var(--accent); }
+.podium-place.place-2 .podium-step { height: 52px; background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%); }
+.podium-place.place-3 .podium-step { height: 36px; background: linear-gradient(180deg, #78716c 0%, #57534e 100%); }
 
 /* ---------- Admin (desktop dashboard) ---------- */
 main.app-main.admin-main {
