@@ -63,14 +63,19 @@ router.get('/me', auth, async (req, res) => {
       return res.status(404).json({ error: 'Bruger ikke fundet' });
     }
     const user = r.rows[0];
-    res.json({
+    const payload = {
       id: user.id,
       email: user.email,
       name: user.name,
       classId: user.class_id,
       className: user.class_name,
       isAdmin: !!user.is_admin,
-    });
+    };
+    if (user.is_admin) {
+      const classesRes = await pool.query('SELECT id, name FROM classes ORDER BY name');
+      payload.classes = classesRes.rows || [];
+    }
+    res.json(payload);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Serverfejl' });

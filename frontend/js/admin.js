@@ -9,6 +9,9 @@ const api = (path, opts = {}) =>
     headers: { ...opts.headers, Authorization: `Bearer ${token}` },
   });
 
+let cachedClasses = [];
+let currentUserId = null;
+
 async function ensureAdmin() {
   const res = await api('/api/auth/me');
   if (!res.ok) {
@@ -22,14 +25,19 @@ async function ensureAdmin() {
     return;
   }
   document.getElementById('admin-user').textContent = user.name;
+  currentUserId = user.id != null ? user.id : null;
+  if (Array.isArray(user.classes)) cachedClasses = user.classes;
 }
 
 async function loadClasses() {
+  if (cachedClasses.length) return cachedClasses;
   try {
     const res = await api('/api/admin/classes');
     const data = await res.json().catch(() => null);
     if (!res.ok) return [];
-    return Array.isArray(data) ? data : [];
+    const list = Array.isArray(data) ? data : [];
+    cachedClasses = list;
+    return list;
   } catch (e) {
     console.error('loadClasses:', e);
     return [];
@@ -74,12 +82,35 @@ function renderUserList(users) {
   const countEl = document.getElementById('user-count');
   if (countEl) countEl.textContent = users.length;
   if (!users.length) {
-    tbody.innerHTML = '<tr><td colspan="4" class="muted">Ingen brugere</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="muted">Ingen brugere</td></tr>';
     return;
   }
-  tbody.innerHTML = users.map(u =>
-    '<tr><td class="name">' + u.name + '</td><td class="email">' + u.email + '</td><td class="class">' + u.className + '</td><td>' + (u.isAdmin ? '<span class="badge">Admin</span>' : '') + '</td></tr>'
-  ).join('');
+  tbody.innerHTML = users.map(u => {
+    const isSelf = currentUserId != null && u.id === currentUserId;
+    const deleteBtn = isSelf
+      ? '<span class="muted">(dig)</span>'
+      : '<button type="button" class="btn-delete-user" data-user-id="' + u.id + '" data-user-name="' + (u.name || '').replace(/"/g, '&quot;') + '">Slet</button>';
+    return '<tr data-user-id="' + u.id + '"><td class="name">' + u.name + '</td><td class="email">' + u.email + '</td><td class="class">' + u.className + '</td><td>' + (u.isAdmin ? '<span class="badge">Admin</span>' : '') + '</td><td class="actions">' + deleteBtn + '</td></tr>';
+  }).join('');
+
+  tbody.querySelectorAll('.btn-delete-user').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-user-id');
+      const name = btn.getAttribute('data-user-name') || 'brugeren';
+      if (!confirm('Slet ' + name + ' permanent? Brugerens indstemplinger slettes også.')) return;
+      btn.disabled = true;
+      const res = await api('/api/admin/users/' + id, { method: 'DELETE' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.error || 'Kunne ikke slette bruger');
+        btn.disabled = false;
+        return;
+      }
+      const filter = document.getElementById('filter-class').value;
+      const list = await loadUsers(filter ? parseInt(filter, 10) : undefined);
+      renderUserList(list);
+    });
+  });
 }
 
 document.getElementById('form-csv').addEventListener('submit', async (e) => {
@@ -117,7 +148,8 @@ document.getElementById('form-csv').addEventListener('submit', async (e) => {
   else html += '.</p>';
   resultEl.innerHTML = html;
   fileInput.value = '';
-  fillClassSelects();
+  cachedClasses = [];
+  await fillClassSelects();
   renderUserList(await loadUsers());
 });
 
@@ -136,7 +168,8 @@ document.getElementById('form-class').addEventListener('submit', async (e) => {
   }
   showMessage('class-message', `Klasse "${data.name}" oprettet.`);
   document.getElementById('class-name').value = '';
-  fillClassSelects();
+  cachedClasses = [];
+  await fillClassSelects();
 });
 
 document.getElementById('form-user').addEventListener('submit', async (e) => {

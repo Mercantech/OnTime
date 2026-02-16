@@ -15,6 +15,13 @@ const MIGRATIONS = [
       END $$;
     `,
   },
+  {
+    name: 'check_ins_lat_lng_nullable',
+    sql: `
+      ALTER TABLE check_ins ALTER COLUMN lat DROP NOT NULL;
+      ALTER TABLE check_ins ALTER COLUMN lng DROP NOT NULL;
+    `,
+  },
 ];
 
 async function run() {

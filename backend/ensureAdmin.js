@@ -22,7 +22,7 @@ async function run() {
      ON CONFLICT (email) DO UPDATE SET is_admin = true`,
     [classId, email.toLowerCase().trim(), hash, name]
   );
-  console.log('Admin sikret:', email);
+  console.log('Admin sikret');
 }
 
 module.exports = { run };

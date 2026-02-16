@@ -22,11 +22,10 @@ router.post('/', auth, async (req, res) => {
     if (!config.isIpInAllowedRanges(clientIp)) {
       return res.status(403).json({
         error: `Du skal være forbundet til skolens WiFi (${config.WIFI_NAME}) for at stemple ind.`,
-        clientIp: clientIp || undefined,
       });
     }
-    lat = config.SCHOOL_LAT;
-    lng = config.SCHOOL_LNG;
+    lat = null;
+    lng = null;
   } else {
     const body = req.body || {};
     lat = body.lat;
@@ -48,6 +47,8 @@ router.post('/', auth, async (req, res) => {
     return res.status(400).json({ error: 'Indstempling er kun mulig på hverdage.' });
   }
   const today = now.toISOString().slice(0, 10);
+  const latVal = lat == null ? null : Math.round(lat * 100) / 100;
+  const lngVal = lng == null ? null : Math.round(lng * 100) / 100;
   try {
     await pool.query(
       `INSERT INTO check_ins (user_id, check_date, checked_at, points, lat, lng)
@@ -57,7 +58,7 @@ router.post('/', auth, async (req, res) => {
          points = EXCLUDED.points,
          lat = EXCLUDED.lat,
          lng = EXCLUDED.lng`,
-      [req.userId, today, now, points, lat, lng]
+      [req.userId, today, now, points, latVal, lngVal]
     );
   } catch (e) {
     if (e.code === '42701') {

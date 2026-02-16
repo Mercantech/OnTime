@@ -3,15 +3,6 @@ const config = require('../config');
 
 const router = express.Router();
 
-function getClientIp(req) {
-  const forwarded = req.headers['x-forwarded-for'];
-  if (forwarded) {
-    const first = String(forwarded).split(',')[0].trim();
-    if (first) return first;
-  }
-  return req.ip || req.socket?.remoteAddress || '';
-}
-
 router.get('/', (req, res) => {
   res.json({
     schoolLat: config.SCHOOL_LAT,
@@ -21,11 +12,6 @@ router.get('/', (req, res) => {
     useWiFiCheck: config.useWiFiCheck,
     wifiName: config.WIFI_NAME,
   });
-});
-
-// Hjælper til at finde den IP serveren ser – tilføj den til ALLOWED_IP_RANGES hvis du er på skolen
-router.get('/client-ip', (req, res) => {
-  res.json({ clientIp: getClientIp(req) });
 });
 
 module.exports = router;

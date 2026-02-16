@@ -126,6 +126,33 @@ router.patch('/users/:id/password', async (req, res) => {
   }
 });
 
+router.delete('/users/:id', async (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  if (Number.isNaN(userId)) return res.status(400).json({ error: 'Ugyldigt bruger-id' });
+  if (userId === req.userId) {
+    return res.status(400).json({ error: 'Du kan ikke slette din egen bruger' });
+  }
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query('DELETE FROM check_ins WHERE user_id = $1', [userId]);
+      const r = await client.query('DELETE FROM users WHERE id = $1 RETURNING id', [userId]);
+      await client.query('COMMIT');
+      if (r.rows.length === 0) return res.status(404).json({ error: 'Bruger ikke fundet' });
+      res.json({ ok: true });
+    } catch (e) {
+      await client.query('ROLLBACK');
+      throw e;
+    } finally {
+      client.release();
+    }
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 // CSV-import: semicolon-separeret, header med Activity;Activity Short description;Username;...;Initial password;...;Email
 function parseCsvLine(line) {
   const out = [];

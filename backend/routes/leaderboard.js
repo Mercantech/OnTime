@@ -5,6 +5,25 @@ const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
+/** GDPR: vis kun fornavn + forbogstav på efternavn; ved duplikater tilføjes ét bogstav mere. */
+function uniqueDisplayNames(names) {
+  const result = [];
+  const used = new Set();
+  for (const fullName of names) {
+    const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+    const last = parts[parts.length - 1] || '';
+    let d = parts.length <= 1 ? (parts[0] || '') : parts[0] + ' ' + (last[0] || '').toUpperCase();
+    let n = 1;
+    while (used.has(d) && n <= last.length) {
+      d = parts[0] + ' ' + last.slice(0, n).toUpperCase();
+      n++;
+    }
+    used.add(d);
+    result.push(d);
+  }
+  return result;
+}
+
 function getMaxPossiblePoints() {
   const now = new Date();
   return config.getWeekdaysUpToToday(now.getFullYear(), now.getMonth()) * 45;
@@ -31,6 +50,8 @@ router.get('/class', auth, async (req, res) => {
       [id]
     );
     const classTotal = r.rows.reduce((sum, row) => sum + row.total_points, 0);
+    const names = r.rows.map(row => row.name);
+    const displayNames = uniqueDisplayNames(names);
     res.json({
       maxPossiblePerUser: maxPossible,
       maxPossibleClass: maxPossible * r.rows.length,
@@ -39,7 +60,7 @@ router.get('/class', auth, async (req, res) => {
       students: r.rows.map((row, i) => ({
         rank: i + 1,
         userId: row.id,
-        name: row.name,
+        name: displayNames[i],
         totalPoints: row.total_points,
         percentage: maxPossible ? Math.round((row.total_points / maxPossible) * 100) : 0,
       })),

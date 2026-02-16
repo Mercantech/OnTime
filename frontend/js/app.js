@@ -190,10 +190,7 @@ document.getElementById('checkin-btn').addEventListener('click', async () => {
   const data = await res.json();
   if (!res.ok) {
     statusEl.hidden = false;
-    let msg = data.error || 'Kunne ikke stemple ind';
-    if (res.status === 403 && data.clientIp) {
-      msg += ' Din IP blev set som ' + data.clientIp + '. Bed admin om at tilføje den til ALLOWED_IP_RANGES.';
-    }
+    const msg = data.error || 'Kunne ikke stemple ind';
     statusEl.textContent = msg;
     statusEl.classList.remove('checkin-success');
     statusEl.classList.add('error');

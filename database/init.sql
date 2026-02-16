@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS check_ins (
   check_date  DATE NOT NULL,
   checked_at  TIMESTAMPTZ NOT NULL,
   points      INT NOT NULL CHECK (points >= 0 AND points <= 45),
-  lat         DOUBLE PRECISION NOT NULL,
-  lng         DOUBLE PRECISION NOT NULL,
+  lat         DOUBLE PRECISION,
+  lng         DOUBLE PRECISION,
   created_at  TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE (user_id, check_date)
 );
