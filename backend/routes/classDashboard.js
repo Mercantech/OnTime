@@ -98,8 +98,12 @@ router.get('/:name', async (req, res) => {
     const burndownIdeal = weekdays.map((_, i) => 45 * numStudents * (i + 1));
     const burndownLabels = weekdays.map(x => x.getDate() + '. ' + x.toLocaleDateString('da-DK', { month: 'short' }));
 
+    const fullPointsPerDay = 45 * numStudents;
     const perfectDays = weekdays
-      .filter(date => (countByDate[date.toISOString().slice(0, 10)] || 0) === numStudents)
+      .filter(date => {
+        const key = date.toISOString().slice(0, 10);
+        return numStudents > 0 && (countByDate[key] || 0) === numStudents && (pointsByDate[key] || 0) === fullPointsPerDay;
+      })
       .map(date => date.toISOString().slice(0, 10));
 
     let classStreak = 0;
@@ -109,7 +113,8 @@ router.get('/:name', async (req, res) => {
       const key = day.toISOString().slice(0, 10);
       const dow = day.getDay();
       if (dow !== 0 && dow !== 6) {
-        if (numStudents > 0 && (countByDate[key] || 0) === numStudents) classStreak++;
+        const fullDay = numStudents > 0 && (countByDate[key] || 0) === numStudents && (pointsByDate[key] || 0) === fullPointsPerDay;
+        if (fullDay) classStreak++;
         else break;
       }
       day.setDate(day.getDate() - 1);

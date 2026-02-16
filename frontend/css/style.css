@@ -490,7 +490,7 @@ main.app-main.dashboard {
 .leaderboard-list .points { color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
 /* ---------- Admin ---------- */
-.admin-main { max-width: 480px; }
+.admin-main { max-width: 960px; padding: 1.5rem 2rem; margin: 0 auto; }
 .admin-main .card form input,
 .admin-main .card form select {
   width: 100%;

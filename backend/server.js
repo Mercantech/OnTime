@@ -24,21 +24,37 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/public/class', classDashboardRoutes);
 
 const frontendDir = path.join(__dirname, process.env.NODE_ENV === 'production' ? 'frontend' : path.join('..', 'frontend'));
-app.use(express.static(frontendDir));
+app.use(express.static(frontendDir, {
+  setHeaders: (res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  },
+}));
+
+function noCacheHeaders(res) {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+}
 
 app.get('/', (req, res) => {
+  noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'index.html'));
 });
 
 app.get('/app', (req, res) => {
+  noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'app.html'));
 });
 
 app.get('/admin', (req, res) => {
+  noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'admin.html'));
 });
 
 app.get('/klasse/:name', (req, res) => {
+  noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'class-dashboard.html'));
 });
 
