@@ -6,6 +6,7 @@ const checkinRoutes = require('./routes/checkin');
 const leaderboardRoutes = require('./routes/leaderboard');
 const configRoutes = require('./routes/config');
 const adminRoutes = require('./routes/admin');
+const classDashboardRoutes = require('./routes/classDashboard');
 const config = require('./config');
 const { run: runMigrations } = require('./migrate');
 const { run: ensureAdmin } = require('./ensureAdmin');
@@ -20,6 +21,7 @@ app.use('/api/checkin', checkinRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/public/class', classDashboardRoutes);
 
 const frontendDir = path.join(__dirname, process.env.NODE_ENV === 'production' ? 'frontend' : path.join('..', 'frontend'));
 app.use(express.static(frontendDir));
@@ -34,6 +36,10 @@ app.get('/app', (req, res) => {
 
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(frontendDir, 'admin.html'));
+});
+
+app.get('/klasse/:name', (req, res) => {
+  res.sendFile(path.join(frontendDir, 'class-dashboard.html'));
 });
 
 const PORT = config.port;

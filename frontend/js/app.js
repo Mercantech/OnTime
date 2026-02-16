@@ -92,8 +92,16 @@ async function loadUser() {
   const adminLink = document.getElementById('admin-link');
   if (adminLink && currentUser.isAdmin) adminLink.hidden = false;
 
+  const classDashboardNavLink = document.getElementById('class-dashboard-link');
+  if (classDashboardNavLink && currentUser.className) {
+    classDashboardNavLink.href = '/klasse/' + encodeURIComponent(currentUser.className);
+    classDashboardNavLink.hidden = false;
+  }
+
   const greeting = document.getElementById('hero-greeting');
   if (greeting) greeting.textContent = 'Hej, ' + currentUser.name + '!';
+  const classDashboardLink = document.getElementById('link-class-dashboard');
+  if (classDashboardLink && currentUser.className) classDashboardLink.href = '/klasse/' + encodeURIComponent(currentUser.className);
 }
 
 async function loadTodayCheckin() {

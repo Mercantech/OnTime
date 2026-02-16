@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Klassedashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>OnTime</h1>
+    <a href="/app" class="admin-link">Til dit dashboard</a>
+    <span id="class-name-header" class="user-info"></span>
+  </header>
+  <main class="app-main dashboard">
+    <section class="card dashboard-hero">
+      <p id="hero-title" class="hero-greeting">Klassedashboard</p>
+      <p id="hero-sub" class="hero-message">Indlæser…</p>
+    </section>
+
+    <section class="dashboard-stats">
+      <div class="card stat-card">
+        <span class="stat-label">Klassens point</span>
+        <span id="stat-points" class="stat-value">–</span>
+        <span id="stat-points-max" class="stat-sublabel">/ – pt</span>
+      </div>
+      <div class="card stat-card">
+        <span class="stat-label">Streak</span>
+        <span id="stat-streak" class="stat-value">0</span>
+        <span class="stat-sublabel">dage hvor alle kom til tiden</span>
+      </div>
+      <div class="card stat-card">
+        <span class="stat-label">Perfekte dage</span>
+        <span id="stat-perfect" class="stat-value">0</span>
+        <span class="stat-sublabel">dage med 100 % fremmøde</span>
+      </div>
+    </section>
+
+    <section class="card dashboard-card">
+      <h2>Klassens fremgang denne måned</h2>
+      <p class="card-hint">Ideal (stiplet) vs faktiske klassepoint (fuld linje).</p>
+      <div class="burndown-wrap">
+        <canvas id="burndown-chart"></canvas>
+      </div>
+    </section>
+
+    <section class="card dashboard-card">
+      <h2>Dage hvor alle kom til tiden</h2>
+      <p id="perfect-days-list" class="card-hint">–</p>
+    </section>
+
+    <section class="card dashboard-card">
+      <h2>Klassens leaderboard</h2>
+      <div id="leaderboard-total" class="leaderboard-total"></div>
+      <div id="leaderboard">Indlæser…</div>
+    </section>
+  </main>
+  <script src="js/class-dashboard.js"></script>
+</body>
+</html>
