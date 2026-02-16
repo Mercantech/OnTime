@@ -16,7 +16,7 @@
   </header>
   <main class="app-main admin-main">
     <div class="grid-stack" id="admin-grid">
-      <div class="grid-stack-item" data-gs-id="ip-ranges" data-gs-x="0" data-gs-y="0" data-gs-w="6" data-gs-h="4">
+      <div class="grid-stack-item" id="ip-ranges" data-gs-id="ip-ranges" data-gs-x="0" data-gs-y="0" data-gs-w="6" data-gs-h="4">
         <div class="grid-stack-item-content"><section class="card">
           <h2>Tilladte netværk (WiFi-whitelist)</h2>
           <p class="card-hint">Elever skal være på <strong>MAGS-OLC</strong>. Format: <code>192.168.1.0/24</code> eller <code>185.22.75.2/32</code>.</p>
@@ -28,7 +28,7 @@
           <ul id="ip-range-list" class="ip-range-list">Indlæser…</ul>
         </section></div>
       </div>
-      <div class="grid-stack-item" data-gs-id="ny-klasse" data-gs-x="6" data-gs-y="0" data-gs-w="4" data-gs-h="4">
+      <div class="grid-stack-item" id="ny-klasse" data-gs-id="ny-klasse" data-gs-x="6" data-gs-y="0" data-gs-w="4" data-gs-h="4">
         <div class="grid-stack-item-content"><section class="card">
           <h2>Ny klasse</h2>
           <form id="form-class">
@@ -38,7 +38,7 @@
           <p id="class-message" class="message" hidden></p>
         </section></div>
       </div>
-      <div class="grid-stack-item" data-gs-id="csv" data-gs-x="0" data-gs-y="4" data-gs-w="6" data-gs-h="4">
+      <div class="grid-stack-item" id="csv" data-gs-id="csv" data-gs-x="0" data-gs-y="4" data-gs-w="6" data-gs-h="4">
         <div class="grid-stack-item-content"><section class="card">
           <h2>Import elever fra CSV</h2>
           <p class="card-hint">Semicolon-separeret. Vælg klasse – CSV har ikke klasse.</p>
@@ -53,7 +53,7 @@
           <div id="import-result" class="import-result" hidden></div>
         </section></div>
       </div>
-      <div class="grid-stack-item" data-gs-id="ny-bruger" data-gs-x="6" data-gs-y="4" data-gs-w="4" data-gs-h="4">
+      <div class="grid-stack-item" id="ny-bruger" data-gs-id="ny-bruger" data-gs-x="6" data-gs-y="4" data-gs-w="4" data-gs-h="4">
         <div class="grid-stack-item-content"><section class="card">
           <h2>Ny bruger</h2>
           <form id="form-user">
@@ -67,7 +67,7 @@
           <p id="user-message" class="message" hidden></p>
         </section></div>
       </div>
-      <div class="grid-stack-item" data-gs-id="brugeroversigt" data-gs-x="0" data-gs-y="8" data-gs-w="12" data-gs-h="7">
+      <div class="grid-stack-item" id="brugeroversigt" data-gs-id="brugeroversigt" data-gs-x="0" data-gs-y="8" data-gs-w="12" data-gs-h="7">
         <div class="grid-stack-item-content"><section class="card">
           <h2>Oversigt over alle brugere</h2>
           <p class="user-count">Antal: <strong id="user-count">0</strong> – Filter: <select id="filter-class"><option value="">Alle klasser</option></select></p>

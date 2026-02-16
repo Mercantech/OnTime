@@ -332,27 +332,7 @@ function saveAdminGridLayout(grid) {
 function initAdminGrid() {
   const el = document.getElementById('admin-grid');
   if (!el || typeof GridStack === 'undefined') return;
-  const saved = localStorage.getItem('ontime_admin_grid');
-  if (saved) {
-    try {
-      const layout = JSON.parse(saved);
-      console.log('[OnTime Admin] Indlæser gemt layout fra localStorage:', layout);
-      const nodes = el.querySelectorAll('.grid-stack-item');
-      layout.forEach((item, index) => {
-        const node = item.id
-          ? el.querySelector('[data-gs-id="' + item.id + '"]')
-          : nodes[index];
-        if (node) {
-          if (item.x != null) node.setAttribute('data-gs-x', item.x);
-          if (item.y != null) node.setAttribute('data-gs-y', item.y);
-          if (item.w != null) node.setAttribute('data-gs-w', item.w);
-          if (item.h != null) node.setAttribute('data-gs-h', item.h);
-        }
-      });
-    } catch (e) {
-      console.warn('[OnTime Admin] Kunne ikke indlæse layout:', e);
-    }
-  }
+
   const grid = GridStack.init({
     column: 12,
     cellHeight: 110,
@@ -363,11 +343,38 @@ function initAdminGrid() {
     minRow: 10,
   }, el);
   adminGridInstance = grid;
+
+  const saved = localStorage.getItem('ontime_admin_grid');
+  if (saved) {
+    try {
+      const layout = JSON.parse(saved);
+      console.log('[OnTime Admin] Indlæser gemt layout fra localStorage:', layout);
+      if (Array.isArray(layout) && layout.length > 0) {
+        grid.load(layout, false);
+      }
+    } catch (e) {
+      console.warn('[OnTime Admin] Kunne ikke indlæse layout:', e);
+    }
+  }
+
   grid.on('change', () => saveAdminGridLayout(grid));
   grid.on('dragstop', () => saveAdminGridLayout(grid));
   grid.on('resizestop', () => saveAdminGridLayout(grid));
   window.addEventListener('beforeunload', () => saveAdminGridLayout());
   document.querySelector('a.admin-link[href="/app"]')?.addEventListener('click', () => saveAdminGridLayout());
+
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted && adminGridInstance) {
+      const s = localStorage.getItem('ontime_admin_grid');
+      if (s) {
+        try {
+          const layout = JSON.parse(s);
+          adminGridInstance.load(layout, false);
+          console.log('[OnTime Admin] Layout genanvendt efter pageshow (bfcache)');
+        } catch (err) {}
+      }
+    }
+  });
 }
 
 async function init() {
