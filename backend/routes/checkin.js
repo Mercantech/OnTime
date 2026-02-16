@@ -19,93 +19,96 @@ function getClientIp(req) {
 function getCheckinMessage(now, points) {
   const h = now.getHours();
   const m = now.getMinutes();
+  const s = now.getSeconds();
   const mins = h * 60 + m;
-  const t = (hh, mm) => (hh < 10 ? '0' : '') + hh + ':' + (mm < 10 ? '0' : '') + mm;
+  const pad = (n) => (n < 10 ? '0' : '') + n;
+  const t = (hh, mm) => pad(hh) + ':' + pad(mm);
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const stamp = ' Kl. ' + pad(h) + '.' + pad(m) + '.' + pad(s) + ' – ' + points + ' point.';
 
   if (mins < 360) {
     return pick([
-      'Kl. ' + t(h, m) + ' – du er en ægte early bird! 🌅 ' + points + ' point.',
-      'Så tidligt? Vi er imponeret. ' + points + ' point.',
-      'Wow, du er vågen før de fleste. God start! ' + points + ' point.',
-    ]);
+      'Kl. ' + t(h, m) + ' – du er en ægte early bird! 🌅',
+      'Så tidligt? Vi er imponeret.',
+      'Wow, du er vågen før de fleste. God start!',
+    ]) + stamp;
   }
   if (mins < 480) {
     return pick([
-      'Perfekt tid! Du kom inden kl. 8. ' + points + ' point.',
-      'Inden klokken 8 – lige som vi elsker det. ' + points + ' point.',
-      'Sådan! Tidlig fugl fanger point. ' + points + ' point.',
-      'Fantastisk – du er der inden 8. ' + points + ' point.',
-      'Godt klaret! Lige i skabet. ' + points + ' point.',
-      'Flot. Velkommen til tiden. ' + points + ' point.',
-    ]);
+      'Perfekt tid! Du kom inden kl. 8.',
+      'Inden klokken 8 – lige som vi elsker det.',
+      'Sådan! Tidlig fugl fanger point.',
+      'Fantastisk – du er der inden 8.',
+      'Godt klaret! Lige i skabet.',
+      'Flot. Velkommen til tiden.',
+    ]) + stamp;
   }
 
   /* 08:00–08:15 – første kvarter for sent */
   if (mins < 495) {
     return pick([
-      'Kl. 8. Du nåede lige... at overskride tiden ' + points + ' point.',
-      'Så. Klokken er 8. Vi forventer inden 8. Du kan selv regne resten. ' + points + ' point.',
-      '08:00. Grænsen. Du er på den forkerte side. Men point får du. ' + points + ' point.',
-      'Lige for sent. Vi forventer inden kl. 8. Ikke 8:01. ' + points + ' point.',
-      'Tak for at du lige viste, at uret findes. Det er 8. ' + points + ' point.',
-      'Før 8 = godt. Efter 8 = det her. ' + points + ' point.',
-      'Du kom. Bare … efter tiden. Noteret. ' + points + ' point.',
-      'Point uddelt. Du skulle have været her inden 8. ' + points + ' point.',
-    ]);
+      'Kl. 8. Du nåede lige at overskride.',
+      'Så. Klokken er 8. Vi forventer inden 8. Du kan selv regne resten.',
+      '08:00. Grænsen. Du er på den forkerte side. Men point får du.',
+      'Lige for sent. Vi forventer inden kl. 8. Ikke 8:01.',
+      'Tak for at du lige viste, at uret findes. Det er 8.',
+      'Før 8 = godt. Efter 8 = det her.',
+      'Du kom. Bare … efter tiden. Noteret.',
+      'Point uddelt. Du skulle have været her inden 8.',
+    ]) + stamp;
   }
   /* 08:15–08:30 – andet kvarter */
   if (mins < 510) {
     return pick([
-      'Kl. 8:15. Morgensove eller bare ligeglad? ' + points + ' point.',
-      'Vi forventer inden kl. 8. Du valgte 8:15. Ok. ' + points + ' point.',
-      'Et kvarter over. Det bliver ikke bedre af at vi skriver det. ' + points + ' point.',
-      'Sååå … alarmen virkede ikke, eller hvad? ' + points + ' point.',
-      '15 minutter for sent. Vi tæller. Du får point. Bare så du ved det. ' + points + ' point.',
-      '8:15. Du er her. Vi er ikke forbavset, men vi er heller ikke imponeret. ' + points + ' point.',
-      'Point for at du dukkede op. Minus for timing. ' + points + ' point.',
-      'Godt du kom. Næste gang: inden kl. 8. Tak. ' + points + ' point.',
-      'Vi har set uret. Du har set det også. I hvert fald nu. ' + points + ' point.',
-      'List og sarkasme: Du er for sent. Her er dine point alligevel. ' + points + ' point.',
-    ]);
+      'Kl. 8:15. Morgensove eller bare ligeglad?',
+      'Vi forventer inden kl. 8. Du valgte 8:15. Ok.',
+      'Et kvarter over. Det bliver ikke bedre af at vi skriver det.',
+      'Sååå … alarmen virkede ikke, eller hvad?',
+      '15 minutter for sent. Vi tæller. Du får point. Bare så du ved det.',
+      '8:15. Du er her. Vi er ikke forbavset, men vi er heller ikke imponeret.',
+      'Point for at du dukkede op. Minus for timing.',
+      'Godt du kom. Næste gang: inden kl. 8. Tak.',
+      'Vi har set uret. Du har set det også. I hvert fald nu.',
+      'List og sarkasme: Du er for sent. Her er dine point alligevel.',
+    ]) + stamp;
   }
   /* 08:30–08:45 – tredje kvarter */
   if (mins < 525) {
     return pick([
-      'Kl. 8:30. Halvanden time for sent. Flot. ' + points + ' point.',
-      'Vi forventer inden kl. 8. Du gav os 8:30. Tak for indsatsen. ' + points + ' point.',
-      '30 minutter over. Ja, vi kan tælle. ' + points + ' point.',
-      'Morgensove? Trafik? Uanset: du er for sent. ' + points + ' point.',
-      'Du stemplede ind. Vi noterer hvornår. Det er ikke inden 8. ' + points + ' point.',
-      '8:30. Vi elsker at du kom. Vi forventer bare inden 8. ' + points + ' point.',
-      'Point uddelt. En lille skælden ud: inden kl. 8. Ikke 8:30. ' + points + ' point.',
-      'Godt med dig – bare for sent til at få applaus. ' + points + ' point.',
-      'Sååå … 8 var for tidligt, 8:15 for tidligt, 8:30 lige pas? ' + points + ' point.',
-      'Du er her. Sent. Men her. ' + points + ' point.',
-      'Vi forventer dig inden kl. 8. Det her er ikke det. ' + points + ' point.',
-      'Tak. Næste gang må det gerne være inden kl. 8. ' + points + ' point.',
-    ]);
+      'Kl. 8:30. Halvanden time for sent. Flot.',
+      'Vi forventer inden kl. 8. Du gav os 8:30. Tak for indsatsen.',
+      '30 minutter over. Ja, vi kan tælle.',
+      'Morgensove? Trafik? Uanset: du er for sent.',
+      'Du stemplede ind. Vi noterer hvornår. Det er ikke inden 8.',
+      '8:30. Vi elsker at du kom. Vi forventer bare inden 8.',
+      'Point uddelt. En lille skælden ud: inden kl. 8. Ikke 8:30.',
+      'Godt med dig – bare for sent til at få applaus.',
+      'Sååå … 8 var for tidligt, 8:15 for tidligt, 8:30 lige pas?',
+      'Du er her. Sent. Men her.',
+      'Vi forventer dig inden kl. 8. Det her er ikke det.',
+      'Tak. Næste gang må det gerne være inden kl. 8.',
+    ]) + stamp;
   }
 
   /* Efter 08:45 – rigtig for sent */
   return pick([
-    'Kl. ' + t(h, m) + '. Ja, vi kan også se uret. ' + points + ' point.',
-    'Forsinket. Hvad skal vi sige … inden kl. 8 næste gang. ' + points + ' point.',
-    'Wow, du kom. Bare meget sent. ' + points + ' point.',
-    'Vi forventer inden kl. 8. Det her er ikke inden 8. ' + points + ' point.',
-    'Point for at du kom. Minus for timing. ' + points + ' point.',
-    'Sååå … kl. 8 var for tidligt? Noteret. ' + points + ' point.',
-    'Du stemplede ind. Vi noterer også hvornår. ' + points + ' point.',
-    'Senere end forventet. Meget senere. ' + points + ' point.',
-    'Morgensove eller trafik? Uanset: inden kl. 8 næste gang, tak. ' + points + ' point.',
-    'Vi elsker at du kom. Vi forventer bare inden kl. 8. ' + points + ' point.',
-    'Point uddelt. Du skulle have været her inden 8. ' + points + ' point.',
-    'Godt med dig – for sent til applaus. ' + points + ' point.',
-    'Du er her. Sent. Men du får point. Bare så du ved det. ' + points + ' point.',
-    'Tak for at vise, at du kan. Næste gang inden kl. 8. ' + points + ' point.',
-    'Klokken ringer ikke for sent hos dig, eller hvad? ' + points + ' point.',
-    'Inden kl. 8. Det er ikke et forslag. ' + points + ' point.',
-  ]);
+    'Kl. ' + t(h, m) + '. Ja, vi kan også se uret.',
+    'Forsinket. Hvad skal vi sige … inden kl. 8 næste gang.',
+    'Wow, du kom. Bare meget sent.',
+    'Vi forventer inden kl. 8. Det her er ikke inden 8.',
+    'Point for at du kom. Minus for timing.',
+    'Sååå … kl. 8 var for tidligt? Noteret.',
+    'Du stemplede ind. Vi noterer også hvornår.',
+    'Senere end forventet. Meget senere.',
+    'Morgensove eller trafik? Uanset: inden kl. 8 næste gang, tak.',
+    'Vi elsker at du kom. Vi forventer bare inden kl. 8.',
+    'Point uddelt. Du skulle have været her inden 8.',
+    'Godt med dig – for sent til applaus.',
+    'Du er her. Sent. Men du får point. Bare så du ved det.',
+    'Tak for at vise, at du kan. Næste gang inden kl. 8.',
+    'Klokken ringer ikke for sent hos dig, eller hvad?',
+    'Inden kl. 8. Det er ikke et forslag.',
+  ]) + stamp;
 }
 
 router.post('/', auth, async (req, res) => {
