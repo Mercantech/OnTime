@@ -24,11 +24,11 @@
     </section>
     <section class="card">
       <h2>Import elever fra CSV</h2>
-      <p class="card-hint">Semicolon-separeret med kolonner: Activity;Activity Short description;Username;...;Initial password;...;Email. Vælg evt. en klasse – ellers bruges klasse fra CSV (Activity Short description).</p>
+      <p class="card-hint">Semicolon-separeret med kolonner: Username;...;Initial password;...;Email;Fullname;... CSV'en har ikke klasse – vælg den klasse eleverne skal ind i.</p>
       <form id="form-csv">
-        <label for="import-class">Importer til klasse:</label>
-        <select id="import-class">
-          <option value="">Brug klasse fra CSV</option>
+        <label for="import-class">Importer til klasse: <span class="required">*</span></label>
+        <select id="import-class" required>
+          <option value="">Vælg klasse</option>
         </select>
         <input type="file" id="csv-file" accept=".csv,text/csv" required>
         <button type="submit">Importer CSV</button>

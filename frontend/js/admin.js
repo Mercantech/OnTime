@@ -53,7 +53,7 @@ async function fillClassSelects() {
   const defAll = '<option value="">Alle klasser</option>';
   document.getElementById('filter-class').innerHTML = defAll + opts;
   const importSelect = document.getElementById('import-class');
-  if (importSelect) importSelect.innerHTML = '<option value="">Brug klasse fra CSV</option>' + opts;
+  if (importSelect) importSelect.innerHTML = '<option value="">Vælg klasse</option>' + opts;
 }
 
 function renderUserList(users) {
@@ -78,10 +78,15 @@ document.getElementById('form-csv').addEventListener('submit', async (e) => {
     resultEl.hidden = false;
     return;
   }
+  const importClass = document.getElementById('import-class').value;
+  if (!importClass) {
+    resultEl.innerHTML = '<p class="error">Vælg en klasse.</p>';
+    resultEl.hidden = false;
+    return;
+  }
   const fd = new FormData();
   fd.append('csv', fileInput.files[0]);
-  const importClass = document.getElementById('import-class').value;
-  if (importClass) fd.append('classId', importClass);
+  fd.append('classId', importClass);
   resultEl.innerHTML = '<p>Importerer…</p>';
   resultEl.hidden = false;
   const res = await fetch('/api/admin/import-csv', {

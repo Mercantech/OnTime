@@ -165,12 +165,12 @@ router.post('/import-csv', upload.single('csv'), async (req, res) => {
     return res.status(400).json({ error: 'Vælg en CSV-fil' });
   }
   const forceClassId = req.body && req.body.classId ? parseInt(String(req.body.classId), 10) : null;
-  let forceClassName = null;
-  if (forceClassId) {
-    const c = await pool.query('SELECT name FROM classes WHERE id = $1', [forceClassId]);
-    if (c.rows.length === 0) return res.status(400).json({ error: 'Ugyldig klasse' });
-    forceClassName = c.rows[0].name;
+  if (!forceClassId) {
+    return res.status(400).json({ error: 'Vælg en klasse til import' });
   }
+  const c = await pool.query('SELECT id, name FROM classes WHERE id = $1', [forceClassId]);
+  if (c.rows.length === 0) return res.status(400).json({ error: 'Ugyldig klasse' });
+  const forceClassName = c.rows[0].name;
   const { headers, rows } = parseCsv(req.file.buffer);
   const get = (row, ...keys) => {
     for (const k of keys) {
@@ -184,7 +184,7 @@ router.post('/import-csv', upload.single('csv'), async (req, res) => {
   const errors = [];
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const className = forceClassName || get(row, 'Activity Short description', 'Activity');
+    const className = forceClassName;
     const emailRaw = get(row, 'Email');
     const username = get(row, 'Username');
     const email = emailRaw ? emailRaw.toLowerCase() : (username ? `${username}@mercantec.dk` : '');
@@ -203,20 +203,8 @@ router.post('/import-csv', upload.single('csv'), async (req, res) => {
       errors.push({ row: i + 2, email, message: 'Manglende Fullname/Given name/Surname' });
       continue;
     }
-    if (!className) {
-      errors.push({ row: i + 2, email, message: 'Manglende Activity Short description/Activity – eller vælg en klasse ovenfor' });
-      continue;
-    }
-
     try {
-      let classId;
-      if (forceClassId) {
-        classId = forceClassId;
-      } else {
-        await pool.query('INSERT INTO classes (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [className]);
-        const classRes = await pool.query('SELECT id FROM classes WHERE name = $1', [className]);
-        classId = classRes.rows[0].id;
-      }
+      const classId = forceClassId;
       const existed = (await pool.query('SELECT 1 FROM users WHERE email = $1', [email])).rows.length > 0;
       const hash = await bcrypt.hash(password, 10);
       await pool.query(
