@@ -226,6 +226,39 @@ main.app-main.dashboard {
   margin-top: 0.15rem;
 }
 
+/* Streak-flamme (grøn, sort tema) */
+.stat-card-streak .streak-flame-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0.15rem 0 0;
+}
+.streak-flame-icon {
+  display: inline-flex;
+  color: var(--accent);
+  opacity: 0.9;
+  line-height: 0;
+}
+.stat-card-streak .streak-flame-icon svg {
+  display: block;
+  width: 1.75rem;
+  height: auto;
+}
+.stat-card-streak .streak-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.stat-card-streak.has-streak .streak-flame-icon {
+  opacity: 1;
+  filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.4));
+}
+.stat-card-streak.has-streak .streak-value {
+  text-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
+}
+
 /* Klasse-highlights (klassedashboard) */
 .class-highlights {
   margin-bottom: 1.5rem;
@@ -552,9 +585,9 @@ main.app-main.dashboard {
   font-size: 0.85rem;
 }
 
-.leaderboard-list li:first-child .rank { background: var(--accent); color: #fff; }
-.leaderboard-list li:nth-child(2) .rank { background: var(--surface-2); color: var(--text-muted); }
-.leaderboard-list li:nth-child(3) .rank { background: var(--surface-2); color: var(--text-muted); }
+.leaderboard-list li:first-child .rank { background: var(--accent); color: #fff; font-weight: 700; }
+.leaderboard-list li:nth-child(2) .rank { background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); color: #fff; font-weight: 700; }
+.leaderboard-list li:nth-child(3) .rank { background: linear-gradient(135deg, #78716c 0%, #57534e 100%); color: #fff; font-weight: 700; }
 
 .leaderboard-list .name { flex: 1; }
 .leaderboard-list .points { color: var(--text-muted); font-variant-numeric: tabular-nums; }

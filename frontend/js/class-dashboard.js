@@ -93,7 +93,10 @@
       if (statPointsMax) statPointsMax.textContent = ' / ' + data.maxPossibleClass + ' pt';
 
       const statStreak = document.getElementById('stat-streak');
-      if (statStreak) statStreak.textContent = data.streak != null ? data.streak : 0;
+      const streakVal = data.streak != null ? data.streak : 0;
+      if (statStreak) statStreak.textContent = streakVal;
+      const streakCard = document.querySelector('.stat-card-streak');
+      if (streakCard) streakCard.classList.toggle('has-streak', streakVal > 0);
 
       const statPerfect = document.getElementById('stat-perfect');
       const perfectDays = Array.isArray(data.perfectDays) ? data.perfectDays : [];

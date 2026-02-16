@@ -48,9 +48,14 @@
         <span id="stat-points" class="stat-value">–</span>
         <span id="stat-points-max" class="stat-sublabel">/ – pt</span>
       </div>
-      <div class="card stat-card">
+      <div class="card stat-card stat-card-streak" id="stat-card-streak">
         <span class="stat-label">Streak</span>
-        <span id="stat-streak" class="stat-value">0</span>
+        <div class="streak-flame-wrap">
+          <span class="streak-flame-icon" aria-hidden="true">
+            <svg width="28" height="32" viewBox="0 0 24 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C8 8 4 12 4 18c0 5.5 3.5 10 8 10s8-4.5 8-10c0-6-4-10-8-18z" fill="currentColor"/><path d="M12 8c2 4 4 6 4 10 0 3.3-2 6-4 6s-4-2.7-4-6c0-4 2-6 4-10z" fill="currentColor" opacity="0.6"/></svg>
+          </span>
+          <span id="stat-streak" class="stat-value streak-value">0</span>
+        </div>
         <span class="stat-sublabel">dage i træk</span>
       </div>
       <div class="card stat-card">

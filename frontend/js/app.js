@@ -185,11 +185,16 @@ async function loadStreak() {
   try {
     const res = await api('/api/leaderboard/streak');
     const data = await res.json().catch(() => ({}));
+    const streak = data.currentStreak != null ? data.currentStreak : 0;
     const el = document.getElementById('stat-streak');
-    if (el) el.textContent = data.currentStreak != null ? data.currentStreak : 0;
+    if (el) el.textContent = streak;
+    const card = document.getElementById('stat-card-streak');
+    if (card) card.classList.toggle('has-streak', streak > 0);
   } catch (e) {
     const el = document.getElementById('stat-streak');
     if (el) el.textContent = '0';
+    const card = document.getElementById('stat-card-streak');
+    if (card) card.classList.remove('has-streak');
   }
 }
 
