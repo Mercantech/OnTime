@@ -24,8 +24,12 @@
     </section>
     <section class="card">
       <h2>Import elever fra CSV</h2>
-      <p class="card-hint">Semicolon-separeret med kolonner: Activity;Activity Short description;Username;...;Initial password;...;Email. Login = Email (eller Username@mercantec.dk), password = Initial password.</p>
+      <p class="card-hint">Semicolon-separeret med kolonner: Activity;Activity Short description;Username;...;Initial password;...;Email. Vælg evt. en klasse – ellers bruges klasse fra CSV (Activity Short description).</p>
       <form id="form-csv">
+        <label for="import-class">Importer til klasse:</label>
+        <select id="import-class">
+          <option value="">Brug klasse fra CSV</option>
+        </select>
         <input type="file" id="csv-file" accept=".csv,text/csv" required>
         <button type="submit">Importer CSV</button>
       </form>
@@ -45,14 +49,16 @@
       <p id="user-message" class="message" hidden></p>
     </section>
     <section class="card">
-      <h2>Brugere</h2>
-      <p>
-        <label>Filter: </label>
-        <select id="filter-class">
-          <option value="">Alle klasser</option>
-        </select>
-      </p>
-      <ul id="user-list" class="admin-user-list"></ul>
+      <h2>Oversigt over alle brugere</h2>
+      <p class="user-count">Antal: <strong id="user-count">0</strong> <span class="filter-inline">– Filter: <select id="filter-class"><option value="">Alle klasser</option></select></span></p>
+      <div class="user-table-wrap">
+        <table class="user-table" id="user-table">
+          <thead>
+            <tr><th>Navn</th><th>Email</th><th>Klasse</th><th></th></tr>
+          </thead>
+          <tbody id="user-list"></tbody>
+        </table>
+      </div>
     </section>
   </main>
   <script src="js/admin.js"></script>

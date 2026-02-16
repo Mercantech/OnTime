@@ -52,16 +52,20 @@ async function fillClassSelects() {
   document.getElementById('user-class').innerHTML = def + opts;
   const defAll = '<option value="">Alle klasser</option>';
   document.getElementById('filter-class').innerHTML = defAll + opts;
+  const importSelect = document.getElementById('import-class');
+  if (importSelect) importSelect.innerHTML = '<option value="">Brug klasse fra CSV</option>' + opts;
 }
 
 function renderUserList(users) {
-  const ul = document.getElementById('user-list');
+  const tbody = document.getElementById('user-list');
+  const countEl = document.getElementById('user-count');
+  if (countEl) countEl.textContent = users.length;
   if (!users.length) {
-    ul.innerHTML = '<li class="muted">Ingen brugere</li>';
+    tbody.innerHTML = '<tr><td colspan="4" class="muted">Ingen brugere</td></tr>';
     return;
   }
-  ul.innerHTML = users.map(u =>
-    `<li><span class="name">${u.name}</span> <span class="email">${u.email}</span> <span class="class">${u.className}</span>${u.isAdmin ? ' <span class="badge">Admin</span>' : ''}</li>`
+  tbody.innerHTML = users.map(u =>
+    '<tr><td class="name">' + u.name + '</td><td class="email">' + u.email + '</td><td class="class">' + u.className + '</td><td>' + (u.isAdmin ? '<span class="badge">Admin</span>' : '') + '</td></tr>'
   ).join('');
 }
 
@@ -76,6 +80,8 @@ document.getElementById('form-csv').addEventListener('submit', async (e) => {
   }
   const fd = new FormData();
   fd.append('csv', fileInput.files[0]);
+  const importClass = document.getElementById('import-class').value;
+  if (importClass) fd.append('classId', importClass);
   resultEl.innerHTML = '<p>Importerer…</p>';
   resultEl.hidden = false;
   const res = await fetch('/api/admin/import-csv', {
