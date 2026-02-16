@@ -194,6 +194,32 @@ main.app-main.dashboard {
   margin: 0 auto;
 }
 
+.daily-quote {
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-2);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  text-align: left;
+  font-size: 0.9rem;
+}
+.daily-quote[hidden] {
+  display: none;
+}
+.daily-quote-text {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.4;
+  font-style: italic;
+}
+.daily-quote-author {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: normal;
+}
+
 .dashboard-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -319,6 +345,13 @@ main.app-main.dashboard {
   line-height: 1;
   margin-bottom: 0.35rem;
 }
+.badge-item.badge-secret {
+  min-height: 4rem;
+  justify-content: center;
+}
+.badge-item.badge-secret .badge-icon {
+  margin-bottom: 0;
+}
 .badge-item .badge-name {
   font-size: 0.7rem;
   font-weight: 600;
@@ -354,6 +387,7 @@ main.app-main.dashboard {
 .badge-item.earned.badge--programmer_day { border-color: #0ea5e9; background: rgba(14, 165, 233, 0.12); }
 .badge-item.earned.badge--nytaarsdag { border-color: #eab308; background: rgba(234, 179, 8, 0.15); }
 .badge-item.earned.badge--syden { border-color: #a855f7; background: rgba(168, 85, 247, 0.12); }
+.badge-item.earned.badge--hakke_stifter { border-color: #d97706; background: rgba(217, 119, 6, 0.12); }
 
 /* Klasse-highlights (klassedashboard) */
 .class-highlights {

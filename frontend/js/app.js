@@ -333,6 +333,7 @@ const BADGE_ICONS = {
   programmer_day: '💻',
   nytaarsdag: '🎉',
   syden: '🪄',
+  hakke_stifter: '🍺',
 };
 
 async function loadBadges() {
@@ -513,14 +514,15 @@ document.getElementById('checkin-btn').addEventListener('click', async () => {
     return;
   }
   hasCheckedInToday = true;
+  const feedback = data.message || 'Stemplet ind i dag ✓';
   if (statusEl) {
     statusEl.hidden = false;
-    statusEl.textContent = data.message;
+    statusEl.textContent = feedback;
     statusEl.classList.add('checkin-success');
     statusEl.classList.remove('error');
   }
   const msgEl = document.getElementById('hero-message');
-  if (msgEl) msgEl.textContent = 'Stemplet ind i dag ✓';
+  if (msgEl) msgEl.textContent = feedback;
   btn.textContent = 'Allerede stemplet ind i dag';
   btn.className = 'btn-checkin not-ready';
   loadMyStats();
@@ -565,11 +567,33 @@ function showGeoMode() {
   if (locationCard) locationCard.hidden = false;
 }
 
+async function loadDailyQuote() {
+  const el = document.getElementById('daily-quote');
+  if (!el) return;
+  const now = new Date();
+  const key = (now.getMonth() + 1).toString().padStart(2, '0') + '-' + now.getDate().toString().padStart(2, '0');
+  try {
+    const res = await fetch('/daily-quotes.json');
+    const data = await res.json().catch(() => ({}));
+    const entry = data[key] || data.default || { quote: '', author: '' };
+    if (entry.quote) {
+      el.innerHTML = '<p class="daily-quote-text">' + escapeHtml(entry.quote) + '</p>' +
+        (entry.author ? '<cite class="daily-quote-author">' + escapeHtml(entry.author) + '</cite>' : '');
+      el.hidden = false;
+    } else {
+      el.hidden = true;
+    }
+  } catch (e) {
+    el.hidden = true;
+  }
+}
+
 async function init() {
   try {
     await loadLocationConfig();
     await loadUser();
     await loadTodayCheckin();
+    loadDailyQuote();
     await loadMyStats();
     await loadStreak();
     await loadLeaderboard();

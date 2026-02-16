@@ -11,7 +11,7 @@ const BADGE_DEFS = [
   { key: 'streak_7', name: 'Seks-syv', description: '7 dages streak – 6-7? Nej, 7! 😏 🥚', secret: true },
   { key: 'streak_10', name: 'Streak 10', description: '10 hverdage i træk' },
   { key: 'perfect_week', name: 'Perfekt uge', description: '5/5 hverdage med 45 point i én uge' },
-  { key: 'early_bird', name: 'Tidlig fugl', description: '5 indstemplinger før kl. 08:15' },
+  { key: 'early_bird', name: 'Tidlig fugl', description: '5 indstemplinger før kl. 07:15' },
   { key: 'before_7', name: 'Før kl. 7', description: 'Kom inden kl. 7 om morgenen 🥚', secret: true },
   { key: 'exactly_8', name: 'Præcis 8', description: 'Stemplet ind præcis kl. 08:00 🥚', secret: true },
   { key: 'month_top', name: 'Månedens mester', description: 'Flest point i klassen denne måned' },
@@ -24,6 +24,7 @@ const BADGE_DEFS = [
   { key: 'programmer_day', name: '256', description: 'Stemplet ind på programmerens dag (256) 💻', secret: true },
   { key: 'nytaarsdag', name: 'Nytårsdag', description: 'Stemplet ind 1. januar 🎉', secret: true },
   { key: 'syden', name: 'Kl. 11:11', description: 'Stemplet ind kl. 11:11 – ønske dig noget 🪄', secret: true },
+  { key: 'hakke_stifter', name: 'Hakke stifter', description: 'Har du været ude og hakke stifter? 🍺', secret: true },
 ];
 
 /** Returnerer brugerens badges; beregner og gemmer nye præstationer. */
@@ -147,9 +148,21 @@ router.get('/me', auth, async (req, res) => {
     });
     if (syden && !earned.has('syden')) toAward.push('syden');
 
+    const checkDates = new Set(
+      checkIns.map((c) => (c.check_date instanceof Date ? c.check_date : new Date(c.check_date)).toISOString().slice(0, 10))
+    );
+    const hakkeStifter = checkIns.some((c) => {
+      const d = c.check_date instanceof Date ? new Date(c.check_date.getTime()) : new Date(c.check_date);
+      if (d.getDay() !== 4) return false;
+      d.setDate(d.getDate() + 1);
+      const friday = d.toISOString().slice(0, 10);
+      return !checkDates.has(friday);
+    });
+    if (hakkeStifter && !earned.has('hakke_stifter')) toAward.push('hakke_stifter');
+
     const earlyCount = checkIns.filter((c) => {
       const t = new Date(c.checked_at);
-      return t.getHours() < 8 || (t.getHours() === 8 && t.getMinutes() < 15);
+      return t.getHours() < 7 || (t.getHours() === 7 && t.getMinutes() < 15);
     }).length;
     if (earlyCount >= 5 && !earned.has('early_bird')) toAward.push('early_bird');
 
