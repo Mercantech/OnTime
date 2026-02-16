@@ -2,6 +2,7 @@ const express = require('express');
 const { pool } = require('../db');
 const config = require('../config');
 const { auth } = require('../middleware/auth');
+const { getDbIpRanges } = require('../ipRanges');
 
 const router = express.Router();
 
@@ -16,12 +17,16 @@ function getClientIp(req) {
 
 router.post('/', auth, async (req, res) => {
   let lat, lng;
+  const envRanges = config.getEnvIpRanges();
+  const dbRanges = await getDbIpRanges();
+  const allRanges = [...envRanges, ...dbRanges];
+  const useWiFiCheck = allRanges.length > 0;
 
-  if (config.useWiFiCheck) {
+  if (useWiFiCheck) {
     const clientIp = getClientIp(req);
-    if (!config.isIpInAllowedRanges(clientIp)) {
+    if (!config.isIpInRanges(clientIp, allRanges)) {
       return res.status(403).json({
-        error: `Du skal være forbundet til skolens WiFi (${config.WIFI_NAME}) for at stemple ind.`,
+        error: `Du skal være forbundet til WiFi-netværket ${config.WIFI_NAME} (MAGS-OLC) for at stemple ind.`,
       });
     }
     lat = null;

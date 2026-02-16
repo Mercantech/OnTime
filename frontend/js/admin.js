@@ -51,6 +51,40 @@ async function loadUsers(classId) {
   return res.json();
 }
 
+async function loadIpRanges() {
+  const res = await api('/api/admin/ip-ranges');
+  if (!res.ok) return [];
+  const data = await res.json().catch(() => ({}));
+  return data.ranges || [];
+}
+
+function renderIpRangeList(ranges) {
+  const el = document.getElementById('ip-range-list');
+  if (!el) return;
+  if (!ranges.length) {
+    el.innerHTML = '<li class="muted">Ingen adresser. Tilføj en (fx fra env ALLOWED_IP_RANGES eller her).</li>';
+    return;
+  }
+  el.innerHTML = ranges.map(r => {
+    const label = r.fromEnv ? r.range + ' <span class="muted">(fra server-config)</span>' : r.range;
+    const action = r.fromEnv ? '' : ' <button type="button" class="btn-delete-ip" data-id="' + r.id + '">Fjern</button>';
+    return '<li>' + label + action + '</li>';
+  }).join('');
+  el.querySelectorAll('.btn-delete-ip').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-id');
+      if (!confirm('Fjern denne adresse fra whitelisten?')) return;
+      const res = await api('/api/admin/ip-ranges/' + id, { method: 'DELETE' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.error || 'Kunne ikke fjerne');
+        return;
+      }
+      renderIpRangeList(await loadIpRanges());
+    });
+  });
+}
+
 function showMessage(elId, text, isError = false) {
   const el = document.getElementById(elId);
   el.textContent = text;
@@ -241,6 +275,27 @@ document.getElementById('filter-class').addEventListener('change', async () => {
   renderUserList(users);
 });
 
+document.getElementById('form-ip-range').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const input = document.getElementById('ip-range-input');
+  const range = input.value.trim();
+  if (!range) return;
+  const res = await api('/api/admin/ip-ranges', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ range }),
+  });
+  const data = await res.json().catch(() => ({}));
+  const msgEl = document.getElementById('ip-range-message');
+  if (!res.ok) {
+    showMessage('ip-range-message', data.error || 'Kunne ikke tilføje', true);
+    return;
+  }
+  showMessage('ip-range-message', 'Adresse tilføjet.');
+  input.value = '';
+  renderIpRangeList(await loadIpRanges());
+});
+
 document.getElementById('logout').addEventListener('click', () => {
   localStorage.removeItem('ontime_token');
   window.location.href = '/';
@@ -250,5 +305,6 @@ async function init() {
   await ensureAdmin();
   await fillClassSelects();
   renderUserList(await loadUsers());
+  renderIpRangeList(await loadIpRanges());
 }
 init();

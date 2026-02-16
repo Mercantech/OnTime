@@ -544,6 +544,13 @@ main.app-main.dashboard {
 .admin-main .card form label { display: block; margin-bottom: 0.25rem; font-size: 0.9rem; }
 .admin-main .checkbox-label { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; cursor: pointer; }
 .admin-main .checkbox-label input[type="checkbox"] { width: auto; margin: 0; }
+.admin-main .card-hint code { font-size: 0.85em; background: var(--surface-2); padding: 0.15rem 0.4rem; border-radius: 4px; }
+.ip-range-list { list-style: none; padding: 0; margin: 1rem 0 0; font-size: 0.9rem; }
+.ip-range-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+.ip-range-list li:last-child { border-bottom: none; }
+.ip-range-list .muted { font-size: 0.85rem; }
+.btn-delete-ip { padding: 0.25rem 0.5rem; font-size: 0.8rem; background: transparent; color: var(--danger); border: 1px solid var(--danger); border-radius: var(--radius-sm); cursor: pointer; }
+.btn-delete-ip:hover { background: var(--danger); color: #fff; }
 .admin-main #form-csv select { margin-bottom: 0.75rem; }
 .admin-main #form-csv select:disabled { opacity: 0.8; }
 .class-status { font-weight: normal; color: var(--text-muted); font-size: 0.85rem; margin-left: 0.25rem; }

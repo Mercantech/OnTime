@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const { pool } = require('../db');
+const config = require('../config');
 const { auth } = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/requireAdmin');
 
@@ -10,6 +11,52 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 *
 
 router.use(auth);
 router.use(requireAdmin);
+
+/** Valider CIDR (fx 192.168.1.0/24 eller 185.22.75.2/32) */
+function isValidCidr(s) {
+  return /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2}$/.test(String(s).trim()) &&
+    parseInt(String(s).split('/')[1], 10) >= 0 && parseInt(String(s).split('/')[1], 10) <= 32;
+}
+
+router.get('/ip-ranges', async (req, res) => {
+  try {
+    const envRanges = config.getEnvIpRanges();
+    const fromEnv = envRanges.map(range => ({ range, fromEnv: true }));
+    const r = await pool.query('SELECT id, range FROM allowed_ip_ranges ORDER BY id');
+    const fromDb = (r.rows || []).map(row => ({ id: row.id, range: row.range, fromEnv: false }));
+    res.json({ ranges: [...fromEnv.map(r => ({ ...r, id: null })), ...fromDb] });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+router.post('/ip-ranges', async (req, res) => {
+  const range = req.body && req.body.range ? String(req.body.range).trim() : '';
+  if (!range) return res.status(400).json({ error: 'Angiv en adresse (fx 192.168.1.0/24)' });
+  if (!isValidCidr(range)) return res.status(400).json({ error: 'Ugyldigt format. Brug CIDR, fx 192.168.1.0/24 eller 185.22.75.2/32' });
+  try {
+    const r = await pool.query('INSERT INTO allowed_ip_ranges (range) VALUES ($1) RETURNING id, range', [range]);
+    res.status(201).json(r.rows[0]);
+  } catch (e) {
+    if (e.code === '23505') return res.status(400).json({ error: 'Den adresse findes allerede' });
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+router.delete('/ip-ranges/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id)) return res.status(400).json({ error: 'Ugyldigt id' });
+  try {
+    const r = await pool.query('DELETE FROM allowed_ip_ranges WHERE id = $1 RETURNING id', [id]);
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Ikke fundet' });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
 
 router.get('/classes', async (req, res) => {
   try {

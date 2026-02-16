@@ -15,6 +15,16 @@
   </header>
   <main class="app-main admin-main">
     <section class="card">
+      <h2>Tilladte netværk (WiFi-whitelist)</h2>
+      <p class="card-hint">Elever skal være på <strong>MAGS-OLC</strong> for at stemple ind. Tilføj her de IP-ranges der skal accepteres (fx hvis netværket skifter eller elever har problemer). Format: <code>192.168.1.0/24</code> eller enkelt IP <code>185.22.75.2/32</code>.</p>
+      <form id="form-ip-range">
+        <input type="text" id="ip-range-input" placeholder="fx 192.168.1.0/24" required>
+        <button type="submit">Tilføj adresse</button>
+      </form>
+      <p id="ip-range-message" class="message" hidden></p>
+      <ul id="ip-range-list" class="ip-range-list">Indlæser…</ul>
+    </section>
+    <section class="card">
       <h2>Ny klasse</h2>
       <form id="form-class">
         <input type="text" id="class-name" placeholder="Klassenavn (fx 2b)" required>

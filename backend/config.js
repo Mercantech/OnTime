@@ -35,15 +35,26 @@ function isIpInCidr(ip, cidr) {
 }
 
 function isIpInAllowedRanges(ip) {
-  if (!ALLOWED_IP_RANGES.length) return false;
+  return isIpInRanges(ip, ALLOWED_IP_RANGES);
+}
+
+/** Tjek om en IP matcher en af CIDR-ranges (fx "192.168.1.0/24"). */
+function isIpInRanges(ip, ranges) {
+  if (!ranges || !ranges.length) return false;
+  const cleanIp = extractIpV4(ip);
+  if (!cleanIp) return false;
+  return ranges.some(cidr => isIpInCidr(cleanIp, cidr));
+}
+
+function extractIpV4(ip) {
   const raw = String(ip).split('%')[0];
-  // Udtræk IPv4 (fx fra "::ffff:192.168.1.5" eller ren "192.168.1.5")
   const m = raw.match(/(\d+\.\d+\.\d+\.\d+)/);
-  const cleanIp = m ? m[1] : raw;
-  if (cleanIp && /^\d+\.\d+\.\d+\.\d+$/.test(cleanIp)) {
-    return ALLOWED_IP_RANGES.some(cidr => isIpInCidr(cleanIp, cidr));
-  }
-  return false;
+  const clean = m ? m[1] : raw;
+  return clean && /^\d+\.\d+\.\d+\.\d+$/.test(clean) ? clean : null;
+}
+
+function getEnvIpRanges() {
+  return [...ALLOWED_IP_RANGES];
 }
 
 function haversineDistance(lat1, lon1, lat2, lon2) {
@@ -104,6 +115,8 @@ module.exports = {
   getWeekdaysInMonth,
   getWeekdaysUpToToday,
   isIpInAllowedRanges,
+  isIpInRanges,
+  getEnvIpRanges,
   useWiFiCheck: ALLOWED_IP_RANGES.length > 0,
   WIFI_NAME,
   SCHOOL_LAT,

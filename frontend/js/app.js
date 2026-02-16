@@ -116,7 +116,7 @@ async function loadTodayCheckin() {
       btn.className = 'btn-checkin not-ready';
     }
   } else {
-    if (msgEl) msgEl.textContent = locationConfig && locationConfig.useWiFiCheck ? 'Forbind til skolens WiFi og stemple ind.' : 'Stempel ind når du er på skolen.';
+    if (msgEl) msgEl.textContent = locationConfig && locationConfig.useWiFiCheck ? 'Forbind til WiFi-netværket MAGS-OLC for at stemple ind.' : 'Stempel ind når du er på skolen.';
     if (statusEl) statusEl.hidden = true;
     if (btn && locationConfig && locationConfig.useWiFiCheck) {
       btn.disabled = false;

@@ -22,6 +22,16 @@ const MIGRATIONS = [
       ALTER TABLE check_ins ALTER COLUMN lng DROP NOT NULL;
     `,
   },
+  {
+    name: 'allowed_ip_ranges',
+    sql: `
+      CREATE TABLE IF NOT EXISTS allowed_ip_ranges (
+        id SERIAL PRIMARY KEY,
+        range TEXT NOT NULL UNIQUE,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      );
+    `,
+  },
 ];
 
 async function run() {
