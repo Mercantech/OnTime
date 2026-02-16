@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Stempel ind</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>OnTime</h1>
+    <a id="admin-link" href="/admin" class="admin-link" hidden>Admin</a>
+    <span id="user-name" class="user-info"></span>
+    <button id="logout" class="btn-logout">Log ud</button>
+  </header>
+  <main class="app-main">
+    <section class="card checkin-card">
+      <h2>Stempel ind</h2>
+      <div id="geo-intro" class="checkin-intro">Du skal være på skolen for at stemple ind. Vi tjekker din position live.</div>
+      <div id="wifi-intro" class="checkin-intro" hidden>Forbind til skolens WiFi og stemple ind når du er på netværket.</div>
+      <div class="location-widget">
+        <div id="geo-widget">
+          <div id="location-ring" class="location-ring waiting">
+            <span class="distance-value">–</span><span> m</span>
+          </div>
+          <p id="location-status" class="location-status">Venter på GPS…</p>
+        </div>
+        <div id="wifi-widget" class="wifi-widget" hidden>
+          <p class="wifi-message">Vær forbundet til <strong id="wifi-name">MAGS-OLC</strong>, så kan du stemple ind.</p>
+        </div>
+        <p id="checkin-status" class="checkin-success" hidden></p>
+        <button id="checkin-btn" class="btn-checkin not-ready" disabled>Stempel ind</button>
+      </div>
+    </section>
+    <section class="card stats-card">
+      <h2>Dine point denne måned</h2>
+      <p id="my-stats" class="stats-big">Indlæser…</p>
+    </section>
+    <section class="card leaderboard-card">
+      <h2>Klassens leaderboard</h2>
+      <div id="leaderboard">Indlæser…</div>
+    </section>
+  </main>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Admin</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>OnTime</h1>
+    <a href="/app" class="admin-link">Tilbage til app</a>
+    <span id="admin-user" class="user-info"></span>
+    <button id="logout" class="btn-logout">Log ud</button>
+  </header>
+  <main class="app-main admin-main">
+    <section class="card">
+      <h2>Ny klasse</h2>
+      <form id="form-class">
+        <input type="text" id="class-name" placeholder="Klassenavn (fx 2b)" required>
+        <button type="submit">Opret klasse</button>
+      </form>
+      <p id="class-message" class="message" hidden></p>
+    </section>
+    <section class="card">
+      <h2>Ny bruger</h2>
+      <form id="form-user">
+        <input type="text" id="user-name" placeholder="Navn" required>
+        <input type="email" id="user-email" placeholder="Email" required>
+        <input type="password" id="user-password" placeholder="Adgangskode (min. 4 tegn)" required minlength="4">
+        <select id="user-class" required>
+          <option value="">Vælg klasse</option>
+        </select>
+        <button type="submit">Opret bruger</button>
+      </form>
+      <p id="user-message" class="message" hidden></p>
+    </section>
+    <section class="card">
+      <h2>Brugere</h2>
+      <p>
+        <label>Filter: </label>
+        <select id="filter-class">
+          <option value="">Alle klasser</option>
+        </select>
+      </p>
+      <ul id="user-list" class="admin-user-list"></ul>
+    </section>
+  </main>
+  <script src="js/admin.js"></script>
+</body>
+</html>

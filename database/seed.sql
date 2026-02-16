@@ -1,0 +1,3 @@
+-- Valgfrit: ekstra klasser kan tilføjes her.
+-- Til testbruger: kør i stedet fra repo-root: node backend/seed.js
+-- (kræver DATABASE_URL, fx: docker-compose run --rm app node seed.js)

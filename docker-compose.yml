@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ontime
+      POSTGRES_PASSWORD: ontime
+      POSTGRES_DB: ontime
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ontime -d ontime"]
+      interval: 3s
+      timeout: 2s
+      retries: 5
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3030:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://ontime:ontime@db:5432/ontime
+      JWT_SECRET: ${JWT_SECRET:-skift-mig-i-produktion}
+      ALLOWED_RADIUS_METERS: ${ALLOWED_RADIUS_METERS:-2000}
+      # WiFi MAGS-OLC: lokalt net 192.168.1.x, skolens offentlige IP, + Docker-net (172.20.x.x)
+      ALLOWED_IP_RANGES: ${ALLOWED_IP_RANGES:-192.168.1.0/24,185.22.75.2/32,172.20.0.0/24}
+      WIFI_NAME: ${WIFI_NAME:-MAGS-OLC}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
