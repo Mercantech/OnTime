@@ -106,12 +106,12 @@ router.get('/:name', async (req, res) => {
       })
       .map(date => date.toISOString().slice(0, 10));
 
-    let classStreak = 0;
+    let classStreak = 0; // kun hverdage (lørdag/søndag tæller ikke)
     const today = new Date();
     let day = new Date(today);
     while (day.getMonth() === month) {
       const key = day.toISOString().slice(0, 10);
-      const dow = day.getDay();
+      const dow = day.getDay(); // 0=søn, 6=lør
       if (dow !== 0 && dow !== 6) {
         const fullDay = numStudents > 0 && (countByDate[key] || 0) === numStudents && (pointsByDate[key] || 0) === fullPointsPerDay;
         if (fullDay) classStreak++;

@@ -491,17 +491,29 @@ main.app-main.dashboard {
 
 /* ---------- Admin (desktop dashboard) ---------- */
 .admin-main {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  max-width: 1200px;
+  max-width: 1600px;
   padding: 1.5rem 2rem;
   margin: 0 auto;
 }
-.admin-main .card:last-child { grid-column: 1 / -1; }
-@media (max-width: 768px) {
-  .admin-main { grid-template-columns: 1fr; }
-  .admin-main .card:last-child { grid-column: 1; }
+#admin-grid {
+  width: 100%;
+  min-height: 400px;
+}
+.admin-main .grid-stack-item-content {
+  min-height: 80px;
+  overflow: auto;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.admin-main .grid-stack-item-content .card {
+  margin-bottom: 0;
+  min-width: 0;
+  height: 100%;
+  box-shadow: none;
+  border: none;
+  background: transparent;
 }
 .admin-main .card {
   margin-bottom: 0;

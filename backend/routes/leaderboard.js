@@ -155,7 +155,7 @@ router.get('/recent', auth, async (req, res) => {
   }
 });
 
-/** Streak: antal på hinanden følgende hverdage med indstempling (denne måned, tæller baglæns fra i dag) */
+/** Streak: antal på hinanden følgende hverdage med indstempling (lørdag/søndag medtages ikke) */
 router.get('/streak', auth, async (req, res) => {
   try {
     const r = await pool.query(
@@ -170,7 +170,7 @@ router.get('/streak', auth, async (req, res) => {
     let streak = 0;
     const d = new Date(today);
     while (d.getMonth() === today.getMonth()) {
-      const day = d.getDay();
+      const day = d.getDay(); // 0=søn, 6=lør – kun hverdage tæller
       const key = d.toISOString().slice(0, 10);
       if (day !== 0 && day !== 6) {
         if (checkedDates.has(key)) streak++;

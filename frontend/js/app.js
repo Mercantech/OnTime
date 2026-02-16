@@ -24,6 +24,12 @@ function haversineMeters(lat1, lon1, lat2, lon2) {
   return Math.round(R * c);
 }
 
+function isWeekend() {
+  const d = new Date();
+  const day = d.getDay();
+  return day === 0 || day === 6; // søndag=0, lørdag=6
+}
+
 async function loadLocationConfig() {
   if (locationConfig) return locationConfig;
   const res = await fetch('/api/config');
@@ -36,6 +42,17 @@ function updateLocationUI(distanceMeters, withinRange, checkedIn) {
   const status = document.getElementById('location-status');
   const btn = document.getElementById('checkin-btn');
   if (!ring || !status || !btn) return;
+
+  if (isWeekend()) {
+    ring.className = 'location-ring waiting';
+    ring.innerHTML = '<span class="distance-value">–</span><span> m</span>';
+    status.textContent = 'Indstempling kun på hverdage (lørdag og søndag tæller ikke).';
+    status.className = 'location-status';
+    btn.disabled = true;
+    btn.className = 'btn-checkin not-ready';
+    btn.textContent = 'Hviledag – ingen indstempling';
+    return;
+  }
 
   if (distanceMeters == null) {
     ring.className = 'location-ring waiting';
@@ -124,9 +141,19 @@ async function loadTodayCheckin() {
       btn.className = 'btn-checkin not-ready';
     }
   } else {
-    if (msgEl) msgEl.textContent = locationConfig && locationConfig.useWiFiCheck ? 'Forbind til WiFi-netværket MAGS-OLC for at stemple ind.' : 'Stempel ind når du er på skolen.';
+    if (msgEl) {
+      if (isWeekend()) {
+        msgEl.textContent = 'I dag er en hviledag – indstempling kun på hverdage.';
+      } else {
+        msgEl.textContent = locationConfig && locationConfig.useWiFiCheck ? 'Forbind til WiFi-netværket MAGS-OLC for at stemple ind.' : 'Stempel ind når du er på skolen.';
+      }
+    }
     if (statusEl) statusEl.hidden = true;
-    if (btn && locationConfig && locationConfig.useWiFiCheck) {
+    if (btn && isWeekend()) {
+      btn.disabled = true;
+      btn.className = 'btn-checkin not-ready';
+      btn.textContent = 'Hviledag – ingen indstempling';
+    } else if (btn && locationConfig && locationConfig.useWiFiCheck) {
       btn.disabled = false;
       btn.className = 'btn-checkin ready';
       btn.textContent = 'Stempel ind';

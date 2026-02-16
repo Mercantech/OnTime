@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OnTime – Admin</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/10.0.1/gridstack.min.css">
 </head>
 <body>
   <header class="app-header">
@@ -14,64 +15,75 @@
     <button id="logout" class="btn-logout">Log ud</button>
   </header>
   <main class="app-main admin-main">
-    <section class="card">
-      <h2>Tilladte netværk (WiFi-whitelist)</h2>
-      <p class="card-hint">Elever skal være på <strong>MAGS-OLC</strong> for at stemple ind. Tilføj her de IP-ranges der skal accepteres (fx hvis netværket skifter eller elever har problemer). Format: <code>192.168.1.0/24</code> eller enkelt IP <code>185.22.75.2/32</code>.</p>
-      <form id="form-ip-range">
-        <input type="text" id="ip-range-input" placeholder="fx 192.168.1.0/24" required>
-        <button type="submit">Tilføj adresse</button>
-      </form>
-      <p id="ip-range-message" class="message" hidden></p>
-      <ul id="ip-range-list" class="ip-range-list">Indlæser…</ul>
-    </section>
-    <section class="card">
-      <h2>Ny klasse</h2>
-      <form id="form-class">
-        <input type="text" id="class-name" placeholder="Klassenavn (fx 2b)" required>
-        <button type="submit">Opret klasse</button>
-      </form>
-      <p id="class-message" class="message" hidden></p>
-    </section>
-    <section class="card">
-      <h2>Import elever fra CSV</h2>
-      <p class="card-hint">Semicolon-separeret med kolonner: Username;...;Initial password;...;Email;Fullname;... CSV'en har ikke klasse – vælg den klasse eleverne skal ind i.</p>
-      <form id="form-csv">
-        <label for="import-class">Importer til klasse: <span class="required">*</span> <span id="import-class-status" class="class-status">Indlæser…</span></label>
-        <select id="import-class" required disabled>
-          <option value="">Indlæser klasser…</option>
-        </select>
-        <input type="file" id="csv-file" accept=".csv,text/csv" required>
-        <button type="submit">Importer CSV</button>
-      </form>
-      <div id="import-result" class="import-result" hidden></div>
-    </section>
-    <section class="card">
-      <h2>Ny bruger</h2>
-      <form id="form-user">
-        <input type="text" id="user-name" placeholder="Navn" required>
-        <input type="email" id="user-email" placeholder="Email" required>
-        <input type="password" id="user-password" placeholder="Adgangskode (min. 4 tegn)" required minlength="4">
-        <select id="user-class" required>
-          <option value="">Vælg klasse</option>
-        </select>
-        <label class="checkbox-label"><input type="checkbox" id="user-is-admin" name="isAdmin"> Gør til administrator</label>
-        <button type="submit">Opret bruger</button>
-      </form>
-      <p id="user-message" class="message" hidden></p>
-    </section>
-    <section class="card">
-      <h2>Oversigt over alle brugere</h2>
-      <p class="user-count">Antal: <strong id="user-count">0</strong> <span class="filter-inline">– Filter: <select id="filter-class"><option value="">Alle klasser</option></select></span></p>
-      <div class="user-table-wrap">
-        <table class="user-table" id="user-table">
-          <thead>
-            <tr><th>Navn</th><th>Email</th><th>Klasse</th><th></th><th>Handlinger</th></tr>
-          </thead>
-          <tbody id="user-list"></tbody>
-        </table>
+    <div class="grid-stack" id="admin-grid">
+      <div class="grid-stack-item" data-gs-id="ip-ranges" data-gs-x="0" data-gs-y="0" data-gs-w="4" data-gs-h="2">
+        <div class="grid-stack-item-content"><section class="card">
+          <h2>Tilladte netværk (WiFi-whitelist)</h2>
+          <p class="card-hint">Elever skal være på <strong>MAGS-OLC</strong>. Format: <code>192.168.1.0/24</code> eller <code>185.22.75.2/32</code>.</p>
+          <form id="form-ip-range">
+            <input type="text" id="ip-range-input" placeholder="fx 192.168.1.0/24" required>
+            <button type="submit">Tilføj adresse</button>
+          </form>
+          <p id="ip-range-message" class="message" hidden></p>
+          <ul id="ip-range-list" class="ip-range-list">Indlæser…</ul>
+        </section></div>
       </div>
-    </section>
+      <div class="grid-stack-item" data-gs-id="ny-klasse" data-gs-x="4" data-gs-y="0" data-gs-w="2" data-gs-h="2">
+        <div class="grid-stack-item-content"><section class="card">
+          <h2>Ny klasse</h2>
+          <form id="form-class">
+            <input type="text" id="class-name" placeholder="Klassenavn (fx 2b)" required>
+            <button type="submit">Opret klasse</button>
+          </form>
+          <p id="class-message" class="message" hidden></p>
+        </section></div>
+      </div>
+      <div class="grid-stack-item" data-gs-id="csv" data-gs-x="6" data-gs-y="0" data-gs-w="4" data-gs-h="2">
+        <div class="grid-stack-item-content"><section class="card">
+          <h2>Import elever fra CSV</h2>
+          <p class="card-hint">Semicolon-separeret. Vælg klasse – CSV har ikke klasse.</p>
+          <form id="form-csv">
+            <label for="import-class">Klasse: <span id="import-class-status" class="class-status">Indlæser…</span></label>
+            <select id="import-class" required disabled>
+              <option value="">Indlæser klasser…</option>
+            </select>
+            <input type="file" id="csv-file" accept=".csv,text/csv" required>
+            <button type="submit">Importer CSV</button>
+          </form>
+          <div id="import-result" class="import-result" hidden></div>
+        </section></div>
+      </div>
+      <div class="grid-stack-item" data-gs-id="ny-bruger" data-gs-x="10" data-gs-y="0" data-gs-w="2" data-gs-h="2">
+        <div class="grid-stack-item-content"><section class="card">
+          <h2>Ny bruger</h2>
+          <form id="form-user">
+            <input type="text" id="user-name" placeholder="Navn" required>
+            <input type="email" id="user-email" placeholder="Email" required>
+            <input type="password" id="user-password" placeholder="Adgangskode (min. 4)" required minlength="4">
+            <select id="user-class" required><option value="">Vælg klasse</option></select>
+            <label class="checkbox-label"><input type="checkbox" id="user-is-admin" name="isAdmin"> Administrator</label>
+            <button type="submit">Opret bruger</button>
+          </form>
+          <p id="user-message" class="message" hidden></p>
+        </section></div>
+      </div>
+      <div class="grid-stack-item" data-gs-id="brugeroversigt" data-gs-x="0" data-gs-y="2" data-gs-w="12" data-gs-h="4">
+        <div class="grid-stack-item-content"><section class="card">
+          <h2>Oversigt over alle brugere</h2>
+          <p class="user-count">Antal: <strong id="user-count">0</strong> – Filter: <select id="filter-class"><option value="">Alle klasser</option></select></p>
+          <div class="user-table-wrap">
+            <table class="user-table" id="user-table">
+              <thead>
+                <tr><th>Navn</th><th>Email</th><th>Klasse</th><th></th><th>Handlinger</th></tr>
+              </thead>
+              <tbody id="user-list"></tbody>
+            </table>
+          </div>
+        </section></div>
+      </div>
+    </div>
   </main>
-  <script src="js/admin.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gridstack.js/10.0.1/gridstack-all.min.js"></script>
+  <script src="/js/admin.js"></script>
 </body>
 </html>

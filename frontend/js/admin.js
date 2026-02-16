@@ -301,7 +301,40 @@ document.getElementById('logout').addEventListener('click', () => {
   window.location.href = '/';
 });
 
+function initAdminGrid() {
+  const el = document.getElementById('admin-grid');
+  if (!el || typeof GridStack === 'undefined') return;
+  const saved = localStorage.getItem('ontime_admin_grid');
+  if (saved) {
+    try {
+      const layout = JSON.parse(saved);
+      layout.forEach((item) => {
+        const node = el.querySelector('[data-gs-id="' + item.id + '"]');
+        if (node) {
+          if (item.x != null) node.setAttribute('data-gs-x', item.x);
+          if (item.y != null) node.setAttribute('data-gs-y', item.y);
+          if (item.w != null) node.setAttribute('data-gs-w', item.w);
+          if (item.h != null) node.setAttribute('data-gs-h', item.h);
+        }
+      });
+    } catch (e) {}
+  }
+  const grid = GridStack.init({
+    column: 12,
+    cellHeight: 90,
+    margin: 12,
+    float: true,
+    animate: true,
+    draggable: { handle: '.card h2' },
+  }, el);
+  grid.on('change', function() {
+    const data = grid.save(false);
+    localStorage.setItem('ontime_admin_grid', JSON.stringify(data));
+  });
+}
+
 async function init() {
+  initAdminGrid();
   await ensureAdmin();
   await fillClassSelects();
   renderUserList(await loadUsers());
