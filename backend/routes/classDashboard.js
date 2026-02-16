@@ -120,6 +120,88 @@ router.get('/:name', async (req, res) => {
       day.setDate(day.getDate() - 1);
     }
 
+    /** Highlights: største streak, ugens top point, tidligst inde i dag */
+    const highlights = {};
+    const idToDisplayName = {};
+    students.forEach((s, i) => { idToDisplayName[studentsRes.rows[i].id] = s.name; });
+
+    const userCheckDates = await pool.query(
+      `SELECT user_id, check_date FROM check_ins c
+       JOIN users u ON u.id = c.user_id AND u.class_id = $1
+       WHERE c.check_date >= $2 AND c.check_date <= $3`,
+      [classId, monthStart.toISOString().slice(0, 10), today.toISOString().slice(0, 10)]
+    );
+    const datesByUser = {};
+    userCheckDates.rows.forEach(row => {
+      const id = row.user_id;
+      if (!datesByUser[id]) datesByUser[id] = new Set();
+      datesByUser[id].add(row.check_date.toISOString().slice(0, 10));
+    });
+    let bestStreakUser = null;
+    let bestStreakVal = 0;
+    Object.keys(datesByUser).forEach((userId) => {
+      let streak = 0;
+      const d = new Date(today);
+      while (d.getMonth() === month) {
+        const key = d.toISOString().slice(0, 10);
+        const dow = d.getDay();
+        if (dow !== 0 && dow !== 6) {
+          if (datesByUser[userId].has(key)) streak++;
+          else break;
+        }
+        d.setDate(d.getDate() - 1);
+      }
+      if (streak > bestStreakVal) {
+        bestStreakVal = streak;
+        bestStreakUser = userId;
+      }
+    });
+    if (bestStreakUser && bestStreakVal > 0) {
+      highlights.bestStreak = { name: idToDisplayName[bestStreakUser] || '?', value: bestStreakVal };
+    }
+
+    const weekStart = new Date(today);
+    const dayOfWeek = weekStart.getDay();
+    const toMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    weekStart.setDate(weekStart.getDate() - toMonday);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekPointsRes = await pool.query(
+      `SELECT user_id, COALESCE(SUM(points), 0)::int AS pts
+       FROM check_ins c
+       JOIN users u ON u.id = c.user_id AND u.class_id = $1
+       WHERE c.check_date >= $2 AND c.check_date <= $3
+       GROUP BY user_id`,
+      [classId, weekStart.toISOString().slice(0, 10), today.toISOString().slice(0, 10)]
+    );
+    let weekTopUser = null;
+    let weekTopVal = 0;
+    weekPointsRes.rows.forEach(row => {
+      if (row.pts > weekTopVal) {
+        weekTopVal = row.pts;
+        weekTopUser = row.user_id;
+      }
+    });
+    if (weekTopUser != null && weekTopVal > 0) {
+      highlights.weekTop = { name: idToDisplayName[weekTopUser] || '?', value: weekTopVal };
+    }
+
+    const earliestTodayRes = await pool.query(
+      `SELECT u.id, u.name, c.checked_at
+       FROM check_ins c
+       JOIN users u ON u.id = c.user_id AND u.class_id = $1
+       WHERE c.check_date = CURRENT_DATE
+       ORDER BY c.checked_at ASC
+       LIMIT 1`,
+      [classId]
+    );
+    if (earliestTodayRes.rows.length > 0) {
+      const row = earliestTodayRes.rows[0];
+      highlights.earliestToday = {
+        name: idToDisplayName[row.id] || row.name,
+        time: row.checked_at,
+      };
+    }
+
     res.json({
       classId,
       className: displayClassName,
@@ -131,6 +213,7 @@ router.get('/:name', async (req, res) => {
       streak: classStreak,
       perfectDays,
       burndown: { labels: burndownLabels, ideal: burndownIdeal, actual: burndownActual },
+      highlights,
     });
   } catch (e) {
     console.error(e);

@@ -226,6 +226,53 @@ main.app-main.dashboard {
   margin-top: 0.15rem;
 }
 
+/* Klasse-highlights (klassedashboard) */
+.class-highlights {
+  margin-bottom: 1.5rem;
+}
+.highlights-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+.highlight-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: var(--shadow);
+}
+.highlight-card .highlight-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.highlight-card .highlight-name {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+.highlight-card .highlight-value {
+  font-size: 0.9rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+.highlight-streak { border-left: 4px solid var(--accent); }
+.highlight-week { border-left: 4px solid #3b82f6; }
+.highlight-early { border-left: 4px solid #eab308; }
+
 .burndown-wrap {
   margin-top: 0.5rem;
   width: 100%;
@@ -251,6 +298,7 @@ main.app-main.dashboard {
   main.app-main.dashboard { padding: 1rem 1rem; }
   .dashboard-stats { grid-template-columns: 1fr; }
   .dashboard-grid-2 { grid-template-columns: 1fr; }
+  .highlights-grid { grid-template-columns: 1fr; }
 }
 
 .calendar-heatmap {

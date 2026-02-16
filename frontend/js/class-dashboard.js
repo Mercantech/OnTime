@@ -68,6 +68,12 @@
     return d.toLocaleDateString('da-DK', { weekday: 'short', day: 'numeric', month: 'short' });
   }
 
+  function escapeHtml(s) {
+    const div = document.createElement('div');
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
   fetch('/api/public/class/' + encodeURIComponent(className))
     .then(res => res.json())
     .then(data => {
@@ -113,6 +119,28 @@
         listEl.innerHTML = students.length
           ? '<ul class="leaderboard-list">' + students.map(s => '<li><span class="rank">' + s.rank + '</span><span class="name">' + s.name + '</span><span class="points">' + s.totalPoints + ' pt (' + s.percentage + '%)</span></li>').join('') + '</ul>'
           : '<p class="muted">Ingen data</p>';
+      }
+
+      const highlights = data.highlights || {};
+      const highlightsSection = document.getElementById('class-highlights');
+      const highlightsGrid = document.getElementById('highlights-grid');
+      if (highlightsSection && highlightsGrid) {
+        const cards = [];
+        if (highlights.bestStreak) {
+          cards.push('<div class="highlight-card highlight-streak"><span class="highlight-label">Største streak</span><span class="highlight-name">' + escapeHtml(highlights.bestStreak.name) + '</span><span class="highlight-value">' + highlights.bestStreak.value + ' dage</span></div>');
+        }
+        if (highlights.weekTop) {
+          cards.push('<div class="highlight-card highlight-week"><span class="highlight-label">Ugens højeste point</span><span class="highlight-name">' + escapeHtml(highlights.weekTop.name) + '</span><span class="highlight-value">' + highlights.weekTop.value + ' pt</span></div>');
+        }
+        if (highlights.earliestToday) {
+          const t = new Date(highlights.earliestToday.time);
+          const timeStr = t.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
+          cards.push('<div class="highlight-card highlight-early"><span class="highlight-label">Tidligst inde i dag</span><span class="highlight-name">' + escapeHtml(highlights.earliestToday.name) + '</span><span class="highlight-value">kl. ' + timeStr + '</span></div>');
+        }
+        if (cards.length > 0) {
+          highlightsSection.hidden = false;
+          highlightsGrid.innerHTML = cards.join('');
+        }
       }
 
       window.addEventListener('resize', () => {
