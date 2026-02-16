@@ -301,6 +301,20 @@ document.getElementById('logout').addEventListener('click', () => {
   window.location.href = '/';
 });
 
+let adminGridInstance = null;
+
+function saveAdminGridLayout(grid) {
+  const g = grid || adminGridInstance;
+  if (!g) return;
+  try {
+    const data = g.save(false);
+    localStorage.setItem('ontime_admin_grid', JSON.stringify(data));
+    console.log('[OnTime Admin] Layout gemt i localStorage:', data);
+  } catch (e) {
+    console.warn('[OnTime Admin] Kunne ikke gemme layout:', e);
+  }
+}
+
 function initAdminGrid() {
   const el = document.getElementById('admin-grid');
   if (!el || typeof GridStack === 'undefined') return;
@@ -308,6 +322,7 @@ function initAdminGrid() {
   if (saved) {
     try {
       const layout = JSON.parse(saved);
+      console.log('[OnTime Admin] Indlæser gemt layout fra localStorage:', layout);
       layout.forEach((item) => {
         const node = el.querySelector('[data-gs-id="' + item.id + '"]');
         if (node) {
@@ -317,21 +332,25 @@ function initAdminGrid() {
           if (item.h != null) node.setAttribute('data-gs-h', item.h);
         }
       });
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[OnTime Admin] Kunne ikke indlæse layout:', e);
+    }
   }
   const grid = GridStack.init({
     column: 12,
-    cellHeight: 100,
+    cellHeight: 110,
     margin: 10,
     float: true,
     animate: true,
     draggable: { handle: '.card h2' },
-    minRow: 8,
+    minRow: 10,
   }, el);
-  grid.on('change', function() {
-    const data = grid.save(false);
-    localStorage.setItem('ontime_admin_grid', JSON.stringify(data));
-  });
+  adminGridInstance = grid;
+  grid.on('change', () => saveAdminGridLayout(grid));
+  grid.on('dragstop', () => saveAdminGridLayout(grid));
+  grid.on('resizestop', () => saveAdminGridLayout(grid));
+  window.addEventListener('beforeunload', () => saveAdminGridLayout());
+  document.querySelector('a.admin-link[href="/app"]')?.addEventListener('click', () => saveAdminGridLayout());
 }
 
 async function init() {
