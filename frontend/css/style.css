@@ -243,8 +243,18 @@ main.app-main.dashboard {
   width: 1.85rem;
   height: auto;
 }
+.stat-card-streak .streak-flame-icon .flame-glow-layer {
+  opacity: 0;
+}
+.stat-card-streak.has-streak .streak-flame-icon .flame-glow-layer {
+  opacity: 1;
+  animation: flame-glow-pulse 2s ease-in-out infinite;
+}
+@keyframes flame-glow-pulse {
+  0%, 100% { opacity: 0.75; }
+  50% { opacity: 1; }
+}
 .stat-card-streak .streak-flame-icon .flame-outer {
-  filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.3));
   animation: flame-flicker 2.2s ease-in-out infinite;
 }
 .stat-card-streak .streak-flame-icon .flame-mid {
@@ -266,17 +276,13 @@ main.app-main.dashboard {
   font-variant-numeric: tabular-nums;
 }
 .stat-card-streak.has-streak .streak-flame-icon .flame-outer {
-  animation: flame-flicker 2.2s ease-in-out infinite, flame-glow 2s ease-in-out infinite;
+  animation: flame-flicker 2.2s ease-in-out infinite;
 }
 .stat-card-streak.has-streak .streak-flame-icon .flame-mid {
-  animation: flame-flicker 1.8s ease-in-out infinite 0.15s, flame-glow 2s ease-in-out infinite 0.1s;
+  animation: flame-flicker 1.8s ease-in-out infinite 0.15s;
 }
 .stat-card-streak.has-streak .streak-flame-icon .flame-inner {
-  animation: flame-flicker 1.5s ease-in-out infinite 0.3s, flame-glow 2s ease-in-out infinite 0.2s;
-}
-@keyframes flame-glow {
-  0%, 100% { filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.45)) drop-shadow(0 0 12px rgba(34, 197, 94, 0.15)); }
-  50% { filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.6)) drop-shadow(0 0 20px rgba(34, 197, 94, 0.25)); }
+  animation: flame-flicker 1.5s ease-in-out infinite 0.3s;
 }
 .stat-card-streak.has-streak .streak-value {
   animation: streak-value-glow 2s ease-in-out infinite;

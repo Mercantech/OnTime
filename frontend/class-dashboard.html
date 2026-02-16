@@ -30,6 +30,11 @@
           <span class="streak-flame-icon" aria-hidden="true">
             <svg class="flame-svg" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
               <defs>
+                <filter id="flameGlowClass" x="-45%" y="-45%" width="190%" height="190%" color-interpolation-filters="sRGB">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="2.8" result="blur"/>
+                  <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.13  0 0 0 0 0.77  0 0 0 0 0.37  0 0 0 0.55 0" result="glow"/>
+                  <feMerge><feMergeNode in="glow"/></feMerge>
+                </filter>
                 <linearGradient id="flameGradClass" x1="16" y1="0" x2="16" y2="42" gradientUnits="userSpaceOnUse">
                   <stop offset="0%" stop-color="#86efac"/>
                   <stop offset="40%" stop-color="#4ade80"/>
@@ -41,6 +46,7 @@
                   <stop offset="100%" stop-color="#4ade80"/>
                 </linearGradient>
               </defs>
+              <path class="flame-glow-layer" d="M16 0 L22 12 L28 26 L22 38 Q16 42 10 38 L4 26 L10 12 Z" fill="#22c55e" filter="url(#flameGlowClass)"/>
               <path class="flame-outer" d="M16 0 L22 12 L28 26 L22 38 Q16 42 10 38 L4 26 L10 12 Z" fill="url(#flameGradClass)"/>
               <path class="flame-mid" d="M16 4 L20 14 L24 26 L20 34 Q16 38 12 34 L8 26 L12 14 Z" fill="url(#flameCoreClass)" opacity="0.95"/>
               <path class="flame-inner" d="M16 10 L18 18 L20 26 L16 30 L12 26 L14 18 Z" fill="#dcfce7" opacity="0.9"/>
