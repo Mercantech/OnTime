@@ -442,6 +442,28 @@ main.app-main.dashboard {
 .stats-big .muted { color: var(--text-muted); font-weight: 500; font-size: 1rem; }
 
 /* ---------- Leaderboard ---------- */
+.btn-class-dashboard {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: var(--accent);
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+.btn-class-dashboard:hover {
+  background: var(--accent-dim);
+  text-decoration: none;
+}
+.btn-class-dashboard:active {
+  transform: scale(0.98);
+}
+
 .leaderboard-total {
   background: var(--surface-2);
   border-radius: var(--radius-sm);
