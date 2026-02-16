@@ -7,9 +7,21 @@ const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
+/** Brugernavn eller email: "jensen", "jensen@mercantec.dk", "jensen@edu.mercantec.dk" → liste af emails at prøve */
+function loginEmailCandidates(input) {
+  const s = String(input || '').trim().toLowerCase();
+  if (!s) return [];
+  if (s.includes('@')) return [s];
+  return [s + '@mercantec.dk', s + '@edu.mercantec.dk'];
+}
+
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
+    return res.status(400).json({ error: 'Email og adgangskode kræves' });
+  }
+  const candidates = loginEmailCandidates(email);
+  if (candidates.length === 0) {
     return res.status(400).json({ error: 'Email og adgangskode kræves' });
   }
   try {
@@ -17,8 +29,8 @@ router.post('/login', async (req, res) => {
       `SELECT u.id, u.email, u.password_hash, u.name, u.class_id, u.is_admin, c.name AS class_name
        FROM users u
        JOIN classes c ON c.id = u.class_id
-       WHERE u.email = $1`,
-      [email.trim().toLowerCase()]
+       WHERE u.email = ANY($1::text[])`,
+      [candidates]
     );
     if (r.rows.length === 0) {
       return res.status(401).json({ error: 'Forkert email eller adgangskode' });
