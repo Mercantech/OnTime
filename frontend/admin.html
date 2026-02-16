@@ -16,49 +16,53 @@
   <main class="app-main admin-main">
     <div class="admin-dashboard">
       <aside class="admin-sidebar">
-        <section class="card">
-          <h2>Tilladte netværk (WiFi-whitelist)</h2>
-          <p class="card-hint">Elever skal være på <strong>MAGS-OLC</strong>. Format: <code>192.168.1.0/24</code> eller <code>185.22.75.2/32</code>.</p>
-          <form id="form-ip-range">
-            <input type="text" id="ip-range-input" placeholder="fx 192.168.1.0/24" required>
-            <button type="submit">Tilføj adresse</button>
-          </form>
-          <p id="ip-range-message" class="message" hidden></p>
-          <ul id="ip-range-list" class="ip-range-list">Indlæser…</ul>
-        </section>
-        <section class="card">
-          <h2>Ny klasse</h2>
-          <form id="form-class">
-            <input type="text" id="class-name" placeholder="Klassenavn (fx 2b)" required>
-            <button type="submit">Opret klasse</button>
-          </form>
-          <p id="class-message" class="message" hidden></p>
-        </section>
-        <section class="card">
-          <h2>Import elever fra CSV</h2>
-          <p class="card-hint">Semicolon-separeret. Vælg klasse – CSV har ikke klasse.</p>
-          <form id="form-csv">
-            <label for="import-class">Klasse: <span id="import-class-status" class="class-status">Indlæser…</span></label>
-            <select id="import-class" required disabled>
-              <option value="">Indlæser klasser…</option>
-            </select>
-            <input type="file" id="csv-file" accept=".csv,text/csv" required>
-            <button type="submit">Importer CSV</button>
-          </form>
-          <div id="import-result" class="import-result" hidden></div>
-        </section>
-        <section class="card">
-          <h2>Ny bruger</h2>
-          <form id="form-user">
-            <input type="text" id="user-name" placeholder="Navn" required>
-            <input type="email" id="user-email" placeholder="Email" required>
-            <input type="password" id="user-password" placeholder="Adgangskode (min. 4)" required minlength="4">
-            <select id="user-class" required><option value="">Vælg klasse</option></select>
-            <label class="checkbox-label"><input type="checkbox" id="user-is-admin" name="isAdmin"> Administrator</label>
-            <button type="submit">Opret bruger</button>
-          </form>
-          <p id="user-message" class="message" hidden></p>
-        </section>
+        <div class="admin-sidebar-col">
+          <section class="card">
+            <h2>Tilladte netværk (WiFi-whitelist)</h2>
+            <p class="card-hint">Elever skal være på <strong>MAGS-OLC</strong>. Format: <code>192.168.1.0/24</code> eller <code>185.22.75.2/32</code>.</p>
+            <form id="form-ip-range">
+              <input type="text" id="ip-range-input" placeholder="fx 192.168.1.0/24" required>
+              <button type="submit">Tilføj adresse</button>
+            </form>
+            <p id="ip-range-message" class="message" hidden></p>
+            <ul id="ip-range-list" class="ip-range-list">Indlæser…</ul>
+          </section>
+          <section class="card">
+            <h2>Ny klasse</h2>
+            <form id="form-class">
+              <input type="text" id="class-name" placeholder="Klassenavn (fx 2b)" required>
+              <button type="submit">Opret klasse</button>
+            </form>
+            <p id="class-message" class="message" hidden></p>
+          </section>
+        </div>
+        <div class="admin-sidebar-col">
+          <section class="card">
+            <h2>Import elever fra CSV</h2>
+            <p class="card-hint">Semicolon-separeret. Vælg klasse – CSV har ikke klasse.</p>
+            <form id="form-csv">
+              <label for="import-class">Klasse: <span id="import-class-status" class="class-status">Indlæser…</span></label>
+              <select id="import-class" required disabled>
+                <option value="">Indlæser klasser…</option>
+              </select>
+              <input type="file" id="csv-file" accept=".csv,text/csv" required>
+              <button type="submit">Importer CSV</button>
+            </form>
+            <div id="import-result" class="import-result" hidden></div>
+          </section>
+          <section class="card">
+            <h2>Ny bruger</h2>
+            <form id="form-user">
+              <input type="text" id="user-name" placeholder="Navn" required>
+              <input type="email" id="user-email" placeholder="Email" required>
+              <input type="password" id="user-password" placeholder="Adgangskode (min. 4)" required minlength="4">
+              <select id="user-class" required><option value="">Vælg klasse</option></select>
+              <label class="checkbox-label"><input type="checkbox" id="user-is-admin" name="isAdmin"> Administrator</label>
+              <button type="submit">Opret bruger</button>
+            </form>
+            <p id="user-message" class="message" hidden></p>
+          </section>
+        </div>
       </aside>
       <div class="admin-content">
         <section class="card card-users">

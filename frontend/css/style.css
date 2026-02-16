@@ -507,13 +507,24 @@ main.app-main.admin-main {
 }
 
 .admin-sidebar {
-  width: 33.333%;
-  min-width: 320px;
-  max-width: 420px;
-  padding: 1.25rem;
-  overflow-y: auto;
+  display: flex;
+  width: 50%;
+  flex-shrink: 0;
+  min-width: 0;
   background: var(--surface-2);
   border-right: 1px solid var(--border);
+}
+
+.admin-sidebar-col {
+  flex: 1;
+  min-width: 0;
+  padding: 1.25rem;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+}
+
+.admin-sidebar-col:last-child {
+  border-right: none;
 }
 
 .admin-sidebar .card {
@@ -635,7 +646,9 @@ main.app-main.admin-main {
 
 @media (max-width: 900px) {
   .admin-dashboard { flex-direction: column; height: auto; min-height: calc(100vh - 4rem); }
-  .admin-sidebar { width: 100%; max-width: none; min-width: 0; border-right: none; border-bottom: 1px solid var(--border); }
+  .admin-sidebar { width: 100%; flex-direction: column; border-right: none; border-bottom: 1px solid var(--border); }
+  .admin-sidebar-col { border-right: none; border-bottom: 1px solid var(--border); }
+  .admin-sidebar-col:last-child { border-bottom: none; }
   .admin-content .card-users .user-table-wrap { min-height: 300px; }
 }
 
