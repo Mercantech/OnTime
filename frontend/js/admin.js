@@ -306,8 +306,22 @@ let adminGridInstance = null;
 function saveAdminGridLayout(grid) {
   const g = grid || adminGridInstance;
   if (!g) return;
+  const el = document.getElementById('admin-grid');
+  if (!el) return;
   try {
-    const data = g.save(false);
+    const nodes = el.querySelectorAll('.grid-stack-item');
+    const data = [];
+    nodes.forEach((node) => {
+      const id = node.getAttribute('data-gs-id');
+      if (!id) return;
+      data.push({
+        id,
+        x: parseInt(node.getAttribute('data-gs-x') || '0', 10),
+        y: parseInt(node.getAttribute('data-gs-y') || '0', 10),
+        w: parseInt(node.getAttribute('data-gs-w') || '1', 10),
+        h: parseInt(node.getAttribute('data-gs-h') || '1', 10),
+      });
+    });
     localStorage.setItem('ontime_admin_grid', JSON.stringify(data));
     console.log('[OnTime Admin] Layout gemt i localStorage:', data);
   } catch (e) {
@@ -323,8 +337,11 @@ function initAdminGrid() {
     try {
       const layout = JSON.parse(saved);
       console.log('[OnTime Admin] Indlæser gemt layout fra localStorage:', layout);
-      layout.forEach((item) => {
-        const node = el.querySelector('[data-gs-id="' + item.id + '"]');
+      const nodes = el.querySelectorAll('.grid-stack-item');
+      layout.forEach((item, index) => {
+        const node = item.id
+          ? el.querySelector('[data-gs-id="' + item.id + '"]')
+          : nodes[index];
         if (node) {
           if (item.x != null) node.setAttribute('data-gs-x', item.x);
           if (item.y != null) node.setAttribute('data-gs-y', item.y);
