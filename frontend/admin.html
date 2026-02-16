@@ -23,6 +23,15 @@
       <p id="class-message" class="message" hidden></p>
     </section>
     <section class="card">
+      <h2>Import elever fra CSV</h2>
+      <p class="card-hint">Semicolon-separeret med kolonner: Activity;Activity Short description;Username;...;Initial password;...;Email. Login = Email (eller Username@mercantec.dk), password = Initial password.</p>
+      <form id="form-csv">
+        <input type="file" id="csv-file" accept=".csv,text/csv" required>
+        <button type="submit">Importer CSV</button>
+      </form>
+      <div id="import-result" class="import-result" hidden></div>
+    </section>
+    <section class="card">
       <h2>Ny bruger</h2>
       <form id="form-user">
         <input type="text" id="user-name" placeholder="Navn" required>

@@ -398,3 +398,8 @@ main.app-main {
 }
 .admin-user-list .muted { color: var(--text-muted); }
 
+.card-hint { font-size: 0.85rem; color: var(--text-muted); margin: -0.5rem 0 0.75rem; }
+.import-result { margin-top: 1rem; font-size: 0.9rem; }
+.import-result .success { color: var(--accent); }
+.import-errors { margin: 0.5rem 0 0; padding-left: 1.25rem; color: var(--danger); max-height: 200px; overflow-y: auto; }
+

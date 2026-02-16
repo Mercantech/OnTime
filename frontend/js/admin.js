@@ -65,6 +65,38 @@ function renderUserList(users) {
   ).join('');
 }
 
+document.getElementById('form-csv').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fileInput = document.getElementById('csv-file');
+  const resultEl = document.getElementById('import-result');
+  if (!fileInput.files || !fileInput.files[0]) {
+    resultEl.innerHTML = '<p class="error">Vælg en fil.</p>';
+    resultEl.hidden = false;
+    return;
+  }
+  const fd = new FormData();
+  fd.append('csv', fileInput.files[0]);
+  resultEl.innerHTML = '<p>Importerer…</p>';
+  resultEl.hidden = false;
+  const res = await fetch('/api/admin/import-csv', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: fd,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    resultEl.innerHTML = '<p class="error">' + (data.error || 'Import fejlede') + '</p>';
+    return;
+  }
+  let html = '<p class="success">Oprettet: ' + data.created + ', opdateret: ' + data.updated;
+  if (data.errors && data.errors.length) html += ', fejl: ' + data.errors.length + '</p><ul class="import-errors">' + data.errors.slice(0, 20).map(err => '<li>Række ' + err.row + (err.email ? ' ' + err.email : '') + ': ' + (err.message || '') + '</li>').join('') + '</ul>';
+  else html += '.</p>';
+  resultEl.innerHTML = html;
+  fileInput.value = '';
+  fillClassSelects();
+  renderUserList(await loadUsers());
+});
+
 document.getElementById('form-class').addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = document.getElementById('class-name').value.trim();
