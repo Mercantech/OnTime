@@ -136,9 +136,10 @@
         }
       }
       if (listEl) {
-        listEl.innerHTML = students.length
-          ? '<ul class="leaderboard-list">' + students.map(s => '<li><span class="rank">' + s.rank + '</span><span class="name">' + s.name + '</span><span class="points">' + s.totalPoints + ' pt (' + s.percentage + '%)</span></li>').join('') + '</ul>'
-          : '<p class="muted">Ingen data</p>';
+        const rest = students.slice(3);
+        listEl.innerHTML = rest.length
+          ? '<ul class="leaderboard-list">' + rest.map(s => '<li><span class="rank">' + s.rank + '</span><span class="name">' + s.name + '</span><span class="points">' + s.totalPoints + ' pt (' + s.percentage + '%)</span></li>').join('') + '</ul>'
+          : students.length > 0 ? '<p class="muted">Kun top 3 i klassen.</p>' : '<p class="muted">Ingen data</p>';
       }
 
       const highlights = data.highlights || {};
