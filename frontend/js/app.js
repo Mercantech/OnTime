@@ -136,10 +136,11 @@ async function loadTodayCheckin() {
   const btn = document.getElementById('checkin-btn');
 
   if (data.checkedIn) {
-    if (msgEl) msgEl.textContent = 'Stemplet ind i dag ✓';
+    const feedback = data.message || ('Stemplet ind i dag ✓ Kl. ' + new Date(data.checkedAt).toLocaleTimeString('da-DK') + ' – ' + data.points + ' point.');
+    if (msgEl) msgEl.textContent = feedback;
     if (statusEl) {
       statusEl.hidden = false;
-      statusEl.textContent = 'Kl. ' + new Date(data.checkedAt).toLocaleTimeString('da-DK') + ' – ' + data.points + ' point.';
+      statusEl.textContent = feedback;
     }
     if (btn) {
       btn.disabled = true;

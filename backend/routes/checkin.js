@@ -189,10 +189,14 @@ router.get('/today', auth, async (req, res) => {
     if (r.rows.length === 0) {
       return res.json({ checkedIn: false });
     }
+    const row = r.rows[0];
+    const checkedAt = new Date(row.checked_at);
+    const points = row.points;
     res.json({
       checkedIn: true,
-      checkedAt: r.rows[0].checked_at,
-      points: r.rows[0].points,
+      checkedAt: row.checked_at,
+      points,
+      message: getCheckinMessage(checkedAt, points),
     });
   } catch (e) {
     console.error(e);
