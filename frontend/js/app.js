@@ -131,39 +131,64 @@ async function loadTodayCheckin() {
 }
 
 async function loadMyStats() {
-  const res = await api('/api/leaderboard/my-stats');
-  const data = await res.json();
-  const el = document.getElementById('stat-points');
-  const maxEl = document.getElementById('stat-points-max');
-  if (el) el.textContent = data.totalPoints;
-  if (maxEl) maxEl.textContent = '/ ' + data.maxPossible + ' pt';
+  try {
+    const res = await api('/api/leaderboard/my-stats');
+    const data = await res.json().catch(() => ({}));
+    const el = document.getElementById('stat-points');
+    const maxEl = document.getElementById('stat-points-max');
+    if (el) el.textContent = data.totalPoints != null ? data.totalPoints : '–';
+    if (maxEl) maxEl.textContent = (data.maxPossible != null ? '/ ' + data.maxPossible + ' pt' : '/ – pt');
+  } catch (e) {
+    const el = document.getElementById('stat-points');
+    const maxEl = document.getElementById('stat-points-max');
+    if (el) el.textContent = '–';
+    if (maxEl) maxEl.textContent = '/ – pt';
+  }
 }
 
 async function loadStreak() {
-  const res = await api('/api/leaderboard/streak');
-  const data = await res.json();
-  const el = document.getElementById('stat-streak');
-  if (el) el.textContent = data.currentStreak || 0;
+  try {
+    const res = await api('/api/leaderboard/streak');
+    const data = await res.json().catch(() => ({}));
+    const el = document.getElementById('stat-streak');
+    if (el) el.textContent = data.currentStreak != null ? data.currentStreak : 0;
+  } catch (e) {
+    const el = document.getElementById('stat-streak');
+    if (el) el.textContent = '0';
+  }
 }
 
 async function loadLeaderboard() {
-  const res = await api('/api/leaderboard/class');
-  const data = await res.json();
-  const totalEl = document.getElementById('leaderboard-total');
-  const listEl = document.getElementById('leaderboard');
-  if (totalEl) totalEl.innerHTML = `<strong>Klasse total:</strong> ${data.classTotal} / ${data.maxPossibleClass} point (${data.classPercentage}%)`;
-  if (listEl) {
-    listEl.innerHTML = '<ul class="leaderboard-list">' +
-      data.students.map(s => `<li><span class="rank">${s.rank}</span><span class="name">${s.name}</span><span class="points">${s.totalPoints} pt (${s.percentage}%)</span></li>`).join('') +
-      '</ul>';
+  try {
+    const res = await api('/api/leaderboard/class');
+    const data = await res.json().catch(() => ({}));
+    const totalEl = document.getElementById('leaderboard-total');
+    const listEl = document.getElementById('leaderboard');
+    const students = Array.isArray(data.students) ? data.students : [];
+    if (totalEl) {
+      totalEl.innerHTML = `<strong>Klasse total:</strong> ${data.classTotal ?? '–'} / ${data.maxPossibleClass ?? '–'} point (${data.classPercentage ?? '–'}%)`;
+    }
+    if (listEl) {
+      listEl.innerHTML = students.length
+        ? '<ul class="leaderboard-list">' + students.map(s => `<li><span class="rank">${s.rank}</span><span class="name">${s.name}</span><span class="points">${s.totalPoints} pt (${s.percentage}%)</span></li>`).join('') + '</ul>'
+        : '<p class="muted">Ingen data</p>';
+    }
+    const classPctEl = document.getElementById('stat-class-pct');
+    if (classPctEl) classPctEl.textContent = data.classPercentage != null ? data.classPercentage : '–';
+  } catch (e) {
+    const totalEl = document.getElementById('leaderboard-total');
+    const listEl = document.getElementById('leaderboard');
+    if (totalEl) totalEl.textContent = '';
+    if (listEl) listEl.innerHTML = '<p class="muted">Kunne ikke hente leaderboard</p>';
+    const classPctEl = document.getElementById('stat-class-pct');
+    if (classPctEl) classPctEl.textContent = '–';
   }
-  const classPctEl = document.getElementById('stat-class-pct');
-  if (classPctEl) classPctEl.textContent = data.classPercentage ?? '–';
 }
 
 function drawBurndownChart(canvas, data) {
-  if (!data || !data.labels || !data.labels.length) return;
+  if (!canvas || !data || !data.labels || !data.labels.length) return;
   const ctx = canvas.getContext('2d');
+  if (!ctx) return;
   const dpr = window.devicePixelRatio || 1;
   const rect = canvas.getBoundingClientRect();
   canvas.width = rect.width * dpr;
@@ -226,29 +251,38 @@ function drawBurndownChart(canvas, data) {
 
 let lastBurndownData = null;
 async function loadBurndown() {
-  const res = await api('/api/leaderboard/burndown');
-  const data = await res.json();
-  lastBurndownData = data;
-  const canvas = document.getElementById('burndown-chart');
-  if (canvas && data.labels && data.labels.length) drawBurndownChart(canvas, data);
+  try {
+    const res = await api('/api/leaderboard/burndown');
+    const data = await res.json().catch(() => ({}));
+    lastBurndownData = data;
+    const canvas = document.getElementById('burndown-chart');
+    if (canvas && data.labels && data.labels.length) drawBurndownChart(canvas, data);
+  } catch (e) {
+    lastBurndownData = null;
+  }
 }
 
 async function loadRecent() {
-  const res = await api('/api/leaderboard/recent');
-  const data = await res.json();
   const el = document.getElementById('recent-list');
   if (!el) return;
-  if (!data.length) {
-    el.innerHTML = '<li class="muted">Ingen indstemplinger denne måned</li>';
-    return;
+  try {
+    const res = await api('/api/leaderboard/recent');
+    const data = await res.json().catch(() => []);
+    const list = Array.isArray(data) ? data : [];
+    if (!list.length) {
+      el.innerHTML = '<li class="muted">Ingen indstemplinger denne måned</li>';
+      return;
+    }
+    el.innerHTML = list.map(r => {
+      const d = new Date(r.date);
+      const t = new Date(r.time);
+      const dateStr = d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short' });
+      const timeStr = t.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
+      return `<li><span class="recent-date">${dateStr} kl. ${timeStr}</span><span class="recent-points">${r.points} pt</span></li>`;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<li class="muted">Kunne ikke hente</li>';
   }
-  el.innerHTML = data.map(r => {
-    const d = new Date(r.date);
-    const t = new Date(r.time);
-    const dateStr = d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short' });
-    const timeStr = t.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
-    return `<li><span class="recent-date">${dateStr} kl. ${timeStr}</span><span class="recent-points">${r.points} pt</span></li>`;
-  }).join('');
 }
 
 function renderCalendarHeatmap(container, checkInDates) {
@@ -279,10 +313,15 @@ function renderCalendarHeatmap(container, checkInDates) {
 }
 
 async function loadCalendar() {
-  const res = await api('/api/leaderboard/calendar');
-  const data = await res.json();
   const el = document.getElementById('calendar-heatmap');
-  if (el) renderCalendarHeatmap(el, data);
+  if (!el) return;
+  try {
+    const res = await api('/api/leaderboard/calendar');
+    const data = await res.json().catch(() => []);
+    renderCalendarHeatmap(el, Array.isArray(data) ? data : []);
+  } catch (e) {
+    renderCalendarHeatmap(el, []);
+  }
 }
 
 function onPosition(lat, lng) {
@@ -411,26 +450,32 @@ function showGeoMode() {
 }
 
 async function init() {
-  await loadLocationConfig();
-  await loadUser();
-  await loadTodayCheckin();
-  await loadMyStats();
-  await loadStreak();
-  await loadLeaderboard();
-  await loadBurndown();
-  await loadRecent();
-  await loadCalendar();
+  try {
+    await loadLocationConfig();
+    await loadUser();
+    await loadTodayCheckin();
+    await loadMyStats();
+    await loadStreak();
+    await loadLeaderboard();
+    await loadBurndown();
+    await loadRecent();
+    await loadCalendar();
 
-  if (locationConfig.useWiFiCheck) {
-    showWiFiMode();
-  } else {
-    showGeoMode();
-    startLocationWatch();
+    if (locationConfig && locationConfig.useWiFiCheck) {
+      showWiFiMode();
+    } else {
+      showGeoMode();
+      startLocationWatch();
+    }
+
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('burndown-chart');
+      if (canvas && lastBurndownData) drawBurndownChart(canvas, lastBurndownData);
+    });
+  } catch (e) {
+    console.error('Init fejl:', e);
+    const msg = document.getElementById('hero-message');
+    if (msg) msg.textContent = 'Kunne ikke indlæse dashboard. Prøv at logge ind igen.';
   }
-
-  window.addEventListener('resize', () => {
-    const canvas = document.getElementById('burndown-chart');
-    if (canvas && lastBurndownData) drawBurndownChart(canvas, lastBurndownData);
-  });
 }
 init();
