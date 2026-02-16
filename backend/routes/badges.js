@@ -8,10 +8,14 @@ const BADGE_DEFS = [
   { key: 'first_checkin', name: 'Første gang', description: 'Din allerførste indstempling' },
   { key: 'streak_3', name: 'Streak 3', description: '3 hverdage i træk med indstempling' },
   { key: 'streak_5', name: 'Streak 5', description: '5 hverdage i træk' },
+  { key: 'streak_7', name: 'Seks-syv', description: '7 dages streak – 6-7? Nej, 7! 😏' },
   { key: 'streak_10', name: 'Streak 10', description: '10 hverdage i træk' },
   { key: 'perfect_week', name: 'Perfekt uge', description: '5/5 hverdage med 45 point i én uge' },
   { key: 'early_bird', name: 'Tidlig fugl', description: '5 indstemplinger før kl. 08:15' },
+  { key: 'before_7', name: 'Før kl. 7', description: 'Kom inden kl. 7 om morgenen' },
+  { key: 'exactly_8', name: 'Præcis 8', description: 'Stemplet ind præcis kl. 08:00' },
   { key: 'month_top', name: 'Månedens mester', description: 'Flest point i klassen denne måned' },
+  { key: 'april_20', name: '4/20', description: 'Stemplet ind den 20. april 🌿' },
 ];
 
 /** Returnerer brugerens badges; beregner og gemmer nye præstationer. */
@@ -63,7 +67,26 @@ router.get('/me', auth, async (req, res) => {
     }
     if (streak >= 3 && !earned.has('streak_3')) toAward.push('streak_3');
     if (streak >= 5 && !earned.has('streak_5')) toAward.push('streak_5');
+    if (streak >= 7 && !earned.has('streak_7')) toAward.push('streak_7');
     if (streak >= 10 && !earned.has('streak_10')) toAward.push('streak_10');
+
+    const before7 = checkIns.some((c) => {
+      const t = new Date(c.checked_at);
+      return t.getHours() < 7;
+    });
+    if (before7 && !earned.has('before_7')) toAward.push('before_7');
+
+    const exactly8 = checkIns.some((c) => {
+      const t = new Date(c.checked_at);
+      return t.getHours() === 8 && t.getMinutes() === 0;
+    });
+    if (exactly8 && !earned.has('exactly_8')) toAward.push('exactly_8');
+
+    const april20 = checkIns.some((c) => {
+      const d = c.check_date instanceof Date ? c.check_date : new Date(c.check_date);
+      return d.getMonth() === 3 && d.getDate() === 20;
+    });
+    if (april20 && !earned.has('april_20')) toAward.push('april_20');
 
     const earlyCount = checkIns.filter((c) => {
       const t = new Date(c.checked_at);

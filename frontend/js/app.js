@@ -317,10 +317,14 @@ const BADGE_ICONS = {
   first_checkin: '⭐',
   streak_3: '🔥',
   streak_5: '🔥',
+  streak_7: '😏',
   streak_10: '🏆',
   perfect_week: '✓',
   early_bird: '🌅',
+  before_7: '⏰',
+  exactly_8: '8️⃣',
   month_top: '👑',
+  april_20: '🌿',
 };
 
 async function loadBadges() {
