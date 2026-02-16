@@ -490,17 +490,31 @@ main.app-main.dashboard {
 .leaderboard-list .points { color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
 /* ---------- Admin (desktop dashboard) ---------- */
+main.app-main.admin-main {
+  max-width: none;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  margin: 0;
+  box-sizing: border-box;
+}
 .admin-main {
-  max-width: 1600px;
-  padding: 1.5rem 2rem;
-  margin: 0 auto;
+  max-width: none;
+  padding: 1rem 1.5rem;
+  margin: 0;
+  width: 100%;
+  min-height: calc(100vh - 4rem);
+  box-sizing: border-box;
 }
 #admin-grid {
   width: 100%;
-  min-height: 400px;
+  min-height: calc(100vh - 6rem);
+}
+#admin-grid.grid-stack {
+  background: transparent;
 }
 .admin-main .grid-stack-item-content {
-  min-height: 80px;
+  min-height: 140px;
+  height: 100%;
   overflow: auto;
   background: var(--surface-1);
   border: 1px solid var(--border);

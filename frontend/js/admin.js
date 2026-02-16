@@ -321,11 +321,12 @@ function initAdminGrid() {
   }
   const grid = GridStack.init({
     column: 12,
-    cellHeight: 90,
-    margin: 12,
+    cellHeight: 100,
+    margin: 10,
     float: true,
     animate: true,
     draggable: { handle: '.card h2' },
+    minRow: 8,
   }, el);
   grid.on('change', function() {
     const data = grid.save(false);
