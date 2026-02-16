@@ -26,9 +26,9 @@
       <h2>Import elever fra CSV</h2>
       <p class="card-hint">Semicolon-separeret med kolonner: Username;...;Initial password;...;Email;Fullname;... CSV'en har ikke klasse – vælg den klasse eleverne skal ind i.</p>
       <form id="form-csv">
-        <label for="import-class">Importer til klasse: <span class="required">*</span></label>
-        <select id="import-class" required>
-          <option value="">Vælg klasse</option>
+        <label for="import-class">Importer til klasse: <span class="required">*</span> <span id="import-class-status" class="class-status">Indlæser…</span></label>
+        <select id="import-class" required disabled>
+          <option value="">Indlæser klasser…</option>
         </select>
         <input type="file" id="csv-file" accept=".csv,text/csv" required>
         <button type="submit">Importer CSV</button>

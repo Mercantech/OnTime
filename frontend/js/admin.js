@@ -25,9 +25,15 @@ async function ensureAdmin() {
 }
 
 async function loadClasses() {
-  const res = await api('/api/admin/classes');
-  if (!res.ok) return [];
-  return res.json();
+  try {
+    const res = await api('/api/admin/classes');
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return [];
+    return Array.isArray(data) ? data : [];
+  } catch (e) {
+    console.error('loadClasses:', e);
+    return [];
+  }
 }
 
 async function loadUsers(classId) {
@@ -47,13 +53,20 @@ function showMessage(elId, text, isError = false) {
 
 async function fillClassSelects() {
   const classes = await loadClasses();
-  const opts = classes.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  const opts = classes.map(c => `<option value="${String(c.id)}">${String(c.name || '')}</option>`).join('');
   const def = '<option value="">Vælg klasse</option>';
-  document.getElementById('user-class').innerHTML = def + opts;
   const defAll = '<option value="">Alle klasser</option>';
-  document.getElementById('filter-class').innerHTML = defAll + opts;
-  const importSelect = document.getElementById('import-class');
-  if (importSelect) importSelect.innerHTML = '<option value="">Vælg klasse</option>' + opts;
+  const elUserClass = document.getElementById('user-class');
+  const elFilterClass = document.getElementById('filter-class');
+  const elImportClass = document.getElementById('import-class');
+  if (elUserClass) elUserClass.innerHTML = def + opts;
+  if (elFilterClass) elFilterClass.innerHTML = defAll + opts;
+  if (elImportClass) {
+    elImportClass.innerHTML = def + opts;
+    elImportClass.disabled = false;
+    const status = document.getElementById('import-class-status');
+    if (status) status.textContent = classes.length ? classes.length + ' klasse(r)' : 'Opret en klasse under "Ny klasse" først.';
+  }
 }
 
 function renderUserList(users) {

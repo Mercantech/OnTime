@@ -14,7 +14,8 @@ router.use(requireAdmin);
 router.get('/classes', async (req, res) => {
   try {
     const r = await pool.query('SELECT id, name FROM classes ORDER BY name');
-    res.json(r.rows);
+    const list = Array.isArray(r.rows) ? r.rows : [];
+    res.set('Content-Type', 'application/json').json(list);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Serverfejl' });

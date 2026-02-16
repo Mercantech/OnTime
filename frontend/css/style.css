@@ -404,6 +404,8 @@ main.app-main {
 .import-errors { margin: 0.5rem 0 0; padding-left: 1.25rem; color: var(--danger); max-height: 200px; overflow-y: auto; }
 .admin-main .card form label { display: block; margin-bottom: 0.25rem; font-size: 0.9rem; }
 .admin-main #form-csv select { margin-bottom: 0.75rem; }
+.admin-main #form-csv select:disabled { opacity: 0.8; }
+.class-status { font-weight: normal; color: var(--text-muted); font-size: 0.85rem; margin-left: 0.25rem; }
 
 .user-count { margin-bottom: 0.75rem; }
 .user-count .filter-inline { margin-left: 0.5rem; }
