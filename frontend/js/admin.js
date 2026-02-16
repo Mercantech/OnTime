@@ -90,8 +90,41 @@ function renderUserList(users) {
     const deleteBtn = isSelf
       ? '<span class="muted">(dig)</span>'
       : '<button type="button" class="btn-delete-user" data-user-id="' + u.id + '" data-user-name="' + (u.name || '').replace(/"/g, '&quot;') + '">Slet</button>';
-    return '<tr data-user-id="' + u.id + '"><td class="name">' + u.name + '</td><td class="email">' + u.email + '</td><td class="class">' + u.className + '</td><td>' + (u.isAdmin ? '<span class="badge">Admin</span>' : '') + '</td><td class="actions">' + deleteBtn + '</td></tr>';
+    let adminBtn = '';
+    if (!isSelf) {
+      adminBtn = u.isAdmin
+        ? '<button type="button" class="btn-toggle-admin" data-user-id="' + u.id + '" data-is-admin="true">Fjern admin</button>'
+        : '<button type="button" class="btn-toggle-admin" data-user-id="' + u.id + '" data-is-admin="false">Gør til admin</button>';
+    } else {
+      adminBtn = u.isAdmin ? '<span class="muted">(dig)</span>' : '';
+    }
+    return '<tr data-user-id="' + u.id + '"><td class="name">' + u.name + '</td><td class="email">' + u.email + '</td><td class="class">' + u.className + '</td><td>' + (u.isAdmin ? '<span class="badge">Admin</span>' : '') + '</td><td class="actions">' + adminBtn + ' ' + deleteBtn + '</td></tr>';
   }).join('');
+
+  tbody.querySelectorAll('.btn-toggle-admin').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-user-id');
+      const currentlyAdmin = btn.getAttribute('data-is-admin') === 'true';
+      const newAdmin = !currentlyAdmin;
+      if (newAdmin && !confirm('Giv denne bruger administrator-rettigheder?')) return;
+      if (!newAdmin && !confirm('Fjern administrator-rettigheder fra denne bruger?')) return;
+      btn.disabled = true;
+      const res = await api('/api/admin/users/' + id + '/admin', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isAdmin: newAdmin }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.error || 'Kunne ikke opdatere');
+        btn.disabled = false;
+        return;
+      }
+      const filter = document.getElementById('filter-class').value;
+      const list = await loadUsers(filter ? parseInt(filter, 10) : undefined);
+      renderUserList(list);
+    });
+  });
 
   tbody.querySelectorAll('.btn-delete-user').forEach(btn => {
     btn.addEventListener('click', async () => {
@@ -178,6 +211,7 @@ document.getElementById('form-user').addEventListener('submit', async (e) => {
   const email = document.getElementById('user-email').value.trim();
   const password = document.getElementById('user-password').value;
   const classId = document.getElementById('user-class').value;
+  const isAdmin = document.getElementById('user-is-admin').checked;
   if (!classId) {
     showMessage('user-message', 'Vælg en klasse', true);
     return;
@@ -185,17 +219,18 @@ document.getElementById('form-user').addEventListener('submit', async (e) => {
   const res = await api('/api/admin/users', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, email, password, classId: parseInt(classId, 10) }),
+    body: JSON.stringify({ name, email, password, classId: parseInt(classId, 10), isAdmin }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     showMessage('user-message', data.error || 'Kunne ikke oprette bruger', true);
     return;
   }
-  showMessage('user-message', `Bruger ${data.email} oprettet.`);
+  showMessage('user-message', `Bruger ${data.email} oprettet.` + (data.isAdmin ? ' Som administrator.' : ''));
   document.getElementById('user-name').value = '';
   document.getElementById('user-email').value = '';
   document.getElementById('user-password').value = '';
+  document.getElementById('user-is-admin').checked = false;
   const filter = document.getElementById('filter-class').value;
   renderUserList(await loadUsers(filter || undefined));
 });

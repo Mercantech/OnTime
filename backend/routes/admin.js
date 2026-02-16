@@ -73,21 +73,22 @@ router.get('/users', async (req, res) => {
 });
 
 router.post('/users', async (req, res) => {
-  const { email, password, name, classId } = req.body;
+  const { email, password, name, classId, isAdmin } = req.body;
   if (!email || !password || !name || !classId) {
     return res.status(400).json({ error: 'Email, adgangskode, navn og klasse kræves' });
   }
   const emailTrim = String(email).trim().toLowerCase();
   const nameTrim = String(name).trim();
+  const admin = !!isAdmin;
   if (password.length < 4) {
     return res.status(400).json({ error: 'Adgangskode skal være mindst 4 tegn' });
   }
   try {
     const hash = await bcrypt.hash(password, 10);
     const r = await pool.query(
-      `INSERT INTO users (class_id, email, password_hash, name)
-       VALUES ($1, $2, $3, $4) RETURNING id, email, name, class_id`,
-      [classId, emailTrim, hash, nameTrim]
+      `INSERT INTO users (class_id, email, password_hash, name, is_admin)
+       VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name, class_id, is_admin`,
+      [classId, emailTrim, hash, nameTrim, admin]
     );
     const row = r.rows[0];
     const classRes = await pool.query('SELECT name FROM classes WHERE id = $1', [row.class_id]);
@@ -97,6 +98,7 @@ router.post('/users', async (req, res) => {
       name: row.name,
       classId: row.class_id,
       className: classRes.rows[0]?.name || '',
+      isAdmin: !!row.is_admin,
     });
   } catch (e) {
     if (e.code === '23505') return res.status(400).json({ error: 'Email bruges allerede' });
@@ -120,6 +122,26 @@ router.patch('/users/:id/password', async (req, res) => {
     );
     if (r.rows.length === 0) return res.status(404).json({ error: 'Bruger ikke fundet' });
     res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+router.patch('/users/:id/admin', async (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  const isAdmin = req.body.isAdmin === true || req.body.isAdmin === 'true';
+  if (Number.isNaN(userId)) return res.status(400).json({ error: 'Ugyldigt bruger-id' });
+  if (userId === req.userId && !isAdmin) {
+    return res.status(400).json({ error: 'Du kan ikke fjerne din egen admin-rettighed' });
+  }
+  try {
+    const r = await pool.query(
+      'UPDATE users SET is_admin = $1 WHERE id = $2 RETURNING id, is_admin',
+      [isAdmin, userId]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Bruger ikke fundet' });
+    res.json({ ok: true, isAdmin: !!r.rows[0].is_admin });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Serverfejl' });
@@ -152,6 +174,20 @@ router.delete('/users/:id', async (req, res) => {
     res.status(500).json({ error: 'Serverfejl' });
   }
 });
+
+// GDPR: kort navn ved import – fornavn + forbogstav (ved duplikater flere bogstaver)
+function toUniqueShortName(fullName, usedSet) {
+  const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+  const last = parts[parts.length - 1] || '';
+  let d = parts.length <= 1 ? (parts[0] || '') : parts[0] + ' ' + (last[0] || '').toUpperCase();
+  let n = 1;
+  while (usedSet.has(d) && n <= last.length) {
+    d = parts[0] + ' ' + last.slice(0, n).toUpperCase();
+    n++;
+  }
+  usedSet.add(d);
+  return d;
+}
 
 // CSV-import: semicolon-separeret, header med Activity;Activity Short description;Username;...;Initial password;...;Email
 function parseCsvLine(line) {
@@ -207,18 +243,17 @@ router.post('/import-csv', upload.single('csv'), async (req, res) => {
     }
     return '';
   };
-  const created = [];
-  const updated = [];
+
+  // Saml gyldige rækker (fulde navne bruges kun til at udlede kort navn – gemmes ikke)
+  const validRows = [];
   const errors = [];
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const className = forceClassName;
     const emailRaw = get(row, 'Email');
     const username = get(row, 'Username');
     const email = emailRaw ? emailRaw.toLowerCase() : (username ? `${username}@mercantec.dk` : '');
     const password = get(row, 'Initial password');
-    const name = get(row, 'Fullname') || [get(row, 'Given name'), get(row, 'Surname')].filter(Boolean).join(' ');
-
+    const fullName = get(row, 'Fullname') || [get(row, 'Given name'), get(row, 'Surname')].filter(Boolean).join(' ');
     if (!email) {
       errors.push({ row: i + 2, message: 'Manglende Email og Username' });
       continue;
@@ -227,25 +262,42 @@ router.post('/import-csv', upload.single('csv'), async (req, res) => {
       errors.push({ row: i + 2, email, message: 'Manglende Initial password' });
       continue;
     }
-    if (!name) {
+    if (!fullName) {
       errors.push({ row: i + 2, email, message: 'Manglende Fullname/Given name/Surname' });
       continue;
     }
+    validRows.push({ rowIndex: i + 2, email, password, fullName });
+  }
+
+  // Navne der allerede findes i klassen (brugere vi ikke opdaterer i denne import)
+  const existingInClass = await pool.query(
+    'SELECT email, name FROM users WHERE class_id = $1',
+    [forceClassId]
+  );
+  const csvEmails = new Set(validRows.map(r => r.email));
+  const usedNames = new Set();
+  for (const u of existingInClass.rows) {
+    if (!csvEmails.has(u.email)) usedNames.add(u.name);
+  }
+
+  const created = [];
+  const updated = [];
+  for (const r of validRows) {
+    const displayName = toUniqueShortName(r.fullName, usedNames);
     try {
-      const classId = forceClassId;
-      const existed = (await pool.query('SELECT 1 FROM users WHERE email = $1', [email])).rows.length > 0;
-      const hash = await bcrypt.hash(password, 10);
+      const hash = await bcrypt.hash(r.password, 10);
+      const existed = (await pool.query('SELECT 1 FROM users WHERE email = $1', [r.email])).rows.length > 0;
       await pool.query(
         `INSERT INTO users (class_id, email, password_hash, name)
          VALUES ($1, $2, $3, $4)
          ON CONFLICT (email) DO UPDATE SET class_id = EXCLUDED.class_id, password_hash = EXCLUDED.password_hash, name = EXCLUDED.name`,
-        [classId, email, hash, name]
+        [forceClassId, r.email, hash, displayName]
       );
-      if (existed) updated.push({ email, name, className });
-      else created.push({ email, name, className });
+      if (existed) updated.push({ email: r.email, name: displayName, className: forceClassName });
+      else created.push({ email: r.email, name: displayName, className: forceClassName });
     } catch (e) {
-      if (e.code === '23505') errors.push({ row: i + 2, email, message: 'Email bruges allerede af anden række' });
-      else errors.push({ row: i + 2, email, message: e.message || 'Fejl' });
+      if (e.code === '23505') errors.push({ row: r.rowIndex, email: r.email, message: 'Email bruges allerede af anden række' });
+      else errors.push({ row: r.rowIndex, email: r.email, message: e.message || 'Fejl' });
     }
   }
   res.json({ created: created.length, updated: updated.length, errors, createdList: created, updatedList: updated });
