@@ -350,7 +350,7 @@ async function loadBadges() {
           const earned = !!b.earnedAt;
           const secret = !!b.secret;
           const icon = BADGE_ICONS[b.key] || '•';
-          const title = secret ? (earned ? (b.name + ' – ' + (b.description || '')) : '') : (b.description || '');
+          const title = secret ? (earned ? (b.name + ' – ' + (b.description || '')) : 'Shhh 🤫 det er en hemmelighed') : (b.description || '');
           const nameHtml = secret ? '' : ('<span class="badge-name">' + escapeHtml(b.name) + '</span>');
           const dateHtml = (!secret && earned) ? ('<span class="badge-date">' + (b.earnedAt || '') + '</span>') : '';
           return (

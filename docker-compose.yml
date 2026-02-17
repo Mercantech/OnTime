@@ -23,6 +23,7 @@ services:
     ports:
       - "3030:3000"
     environment:
+      TZ: Europe/Copenhagen
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgresql://ontime:ontime@db:5432/ontime
