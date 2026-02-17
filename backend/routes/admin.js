@@ -222,6 +222,42 @@ router.delete('/users/:id', async (req, res) => {
   }
 });
 
+/** Giv point til en elev (opret eller opdater indstempling for en dato). */
+router.post('/give-points', async (req, res) => {
+  const { userId, date, points } = req.body || {};
+  const uid = parseInt(userId, 10);
+  if (Number.isNaN(uid)) return res.status(400).json({ error: 'Vælg en elev' });
+  const pts = parseInt(points, 10);
+  if (Number.isNaN(pts) || pts < 0 || pts > 45) {
+    return res.status(400).json({ error: 'Point skal være mellem 0 og 45' });
+  }
+  let checkDate;
+  if (date && /^\d{4}-\d{2}-\d{2}$/.test(String(date).trim())) {
+    checkDate = String(date).trim();
+  } else {
+    const now = new Date();
+    checkDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  }
+  try {
+    const userRow = await pool.query('SELECT id, class_id FROM users WHERE id = $1', [uid]);
+    if (!userRow.rows.length) return res.status(404).json({ error: 'Bruger ikke fundet' });
+    const checkedAt = new Date(checkDate + 'T08:00:00');
+    await pool.query(
+      `INSERT INTO check_ins (user_id, check_date, checked_at, points)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (user_id, check_date) DO UPDATE SET points = EXCLUDED.points, checked_at = EXCLUDED.checked_at`,
+      [uid, checkDate, checkedAt, pts]
+    );
+    res.json({ ok: true, date: checkDate, points: pts });
+  } catch (e) {
+    if (e.constraint === 'check_ins_points_check') {
+      return res.status(400).json({ error: 'Point skal være mellem 0 og 45' });
+    }
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 // GDPR: kort navn ved import – fornavn + forbogstav (ved duplikater flere bogstaver)
 function toUniqueShortName(fullName, usedSet) {
   const parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);

@@ -51,6 +51,22 @@
             <div id="import-result" class="import-result" hidden></div>
           </section>
           <section class="card">
+            <h2>Giv point til elev</h2>
+            <p class="card-hint">Sæt eller opdater point for en elev på en given dato (0–45 point).</p>
+            <form id="form-give-points">
+              <label for="give-points-user">Elev</label>
+              <select id="give-points-user" required>
+                <option value="">Vælg elev…</option>
+              </select>
+              <label for="give-points-date">Dato</label>
+              <input type="date" id="give-points-date" required>
+              <label for="give-points-points">Point (0–45)</label>
+              <input type="number" id="give-points-points" min="0" max="45" value="45" required>
+              <button type="submit">Giv point</button>
+            </form>
+            <p id="give-points-message" class="message" hidden></p>
+          </section>
+          <section class="card">
             <h2>Ny bruger</h2>
             <form id="form-user">
               <input type="text" id="user-name" placeholder="Navn" required>

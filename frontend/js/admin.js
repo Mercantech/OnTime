@@ -114,7 +114,12 @@ async function fillClassSelects() {
 function renderUserList(users) {
   const tbody = document.getElementById('user-list');
   const countEl = document.getElementById('user-count');
+  const givePointsSelect = document.getElementById('give-points-user');
   if (countEl) countEl.textContent = users.length;
+  if (givePointsSelect) {
+    givePointsSelect.innerHTML = '<option value="">Vælg elev…</option>' +
+      users.map(u => '<option value="' + u.id + '">' + (u.name || '') + ' (' + (u.className || '') + ')</option>').join('');
+  }
   if (!users.length) {
     tbody.innerHTML = '<tr><td colspan="5" class="muted">Ingen brugere</td></tr>';
     return;
@@ -275,6 +280,36 @@ document.getElementById('filter-class').addEventListener('change', async () => {
   renderUserList(users);
 });
 
+function setGivePointsDateToToday() {
+  const el = document.getElementById('give-points-date');
+  if (!el) return;
+  const d = new Date();
+  el.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+document.getElementById('form-give-points').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const userId = document.getElementById('give-points-user').value;
+  const date = document.getElementById('give-points-date').value;
+  const points = document.getElementById('give-points-points').value;
+  if (!userId) {
+    showMessage('give-points-message', 'Vælg en elev.', true);
+    return;
+  }
+  const res = await api('/api/admin/give-points', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: parseInt(userId, 10), date: date || undefined, points: parseInt(points, 10) }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    showMessage('give-points-message', data.error || 'Kunne ikke give point', true);
+    return;
+  }
+  showMessage('give-points-message', data.points + ' point givet for ' + (data.date || date) + '.');
+  setGivePointsDateToToday();
+});
+
 document.getElementById('form-ip-range').addEventListener('submit', async (e) => {
   e.preventDefault();
   const input = document.getElementById('ip-range-input');
@@ -306,5 +341,6 @@ async function init() {
   await fillClassSelects();
   renderUserList(await loadUsers());
   renderIpRangeList(await loadIpRanges());
+  setGivePointsDateToToday();
 }
 init();
