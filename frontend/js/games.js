@@ -238,27 +238,75 @@ async function loadWordle() {
   if (state.status === 'won') awardIfWin();
 }
 
-// ---------- Dagens flag ----------
+// ---------- Dagens flag (3 forsøg, state fra backend) ----------
 async function initFlagGame() {
   const statusEl = document.getElementById('flag-status');
   const wrapEl = document.getElementById('flag-wrap');
   const imgEl = document.getElementById('flag-img');
+  const attemptsEl = document.getElementById('flag-attempts');
+  const guessRowEl = document.getElementById('flag-guess-row');
   const inputEl = document.getElementById('flag-guess');
   const submitBtn = document.getElementById('flag-submit');
   const feedbackEl = document.getElementById('flag-feedback');
-  if (!statusEl || !wrapEl || !imgEl || !inputEl || !submitBtn || !feedbackEl) return;
+  if (!statusEl || !wrapEl || !imgEl || !attemptsEl || !guessRowEl || !inputEl || !submitBtn || !feedbackEl) return;
 
-  let won = false;
+  let state = { won: false, lost: false, attemptsUsed: 0, attemptsLeft: 3, countryName: null };
+
+  function renderFlagUI() {
+    feedbackEl.hidden = true;
+    if (state.won) {
+      statusEl.textContent = 'Du har gættet dagens flag!';
+      attemptsEl.hidden = true;
+      guessRowEl.hidden = true;
+      feedbackEl.hidden = false;
+      feedbackEl.textContent = 'Det var ' + (state.countryName || '') + '. Du fik 2 point.';
+      feedbackEl.className = 'flag-feedback flag-feedback-correct';
+      inputEl.disabled = true;
+      submitBtn.disabled = true;
+      return;
+    }
+    if (state.lost) {
+      statusEl.textContent = 'Ingen forsøg tilbage i dag.';
+      attemptsEl.hidden = false;
+      attemptsEl.textContent = 'Dagens land var ' + (state.countryName || '') + '.';
+      attemptsEl.className = 'flag-attempts flag-attempts-lost';
+      guessRowEl.hidden = true;
+      inputEl.disabled = true;
+      submitBtn.disabled = true;
+      return;
+    }
+    statusEl.textContent = 'Hvilket land tilhører dette flag?';
+    attemptsEl.hidden = false;
+    attemptsEl.textContent = 'Forsøg ' + (state.attemptsUsed + 1) + '/3 – du har ' + state.attemptsLeft + ' forsøg tilbage.';
+    attemptsEl.className = 'flag-attempts';
+    guessRowEl.hidden = false;
+    inputEl.disabled = false;
+    submitBtn.disabled = false;
+  }
+
   try {
-    const res = await api('/api/games/daily-flag');
-    const data = await res.json().catch(() => ({}));
-    if (!data.flagUrl) {
+    const [flagRes, statusRes] = await Promise.all([
+      api('/api/games/daily-flag'),
+      api('/api/games/flag/status'),
+    ]);
+    const flagData = await flagRes.json().catch(() => ({}));
+    const statusData = await statusRes.json().catch(() => ({}));
+
+    if (!flagData.flagUrl) {
       statusEl.textContent = 'Kunne ikke hente dagens flag.';
       return;
     }
-    imgEl.src = data.flagUrl;
-    statusEl.textContent = 'Hvilket land tilhører dette flag?';
+    imgEl.src = flagData.flagUrl;
     wrapEl.hidden = false;
+
+    state = {
+      won: !!statusData.won,
+      lost: !!statusData.lost,
+      attemptsUsed: statusData.attemptsUsed ?? 0,
+      attemptsLeft: statusData.attemptsLeft ?? Math.max(0, 3 - (statusData.attemptsUsed ?? 0)),
+      countryName: statusData.countryName || null,
+    };
+    renderFlagUI();
   } catch (e) {
     statusEl.textContent = 'Fejl ved indlæsning.';
     return;
@@ -278,17 +326,34 @@ async function initFlagGame() {
         body: JSON.stringify({ guess }),
       });
       const data = await res.json().catch(() => ({}));
+
       if (data.correct) {
-        won = true;
-        feedbackEl.textContent = 'Korrekt! Det var ' + (data.countryName || '') + '. Du fik ' + (data.pointsAwarded || 2) + ' point.';
-        feedbackEl.className = 'flag-feedback flag-feedback-correct';
-        inputEl.disabled = true;
-        submitBtn.disabled = true;
-      } else {
-        feedbackEl.textContent = 'Forkert. Prøv igen.';
+        state.won = true;
+        state.countryName = data.countryName || null;
+        renderFlagUI();
+        return;
+      }
+
+      if (data.invalidGuess) {
+        feedbackEl.textContent = data.message || 'Det er ikke et land fra listen. Brug det officielle engelske navn.';
         feedbackEl.className = 'flag-feedback flag-feedback-wrong';
         submitBtn.disabled = false;
+        return;
       }
+
+      state.attemptsUsed = 3 - (data.attemptsLeft ?? 0);
+      state.attemptsLeft = data.attemptsLeft ?? 0;
+      state.lost = !!data.noMoreAttempts;
+      if (data.noMoreAttempts) state.countryName = data.countryName || null;
+
+      if (state.lost) {
+        renderFlagUI();
+        return;
+      }
+      feedbackEl.textContent = 'Forkert. Du har ' + state.attemptsLeft + ' forsøg tilbage.';
+      feedbackEl.className = 'flag-feedback flag-feedback-wrong';
+      attemptsEl.textContent = 'Forsøg ' + (state.attemptsUsed + 1) + '/3 – du har ' + state.attemptsLeft + ' forsøg tilbage.';
+      submitBtn.disabled = false;
     } catch (e) {
       feedbackEl.textContent = 'Der opstod en fejl.';
       feedbackEl.className = 'flag-feedback';

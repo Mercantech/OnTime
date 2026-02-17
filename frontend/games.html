@@ -34,7 +34,8 @@
         <div id="flag-status" class="flag-status muted">Indlæser…</div>
         <div id="flag-wrap" class="flag-wrap" hidden>
           <img id="flag-img" src="" alt="Dagens flag" class="flag-img">
-          <div class="flag-guess-row">
+          <p id="flag-attempts" class="flag-attempts" hidden aria-live="polite"></p>
+          <div id="flag-guess-row" class="flag-guess-row">
             <input type="text" id="flag-guess" class="flag-input" placeholder="Landets navn (engelsk)" autocomplete="off">
             <button type="button" id="flag-submit" class="btn-checkin">Gæt</button>
           </div>

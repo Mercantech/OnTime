@@ -58,6 +58,17 @@ const MIGRATIONS = [
       CREATE INDEX IF NOT EXISTS idx_game_completions_user ON game_completions (user_id);
     `,
   },
+  {
+    name: 'flag_daily_attempts',
+    sql: `
+      CREATE TABLE IF NOT EXISTS flag_daily_attempts (
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        play_date DATE NOT NULL,
+        attempts INT NOT NULL DEFAULT 0 CHECK (attempts >= 0 AND attempts <= 3),
+        PRIMARY KEY (user_id, play_date)
+      );
+    `,
+  },
 ];
 
 async function run() {
