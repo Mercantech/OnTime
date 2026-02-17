@@ -40,13 +40,26 @@ router.get('/:name', async (req, res) => {
     const maxPossible = getMaxPossiblePoints();
     const studentsRes = await pool.query(
       `SELECT u.id, u.name,
-              COALESCE(SUM(c.points), 0)::int AS total_points
+              COALESCE(ci.total, 0)::int AS checkin_points,
+              COALESCE(gm.total, 0)::int AS game_points,
+              (COALESCE(ci.total, 0) + COALESCE(gm.total, 0))::int AS total_points
        FROM users u
-       LEFT JOIN check_ins c ON c.user_id = u.id
-         AND c.checked_at >= date_trunc('month', CURRENT_DATE)
-         AND c.checked_at < date_trunc('month', CURRENT_DATE) + interval '1 month'
+       LEFT JOIN (
+         SELECT user_id, SUM(points)::int AS total
+         FROM check_ins
+         WHERE checked_at >= date_trunc('month', CURRENT_DATE)
+           AND checked_at < date_trunc('month', CURRENT_DATE) + interval '1 month'
+         GROUP BY user_id
+       ) ci ON ci.user_id = u.id
+       LEFT JOIN (
+         SELECT user_id, SUM(points)::int AS total
+         FROM game_completions
+         WHERE play_date >= date_trunc('month', CURRENT_DATE)::date
+           AND play_date < (date_trunc('month', CURRENT_DATE)::date + interval '1 month')::date
+         GROUP BY user_id
+       ) gm ON gm.user_id = u.id
        WHERE u.class_id = $1
-       GROUP BY u.id, u.name
+       GROUP BY u.id, u.name, ci.total, gm.total
        ORDER BY total_points DESC, u.name`,
       [classId]
     );
@@ -55,10 +68,24 @@ router.get('/:name', async (req, res) => {
     const maxPossibleClass = maxPossible * numStudents;
     const names = studentsRes.rows.map(row => row.name);
     const displayNames = uniqueDisplayNames(names);
+    const userIds = studentsRes.rows.map((row) => row.id);
+    const gamesTodayRes = userIds.length
+      ? await pool.query(
+          `SELECT user_id, array_agg(game_key ORDER BY game_key) AS games
+           FROM game_completions
+           WHERE play_date = CURRENT_DATE AND user_id = ANY($1::int[])
+           GROUP BY user_id`,
+          [userIds]
+        )
+      : { rows: [] };
+    const gamesTodayByUser = {};
+    gamesTodayRes.rows.forEach((row) => { gamesTodayByUser[row.user_id] = row.games || []; });
+
     const students = studentsRes.rows.map((row, i) => ({
       rank: i + 1,
       name: displayNames[i],
       totalPoints: row.total_points,
+      gamesToday: gamesTodayByUser[row.id] || [],
       percentage: maxPossible ? Math.round((row.total_points / maxPossible) * 100) : 0,
     }));
 

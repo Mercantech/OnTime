@@ -11,6 +11,7 @@
     <h1>OnTime</h1>
     <a id="admin-link" href="/admin" class="admin-link" hidden>Admin</a>
     <a id="class-dashboard-link" href="#" class="admin-link header-class-link" hidden>Se min klasse</a>
+    <a href="/spil" class="admin-link">Spil</a>
     <span id="user-name" class="user-info"></span>
     <button id="logout" class="btn-logout">Log ud</button>
   </header>
@@ -97,13 +98,9 @@
 
     <!-- Spil -->
     <section class="card dashboard-card">
-      <h2>Dagens Wordle</h2>
-      <p class="card-hint">Gæt dagens ord på 6 forsøg. Vinder du, låser du et badge op.</p>
-      <div id="wordle" class="wordle">
-        <div id="wordle-status" class="wordle-status muted">Indlæser dagens ord…</div>
-        <div id="wordle-board" class="wordle-board" aria-label="Wordle bræt" role="grid"></div>
-        <div id="wordle-keyboard" class="wordle-keyboard" aria-label="Wordle tastatur"></div>
-      </div>
+      <h2>Spil</h2>
+      <p class="card-hint">Gæt dagens Wordle eller dagens flag og optjen point.</p>
+      <a href="/spil" class="btn-checkin">Åbn spil</a>
     </section>
 
     <!-- Burndown -->

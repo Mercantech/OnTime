@@ -478,6 +478,26 @@ main.app-main.dashboard {
 .badge-item.earned.badge--syden { border-color: #a855f7; background: rgba(168, 85, 247, 0.12); }
 .badge-item.earned.badge--hakke_stifter { border-color: #d97706; background: rgba(217, 119, 6, 0.12); }
 .badge-item.earned.badge--wordle_win { border-color: #22c55e; background: rgba(34, 197, 94, 0.12); }
+.badge-item.earned.badge--flag_win { border-color: #0ea5e9; background: rgba(14, 165, 233, 0.12); }
+
+/* Spil-side */
+.games-page { max-width: 42rem; margin: 0 auto; padding: 1rem; }
+.games-title { margin: 0 0 0.25rem; font-size: 1.5rem; }
+.games-intro { color: var(--text-muted); margin: 0 0 1.5rem; font-size: 0.95rem; }
+.game-card { margin-bottom: 1.5rem; }
+.header-home { color: inherit; text-decoration: none; }
+.header-home:hover { text-decoration: underline; }
+
+/* Dagens flag */
+.flag-game { margin-top: 0.5rem; }
+.flag-status { margin-bottom: 0.5rem; }
+.flag-wrap { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.flag-img { max-width: 320px; width: 100%; height: auto; border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.flag-guess-row { display: flex; gap: 0.5rem; align-items: center; width: 100%; max-width: 320px; }
+.flag-input { flex: 1; padding: 0.5rem 0.75rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 1rem; }
+.flag-feedback { margin: 0; font-size: 0.95rem; }
+.flag-feedback-correct { color: var(--accent); font-weight: 600; }
+.flag-feedback-wrong { color: var(--text-muted); }
 
 /* Klasse-highlights (klassedashboard) */
 .class-highlights {
@@ -811,6 +831,13 @@ main.app-main.dashboard {
 
 .leaderboard-list .name { flex: 1; }
 .leaderboard-list .points { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.lb-games {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-left: 0.4rem;
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
 
 /* Podium top 3 */
 .leaderboard-podium {

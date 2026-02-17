@@ -63,6 +63,11 @@ app.get('/klasse/:name', (req, res) => {
   res.sendFile(path.join(frontendDir, 'class-dashboard.html'));
 });
 
+app.get('/spil', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'games.html'));
+});
+
 const PORT = config.port;
 runMigrations()
   .then(() => ensureAdmin())

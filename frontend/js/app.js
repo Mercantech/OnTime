@@ -216,6 +216,14 @@ async function loadLeaderboard() {
     if (totalEl) {
       totalEl.innerHTML = `<strong>Klasse total:</strong> ${data.classTotal ?? '–'} / ${data.maxPossibleClass ?? '–'} point (${data.classPercentage ?? '–'}%)`;
     }
+    const gameIcons = (gamesToday) => {
+      const g = Array.isArray(gamesToday) ? gamesToday : [];
+      const parts = [];
+      if (g.includes('wordle')) parts.push('🟩');
+      if (g.includes('flag')) parts.push('🏳️');
+      return parts.length ? '<span class="lb-games" title="Løst spil i dag">' + parts.join('') + '</span>' : '';
+    };
+
     if (podiumEl) {
       const top3 = students.slice(0, 3);
       if (top3.length >= 3) {
@@ -224,7 +232,7 @@ async function loadLeaderboard() {
         podiumEl.innerHTML = order.map((s, i) =>
           '<div class="podium-place ' + places[i] + '">' +
           '<span class="podium-avatar">' + s.rank + '</span>' +
-          '<span class="podium-name">' + escapeHtml(s.name) + '</span>' +
+          '<span class="podium-name">' + escapeHtml(s.name) + gameIcons(s.gamesToday) + '</span>' +
           '<span class="podium-points">' + s.totalPoints + ' pt</span>' +
           '<div class="podium-step">' + s.rank + '. plads</div></div>'
         ).join('');
@@ -235,7 +243,7 @@ async function loadLeaderboard() {
     if (listEl) {
       const rest = students.slice(3);
       listEl.innerHTML = rest.length
-        ? '<ul class="leaderboard-list">' + rest.map(s => `<li><span class="rank">${s.rank}</span><span class="name">${s.name}</span><span class="points">${s.totalPoints} pt (${s.percentage}%)</span></li>`).join('') + '</ul>'
+        ? '<ul class="leaderboard-list">' + rest.map(s => `<li><span class="rank">${s.rank}</span><span class="name">${escapeHtml(s.name)}${gameIcons(s.gamesToday)}</span><span class="points">${s.totalPoints} pt (${s.percentage}%)</span></li>`).join('') + '</ul>'
         : students.length > 0 ? '<p class="muted">Kun top 3 i klassen.</p>' : '<p class="muted">Ingen data</p>';
     }
     const classPctEl = document.getElementById('stat-class-pct');
@@ -323,6 +331,7 @@ const BADGE_ICONS = {
   perfect_week: '✓',
   early_bird: '🌅',
   wordle_win: '🟩',
+  flag_win: '🏳️',
   before_7: '⏰',
   exactly_8: '8️⃣',
   month_top: '👑',
@@ -703,6 +712,8 @@ async function loadWordle() {
     try {
       await api('/api/games/wordle/win', { method: 'POST' });
       loadBadges();
+      loadMyStats();
+      loadLeaderboard();
     } catch (e) {}
   }
 
@@ -806,7 +817,6 @@ async function init() {
     await loadUser();
     await loadTodayCheckin();
     loadDailyQuote();
-    loadWordle();
     await loadMyStats();
     await loadStreak();
     await loadLeaderboard();

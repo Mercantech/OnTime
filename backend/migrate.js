@@ -43,6 +43,21 @@ const MIGRATIONS = [
       );
     `,
   },
+  {
+    name: 'game_completions',
+    sql: `
+      CREATE TABLE IF NOT EXISTS game_completions (
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        game_key TEXT NOT NULL,
+        play_date DATE NOT NULL,
+        points INT NOT NULL DEFAULT 0 CHECK (points >= 0 AND points <= 45),
+        completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (user_id, game_key, play_date)
+      );
+      CREATE INDEX IF NOT EXISTS idx_game_completions_date ON game_completions (play_date);
+      CREATE INDEX IF NOT EXISTS idx_game_completions_user ON game_completions (user_id);
+    `,
+  },
 ];
 
 async function run() {
