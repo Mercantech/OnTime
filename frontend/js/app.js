@@ -322,6 +322,7 @@ const BADGE_ICONS = {
   streak_10: '🏆',
   perfect_week: '✓',
   early_bird: '🌅',
+  wordle_win: '🟩',
   before_7: '⏰',
   exactly_8: '8️⃣',
   month_top: '👑',
@@ -589,12 +590,223 @@ async function loadDailyQuote() {
   }
 }
 
+function getLocalISODate(d = new Date()) {
+  return (
+    d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0')
+  );
+}
+
+function normalizeWordleWord(s) {
+  return String(s || '').trim().toLocaleLowerCase('da-DK');
+}
+
+function scoreWordleGuess(guess, answer) {
+  const g = guess.split('');
+  const a = answer.split('');
+  const res = Array(5).fill('absent');
+
+  for (let i = 0; i < 5; i++) {
+    if (g[i] === a[i]) {
+      res[i] = 'correct';
+      g[i] = null;
+      a[i] = null;
+    }
+  }
+  for (let i = 0; i < 5; i++) {
+    if (!g[i]) continue;
+    const idx = a.indexOf(g[i]);
+    if (idx !== -1) {
+      res[i] = 'present';
+      a[idx] = null;
+    }
+  }
+  return res;
+}
+
+function upgradeKeyState(prev, next) {
+  const order = { correct: 3, present: 2, absent: 1, unknown: 0 };
+  const p = prev || 'unknown';
+  return order[next] > order[p] ? next : p;
+}
+
+async function loadWordle() {
+  const wrap = document.getElementById('wordle');
+  const boardEl = document.getElementById('wordle-board');
+  const kbEl = document.getElementById('wordle-keyboard');
+  const statusEl = document.getElementById('wordle-status');
+  if (!wrap || !boardEl || !kbEl || !statusEl) return;
+
+  const dateKey = getLocalISODate();
+  const storageKey = 'ontime_wordle_' + dateKey;
+
+  let answer = '';
+  try {
+    const res = await fetch('/wordle-answers-30d.json');
+    const data = await res.json().catch(() => ({}));
+    answer = normalizeWordleWord(data[dateKey] || data.default || '');
+  } catch (e) {
+    answer = '';
+  }
+
+  if (!answer || answer.length !== 5) {
+    statusEl.textContent = 'Ingen Wordle-ord i dag.';
+    return;
+  }
+
+  const saved = (() => {
+    try { return JSON.parse(localStorage.getItem(storageKey) || 'null'); } catch { return null; }
+  })();
+
+  const state = {
+    dateKey,
+    answer,
+    current: '',
+    guesses: Array.isArray(saved?.guesses) ? saved.guesses : [],
+    status: saved?.status === 'won' || saved?.status === 'lost' ? saved.status : 'playing',
+    keyStates: {},
+    awarded: !!saved?.awarded,
+  };
+
+  const rows = [
+    ['Q','W','E','R','T','Y','U','I','O','P','Å'],
+    ['A','S','D','F','G','H','J','K','L','Æ','Ø'],
+    ['ENTER','Z','X','C','V','B','N','M','⌫'],
+  ];
+
+  function persist() {
+    localStorage.setItem(storageKey, JSON.stringify({
+      guesses: state.guesses,
+      status: state.status,
+      awarded: state.awarded,
+    }));
+  }
+
+  function rebuildKeyStates() {
+    state.keyStates = {};
+    for (const g of state.guesses) {
+      const word = normalizeWordleWord(g.word || '');
+      const score = Array.isArray(g.score) ? g.score : [];
+      for (let i = 0; i < 5; i++) {
+        const ch = word[i]?.toLocaleUpperCase('da-DK');
+        if (!ch) continue;
+        state.keyStates[ch] = upgradeKeyState(state.keyStates[ch], score[i] || 'absent');
+      }
+    }
+  }
+
+  async function awardIfWin() {
+    if (state.status !== 'won' || state.awarded) return;
+    state.awarded = true;
+    persist();
+    try {
+      await api('/api/games/wordle/win', { method: 'POST' });
+      loadBadges();
+    } catch (e) {}
+  }
+
+  function render() {
+    rebuildKeyStates();
+
+    if (state.status === 'won') statusEl.textContent = 'Du vandt Wordle i dag. Flot!';
+    else if (state.status === 'lost') statusEl.textContent = 'Øv. Dagens ord var: ' + state.answer.toLocaleUpperCase('da-DK') + '.';
+    else statusEl.textContent = 'Gæt dagens ord (' + state.dateKey + ').';
+
+    const rowHtml = [];
+    for (let r = 0; r < 6; r++) {
+      let letters = '';
+      let score = null;
+      if (r < state.guesses.length) {
+        letters = normalizeWordleWord(state.guesses[r].word || '');
+        score = Array.isArray(state.guesses[r].score) ? state.guesses[r].score : null;
+      } else if (r === state.guesses.length) {
+        letters = normalizeWordleWord(state.current);
+      }
+      const tiles = [];
+      for (let c = 0; c < 5; c++) {
+        const ch = (letters[c] || '').toLocaleUpperCase('da-DK');
+        let cls = 'wordle-tile';
+        if (ch) cls += ' filled';
+        if (score) cls += ' ' + (score[c] || 'absent');
+        tiles.push('<div class="' + cls + '" role="gridcell" aria-label="' + escapeHtml(ch || 'tom') + '">' + escapeHtml(ch) + '</div>');
+      }
+      rowHtml.push('<div class="wordle-row" role="row">' + tiles.join('') + '</div>');
+    }
+    boardEl.innerHTML = rowHtml.join('');
+
+    kbEl.innerHTML = rows.map((row) => {
+      const keys = row.map((k) => {
+        const stateCls = (k.length === 1 && state.keyStates[k]) ? ' ' + state.keyStates[k] : '';
+        const wide = (k === 'ENTER' || k === '⌫') ? ' wide' : '';
+        const label = k === '⌫' ? 'Slet' : (k === 'ENTER' ? 'Enter' : k);
+        return '<button type="button" class="wordle-key' + wide + stateCls + '" data-key="' + escapeHtml(k) + '">' + escapeHtml(label) + '</button>';
+      }).join('');
+      return '<div class="wordle-keyboard-row">' + keys + '</div>';
+    }).join('');
+
+    kbEl.querySelectorAll('.wordle-key').forEach((btn) => {
+      btn.addEventListener('click', () => handleKey(btn.getAttribute('data-key')));
+    });
+  }
+
+  function handleKey(key) {
+    if (state.status !== 'playing') return;
+    if (!key) return;
+
+    if (key === 'ENTER') {
+      if (state.current.length !== 5) return;
+      const guess = normalizeWordleWord(state.current);
+      const score = scoreWordleGuess(guess, state.answer);
+      state.guesses.push({ word: guess, score });
+      state.current = '';
+      if (guess === state.answer) state.status = 'won';
+      else if (state.guesses.length >= 6) state.status = 'lost';
+      persist();
+      render();
+      awardIfWin();
+      return;
+    }
+
+    if (key === '⌫') {
+      state.current = state.current.slice(0, -1);
+      render();
+      return;
+    }
+
+    if (key.length === 1) {
+      const ch = key.toLocaleLowerCase('da-DK');
+      if (!/^[a-zæøå]$/i.test(ch)) return;
+      if (state.current.length >= 5) return;
+      state.current += ch;
+      render();
+    }
+  }
+
+  if (!document.body.dataset.wordleInit) {
+    document.body.dataset.wordleInit = '1';
+    document.addEventListener('keydown', (e) => {
+      const k = e.key;
+      if (k === 'Enter') { e.preventDefault(); handleKey('ENTER'); return; }
+      if (k === 'Backspace') { e.preventDefault(); handleKey('⌫'); return; }
+      if (k && k.length === 1) {
+        const ch = k.toLocaleUpperCase('da-DK');
+        if (/^[A-ZÆØÅ]$/.test(ch)) handleKey(ch);
+      }
+    });
+  }
+
+  render();
+  if (state.status === 'won') awardIfWin();
+}
+
 async function init() {
   try {
     await loadLocationConfig();
     await loadUser();
     await loadTodayCheckin();
     loadDailyQuote();
+    loadWordle();
     await loadMyStats();
     await loadStreak();
     await loadLeaderboard();

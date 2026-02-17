@@ -9,6 +9,7 @@ const configRoutes = require('./routes/config');
 const adminRoutes = require('./routes/admin');
 const classDashboardRoutes = require('./routes/classDashboard');
 const badgesRoutes = require('./routes/badges');
+const gamesRoutes = require('./routes/games');
 const config = require('./config');
 const { run: runMigrations } = require('./migrate');
 const { run: ensureAdmin } = require('./ensureAdmin');
@@ -25,6 +26,7 @@ app.use('/api/config', configRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/public/class', classDashboardRoutes);
 app.use('/api/badges', badgesRoutes);
+app.use('/api/games', gamesRoutes);
 
 const frontendDir = path.join(__dirname, process.env.NODE_ENV === 'production' ? 'frontend' : path.join('..', 'frontend'));
 app.use(express.static(frontendDir, {

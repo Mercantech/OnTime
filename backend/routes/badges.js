@@ -12,6 +12,7 @@ const BADGE_DEFS = [
   { key: 'streak_10', name: 'Streak 10', description: '10 hverdage i træk' },
   { key: 'perfect_week', name: 'Perfekt uge', description: '5/5 hverdage med 45 point i én uge' },
   { key: 'early_bird', name: 'Tidlig fugl', description: '5 indstemplinger før kl. 07:15' },
+  { key: 'wordle_win', name: 'Wordle', description: 'Vandt Wordle (spillet)' },
   { key: 'before_7', name: 'Før kl. 7', description: 'Kom inden kl. 7 om morgenen 🥚', secret: true },
   { key: 'exactly_8', name: 'Præcis 8', description: 'Stemplet ind præcis kl. 08:00 🥚', secret: true },
   { key: 'month_top', name: 'Månedens mester', description: 'Flest point i klassen denne måned' },
