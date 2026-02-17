@@ -63,6 +63,14 @@ app.get('/klasse/:name', (req, res) => {
   res.sendFile(path.join(frontendDir, 'class-dashboard.html'));
 });
 
+app.get('/spil/wordle', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'wordle.html'));
+});
+app.get('/spil/flag', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'flag.html'));
+});
 app.get('/spil', (req, res) => {
   noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'games.html'));

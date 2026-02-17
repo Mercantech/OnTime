@@ -306,7 +306,10 @@ document.getElementById('form-give-points').addEventListener('submit', async (e)
     showMessage('give-points-message', data.error || 'Kunne ikke give point', true);
     return;
   }
-  showMessage('give-points-message', data.points + ' point givet for ' + (data.date || date) + '.');
+  const msg = data.delta != null && data.delta < 0
+    ? (Math.abs(data.delta) + ' point trukket. Står nu på ' + data.points + ' point for ' + (data.date || date) + '.')
+    : (data.points + ' point for ' + (data.date || date) + '.');
+  showMessage('give-points-message', msg);
   setGivePointsDateToToday();
 });
 

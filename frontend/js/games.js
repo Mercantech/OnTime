@@ -367,11 +367,16 @@ async function initFlagGame() {
   });
 }
 
-// ---------- Init ----------
+// ---------- Init (kun det spil der matcher URL) ----------
 async function init() {
   await loadUser();
-  loadWordle();
-  await initFlagGame();
+  const pathname = window.location.pathname;
+  if (pathname.includes('/spil/wordle')) {
+    loadWordle();
+  } else if (pathname.includes('/spil/flag')) {
+    await initFlagGame();
+  }
+  // /spil = kun oversigt, ingen spil at starte
 }
 
 init();

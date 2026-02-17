@@ -17,32 +17,18 @@
     <h2 class="games-title">Spil</h2>
     <p class="games-intro">Gæt dagens ord eller dagens flag og optjen point.</p>
 
-    <section id="wordle" class="card dashboard-card game-card">
-      <h3>Dagens Wordle</h3>
-      <p class="card-hint">Gæt dagens ord på 6 forsøg. Vinder du, låser du et badge op.</p>
-      <div id="wordle-wrap" class="wordle">
-        <div id="wordle-status" class="wordle-status muted">Indlæser dagens ord…</div>
-        <div id="wordle-board" class="wordle-board" aria-label="Wordle bræt" role="grid"></div>
-        <div id="wordle-keyboard" class="wordle-keyboard" aria-label="Wordle tastatur"></div>
-      </div>
-    </section>
-
-    <section id="flag" class="card dashboard-card game-card">
-      <h3>Dagens flag</h3>
-      <p class="card-hint">Gæt hvilket land dagens flag tilhører. Skriv landets navn på engelsk (f.eks. Denmark, Germany).</p>
-      <div id="flag-game" class="flag-game">
-        <div id="flag-status" class="flag-status muted">Indlæser…</div>
-        <div id="flag-wrap" class="flag-wrap" hidden>
-          <img id="flag-img" src="" alt="Dagens flag" class="flag-img">
-          <p id="flag-attempts" class="flag-attempts" hidden aria-live="polite"></p>
-          <div id="flag-guess-row" class="flag-guess-row">
-            <input type="text" id="flag-guess" class="flag-input" placeholder="Landets navn (engelsk)" autocomplete="off">
-            <button type="button" id="flag-submit" class="btn-checkin">Gæt</button>
-          </div>
-          <p id="flag-feedback" class="flag-feedback" hidden></p>
-        </div>
-      </div>
-    </section>
+    <div class="games-preview-grid">
+      <a href="/spil/wordle" class="game-preview-card game-preview-wordle">
+        <span class="game-preview-icon" aria-hidden="true">🟩</span>
+        <span class="game-preview-name">Dagens Wordle</span>
+        <span class="game-preview-desc">6 forsøg til ordet</span>
+      </a>
+      <a href="/spil/flag" class="game-preview-card game-preview-flag">
+        <span class="game-preview-icon" aria-hidden="true">🏳️</span>
+        <span class="game-preview-name">Dagens flag</span>
+        <span class="game-preview-desc">3 forsøg – gæt landet</span>
+      </a>
+    </div>
   </main>
   <script src="js/games.js"></script>
 </body>
