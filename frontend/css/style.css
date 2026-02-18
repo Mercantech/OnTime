@@ -1159,6 +1159,12 @@ main.app-main.admin-main {
 }
 
 /* ---------- Bets (popup i hjørnet) ---------- */
+.bet-trigger[hidden],
+.bet-modal-overlay[hidden],
+.bet-modal[hidden] {
+  display: none !important;
+  pointer-events: none;
+}
 .bet-trigger {
   position: fixed;
   bottom: 1.25rem;

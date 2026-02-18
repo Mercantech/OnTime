@@ -24,6 +24,9 @@ const leverBtn = document.getElementById('slot-lever');
 const messageEl = document.getElementById('slot-message');
 const badgeEl = document.getElementById('slot-badge');
 const balanceEl = document.getElementById('casino-balance');
+const coinEl = document.getElementById('coin');
+const flipBtn = document.getElementById('flip-btn');
+const flipMessageEl = document.getElementById('flip-message');
 
 function setReel(reelEl, symbol) {
   if (!reelEl) return;
@@ -49,21 +52,24 @@ function reelLand(reelEl) {
 
 async function loadStatus() {
   try {
-    const res = await api('/api/casino/status');
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      if (res.status === 401) {
-        window.location.href = '/';
-        return;
-      }
-      if (balanceEl) balanceEl.textContent = '–';
-      if (leverBtn) leverBtn.disabled = true;
+    const [slotRes, coinRes] = await Promise.all([
+      api('/api/casino/status'),
+      api('/api/games/coinflip/status'),
+    ]);
+    const slotData = await slotRes.json().catch(() => ({}));
+    const coinData = await coinRes.json().catch(() => ({}));
+
+    if (slotRes.status === 401 || coinRes.status === 401) {
+      window.location.href = '/';
       return;
     }
-    if (balanceEl) balanceEl.textContent = data.balance ?? '–';
-    if (leverBtn) leverBtn.disabled = !data.canSpin;
+
+    const balance = slotData.balance ?? coinData.balance ?? '–';
+    if (balanceEl) balanceEl.textContent = balance;
+
+    if (leverBtn) leverBtn.disabled = !slotData.canSpin;
     if (messageEl) {
-      if (data.alreadySpunToday) {
+      if (slotData.alreadySpunToday) {
         messageEl.hidden = false;
         messageEl.className = 'slot-message lose';
         messageEl.textContent = 'Du har allerede spillet i dag. Kom tilbage i morgen!';
@@ -72,10 +78,22 @@ async function loadStatus() {
       }
     }
     if (badgeEl) badgeEl.hidden = true;
+
+    if (flipBtn) flipBtn.disabled = !coinData.canFlip;
+    if (flipMessageEl) {
+      if (coinData.alreadyFlippedToday) {
+        flipMessageEl.hidden = false;
+        flipMessageEl.className = 'flip-message lose';
+        flipMessageEl.textContent = 'Du har allerede flippet i dag. Kom tilbage i morgen!';
+      } else {
+        flipMessageEl.hidden = true;
+      }
+    }
   } catch (e) {
     console.error('loadStatus:', e);
     if (balanceEl) balanceEl.textContent = '–';
     if (leverBtn) leverBtn.disabled = true;
+    if (flipBtn) flipBtn.disabled = true;
   }
 }
 
@@ -161,6 +179,37 @@ leverBtn.addEventListener('click', async () => {
     }
     loadStatus();
   });
+});
+
+flipBtn?.addEventListener('click', async () => {
+  if (flipBtn.disabled) return;
+  flipBtn.disabled = true;
+  if (flipMessageEl) flipMessageEl.hidden = true;
+  if (coinEl) coinEl.classList.add('flipping');
+
+  const res = await api('/api/games/coinflip/flip', { method: 'POST' });
+  const data = await res.json().catch(() => ({}));
+
+  setTimeout(() => {
+    if (coinEl) coinEl.classList.remove('flipping');
+    if (!res.ok) {
+      if (flipMessageEl) {
+        flipMessageEl.hidden = false;
+        flipMessageEl.className = 'flip-message lose';
+        flipMessageEl.textContent = data.error || 'Noget gik galt.';
+      }
+      loadStatus();
+      return;
+    }
+    if (flipMessageEl) {
+      flipMessageEl.hidden = false;
+      flipMessageEl.className = 'flip-message ' + (data.win ? 'win' : 'lose');
+      flipMessageEl.textContent = data.win
+        ? 'Krone! Du vandt 2 point og får ikon på leaderboard.'
+        : 'Plat. Bedre held næste gang!';
+    }
+    loadStatus();
+  }, 800);
 });
 
 setReels('?', '?', '?');

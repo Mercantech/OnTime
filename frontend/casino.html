@@ -3,14 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OnTime</title>
+  <title>OnTime – Casino</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/casino.css">
 </head>
 <body class="casino-page">
   <main class="casino-main">
+    <h1 class="casino-page-title">🎰 Casino</h1>
+
     <div class="casino-machine">
-      <h1 class="casino-title">🎰 Enarmet bandit</h1>
+      <h2 class="casino-title">Enarmet bandit</h2>
       <p class="casino-cost">1 point pr. dag – huset vinder altid.</p>
       <div class="slot-reels" id="slot-reels" aria-live="polite">
         <div class="reel" id="reel1"><span class="reel-symbol">?</span></div>
@@ -20,8 +22,24 @@
       <button type="button" id="slot-lever" class="slot-lever" disabled>Træk</button>
       <p id="slot-message" class="slot-message" hidden></p>
       <p id="slot-badge" class="slot-badge" hidden></p>
-      <p class="casino-balance">Dine point: <strong id="casino-balance">–</strong></p>
     </div>
+
+    <div class="casino-divider"></div>
+
+    <div class="casino-coinflip">
+      <h2 class="casino-title">🪙 Coinflip</h2>
+      <p class="casino-cost">1 point pr. dag. Krone = 2 point + ikon på leaderboard.</p>
+      <div class="coinflip-coin-wrap" id="coin-wrap">
+        <div class="coinflip-coin" id="coin">
+          <span class="coin-front">🪙</span>
+          <span class="coin-back">🪙</span>
+        </div>
+      </div>
+      <button type="button" id="flip-btn" class="coinflip-btn" disabled>Flip (1 pt)</button>
+      <p id="flip-message" class="flip-message" hidden></p>
+    </div>
+
+    <p class="casino-balance">Dine point: <strong id="casino-balance">–</strong></p>
     <a href="/app" class="casino-back">← Tilbage til app</a>
   </main>
   <script src="js/casino.js"></script>

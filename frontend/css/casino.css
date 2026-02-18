@@ -12,6 +12,74 @@
   text-align: center;
   max-width: 360px;
 }
+.casino-page-title {
+  margin: 0 0 1rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #e8e8ed;
+}
+.casino-divider {
+  height: 1px;
+  background: #3d3545;
+  margin: 1.5rem 0;
+}
+.casino-coinflip {
+  margin-bottom: 0.5rem;
+}
+.casino-coinflip .casino-title { font-size: 1.15rem; }
+.coinflip-coin-wrap {
+  margin: 1rem 0 1.25rem;
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.coinflip-coin {
+  width: 4.5rem;
+  height: 4.5rem;
+  position: relative;
+  transform-style: preserve-3d;
+}
+.coinflip-coin .coin-front,
+.coinflip-coin .coin-back {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  backface-visibility: hidden;
+}
+.coinflip-coin .coin-back { transform: rotateY(180deg); }
+.coinflip-coin.flipping {
+  animation: coinflip-spin 0.8s ease-out forwards;
+}
+@keyframes coinflip-spin {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(1800deg); }
+}
+.coinflip-btn {
+  width: 100%;
+  max-width: 200px;
+  padding: 0.85rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.coinflip-btn:hover:not(:disabled) { background: var(--accent-dim); }
+.coinflip-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.flip-message {
+  margin: 1rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  min-height: 1.5em;
+}
+.flip-message.win { color: var(--accent); }
+.flip-message.lose { color: #9090a0; }
 
 .casino-machine {
   background: linear-gradient(180deg, #2a2530 0%, #1e1a24 100%);

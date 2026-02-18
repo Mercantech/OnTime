@@ -81,8 +81,7 @@ app.get('/spil/flag', (req, res) => {
   res.sendFile(path.join(frontendDir, 'flag.html'));
 });
 app.get('/spil/coinflip', (req, res) => {
-  noCacheHeaders(res);
-  res.sendFile(path.join(frontendDir, 'coinflip.html'));
+  res.redirect(302, '/casino');
 });
 app.get('/spil', (req, res) => {
   noCacheHeaders(res);

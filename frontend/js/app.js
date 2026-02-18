@@ -221,7 +221,7 @@ async function loadLeaderboard() {
       const parts = [];
       if (g.includes('wordle')) parts.push('<a href="/spil/wordle" class="lb-game-link" title="Wordle">🟩</a>');
       if (g.includes('flag')) parts.push('<a href="/spil/flag" class="lb-game-link" title="Dagens flag">🏳️</a>');
-      if (g.includes('coinflip')) parts.push('<a href="/spil/coinflip" class="lb-game-link" title="Coinflip">🪙</a>');
+      if (g.includes('coinflip')) parts.push('<a href="/casino" class="lb-game-link" title="Coinflip">🪙</a>');
       return parts.length ? '<span class="lb-games" title="Løst spil i dag">' + parts.join('') + '</span>' : '';
     };
 
@@ -962,10 +962,11 @@ async function loadBets() {
 function openBetModal() {
   const overlay = document.getElementById('bet-modal-overlay');
   const modal = document.getElementById('bet-modal');
-  if (overlay) overlay.hidden = false;
-  if (overlay) overlay.setAttribute('aria-hidden', 'false');
-  if (modal) modal.hidden = false;
-  if (modal) modal.setAttribute('aria-hidden', 'false');
+  if (!overlay || !modal) return;
+  overlay.hidden = false;
+  overlay.setAttribute('aria-hidden', 'false');
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('bet-modal-open');
   loadBets();
 }
@@ -992,17 +993,28 @@ function setupBetModal() {
   });
 }
 
-/** Vis Bet-knappen kun når der findes mindst ét bet (notification-lignende). */
+/** Vis Bet-knappen KUN når der findes mindst ét aktivt bet (open eller locked). */
 async function updateBetTriggerVisibility() {
   const trigger = document.getElementById('bet-trigger');
+  const overlay = document.getElementById('bet-modal-overlay');
+  const modal = document.getElementById('bet-modal');
   if (!trigger) return;
   try {
     const res = await api('/api/bets');
     const data = await res.json().catch(() => ({}));
-    const hasBets = Array.isArray(data.bets) && data.bets.length > 0;
-    trigger.hidden = !hasBets;
+    const bets = Array.isArray(data.bets) ? data.bets : [];
+    const hasActiveBet = bets.some((b) => b.status === 'open' || b.status === 'locked');
+    trigger.hidden = !hasActiveBet;
+    if (!hasActiveBet) {
+      if (overlay) overlay.hidden = true;
+      if (modal) modal.hidden = true;
+      document.body.classList.remove('bet-modal-open');
+    }
   } catch (e) {
     trigger.hidden = true;
+    if (overlay) overlay.hidden = true;
+    if (modal) modal.hidden = true;
+    document.body.classList.remove('bet-modal-open');
   }
 }
 
