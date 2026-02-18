@@ -168,6 +168,114 @@ router.post('/flag/guess', auth, async (req, res) => {
 
 router.use(auth);
 
+const COINFLIP_COST = 1;
+const COINFLIP_WIN_PAYOUT = 2;
+const COINFLIP_POINTS_RECORDED = 1; // point registreret i game_completions (viser på leaderboard)
+
+function monthWindowSql(field) {
+  return `${field} >= date_trunc('month', CURRENT_DATE) AND ${field} < date_trunc('month', CURRENT_DATE) + interval '1 month'`;
+}
+
+async function getUserMonthPointsTotal(client, userId) {
+  const r = await client.query(
+    `SELECT (
+      COALESCE((SELECT SUM(points)::int FROM check_ins WHERE user_id = $1 AND ${monthWindowSql('checked_at')}), 0)
+      + COALESCE((SELECT SUM(points)::int FROM game_completions WHERE user_id = $1 AND play_date >= date_trunc('month', CURRENT_DATE)::date AND play_date < (date_trunc('month', CURRENT_DATE)::date + interval '1 month')::date), 0)
+      + COALESCE((SELECT SUM(delta)::int FROM point_transactions WHERE user_id = $1 AND ${monthWindowSql('created_at')}), 0)
+    )::int AS total_points`,
+    [userId]
+  );
+  return r.rows[0]?.total_points ?? 0;
+}
+
+async function hasFlippedToday(client, userId) {
+  const r = await client.query(
+    `SELECT 1 FROM point_transactions
+     WHERE user_id = $1 AND reason = 'Coinflip' AND delta = -$2
+       AND created_at >= CURRENT_DATE AND created_at < CURRENT_DATE + interval '1 day'
+     LIMIT 1`,
+    [userId, COINFLIP_COST]
+  );
+  return r.rows.length > 0;
+}
+
+/** Coinflip status: kan brugeren flippe i dag, saldo */
+router.get('/coinflip/status', async (req, res) => {
+  try {
+    const userId = req.userId;
+    const client = await pool.connect();
+    try {
+      const [balance, flippedToday] = await Promise.all([
+        getUserMonthPointsTotal(client, userId),
+        hasFlippedToday(client, userId),
+      ]);
+      res.json({
+        balance,
+        canFlip: balance >= COINFLIP_COST && !flippedToday,
+        alreadyFlippedToday: flippedToday,
+        cost: COINFLIP_COST,
+      });
+    } finally {
+      client.release();
+    }
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+/** Coinflip: 1 point, 50% vinder 2 point + vises på leaderboard (game_completions). */
+router.post('/coinflip/flip', async (req, res) => {
+  const userId = req.userId;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const [balance, flippedToday] = await Promise.all([
+      getUserMonthPointsTotal(client, userId),
+      hasFlippedToday(client, userId),
+    ]);
+
+    if (flippedToday) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Du har allerede flippet i dag. Kom tilbage i morgen!' });
+    }
+    if (balance < COINFLIP_COST) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ error: 'Du har ikke nok point (skal bruge 1 point).' });
+    }
+
+    await client.query(
+      `INSERT INTO point_transactions (user_id, delta, reason) VALUES ($1, $2, $3)`,
+      [userId, -COINFLIP_COST, 'Coinflip']
+    );
+
+    const win = Math.random() < 0.5;
+    if (win) {
+      await client.query(
+        `INSERT INTO point_transactions (user_id, delta, reason) VALUES ($1, $2, $3)`,
+        [userId, COINFLIP_WIN_PAYOUT, 'Coinflip gevinst']
+      );
+      const now = new Date();
+      const today = now.toISOString().slice(0, 10);
+      await client.query(
+        `INSERT INTO game_completions (user_id, game_key, play_date, points, completed_at)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (user_id, game_key, play_date) DO UPDATE SET points = EXCLUDED.points, completed_at = EXCLUDED.completed_at`,
+        [userId, 'coinflip', today, COINFLIP_POINTS_RECORDED, now]
+      );
+    }
+
+    await client.query('COMMIT');
+    res.json({ win, payout: win ? COINFLIP_WIN_PAYOUT : 0 });
+  } catch (e) {
+    await client.query('ROLLBACK');
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  } finally {
+    client.release();
+  }
+});
+
 /** Marker at brugeren har vundet Wordle (giver badge én gang). */
 router.post('/wordle/win', async (req, res) => {
   try {

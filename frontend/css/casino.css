@@ -56,21 +56,28 @@
   align-items: center;
   justify-content: center;
   box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .slot-reels .reel-symbol {
   font-size: 2.25rem;
   line-height: 1;
+  transition: opacity 0.08s ease;
 }
 
 .slot-reels.spinning .reel-symbol {
-  animation: reel-spin 0.15s linear infinite;
+  opacity: 0.92;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.15));
 }
 
-@keyframes reel-spin {
-  0% { transform: translateY(0); opacity: 1; }
-  50% { transform: translateY(-4px); opacity: 0.8; }
-  100% { transform: translateY(0); opacity: 1; }
+.slot-reels .reel.reel-land {
+  animation: reel-land 0.28s ease-out;
+}
+
+@keyframes reel-land {
+  0% { transform: scale(1.18); box-shadow: inset 0 2px 8px rgba(0,0,0,0.4), 0 0 0 2px rgba(234, 179, 8, 0.5); }
+  60% { transform: scale(0.97); box-shadow: inset 0 2px 8px rgba(0,0,0,0.4), 0 0 0 1px rgba(234, 179, 8, 0.2); }
+  100% { transform: scale(1); box-shadow: inset 0 2px 8px rgba(0,0,0,0.4); }
 }
 
 .slot-lever {

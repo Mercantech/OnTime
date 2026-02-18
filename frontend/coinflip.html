@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Coinflip</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/coinflip.css">
+</head>
+<body class="coinflip-page">
+  <header class="app-header">
+    <h1><a href="/app" class="header-home">OnTime</a></h1>
+    <a href="/spil" class="admin-link">Spil</a>
+    <span id="user-name" class="user-info"></span>
+    <button id="logout" class="btn-logout">Log ud</button>
+  </header>
+  <main class="app-main coinflip-main">
+    <h2 class="coinflip-title">🪙 Coinflip</h2>
+    <p class="coinflip-desc">Sats 1 point. Plat = tab, krone = du vinder 2 point og får ikon på leaderboard.</p>
+    <div class="coinflip-coin-wrap" id="coin-wrap">
+      <div class="coinflip-coin" id="coin">
+        <span class="coin-front">🪙</span>
+        <span class="coin-back">🪙</span>
+      </div>
+    </div>
+    <button type="button" id="flip-btn" class="coinflip-btn" disabled>Flip (1 pt)</button>
+    <p id="flip-message" class="flip-message" hidden></p>
+    <p class="coinflip-balance">Dine point: <strong id="coinflip-balance">–</strong></p>
+  </main>
+  <script src="/js/coinflip.js"></script>
+</body>
+</html>

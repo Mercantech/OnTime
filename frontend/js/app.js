@@ -219,8 +219,9 @@ async function loadLeaderboard() {
     const gameIcons = (gamesToday) => {
       const g = Array.isArray(gamesToday) ? gamesToday : [];
       const parts = [];
-      if (g.includes('wordle')) parts.push('🟩');
-      if (g.includes('flag')) parts.push('🏳️');
+      if (g.includes('wordle')) parts.push('<a href="/spil/wordle" class="lb-game-link" title="Wordle">🟩</a>');
+      if (g.includes('flag')) parts.push('<a href="/spil/flag" class="lb-game-link" title="Dagens flag">🏳️</a>');
+      if (g.includes('coinflip')) parts.push('<a href="/spil/coinflip" class="lb-game-link" title="Coinflip">🪙</a>');
       return parts.length ? '<span class="lb-games" title="Løst spil i dag">' + parts.join('') + '</span>' : '';
     };
 
@@ -991,6 +992,20 @@ function setupBetModal() {
   });
 }
 
+/** Vis Bet-knappen kun når der findes mindst ét bet (notification-lignende). */
+async function updateBetTriggerVisibility() {
+  const trigger = document.getElementById('bet-trigger');
+  if (!trigger) return;
+  try {
+    const res = await api('/api/bets');
+    const data = await res.json().catch(() => ({}));
+    const hasBets = Array.isArray(data.bets) && data.bets.length > 0;
+    trigger.hidden = !hasBets;
+  } catch (e) {
+    trigger.hidden = true;
+  }
+}
+
 async function init() {
   try {
     await loadLocationConfig();
@@ -1006,6 +1021,7 @@ async function init() {
     await loadCalendar();
     loadVersion();
     setupBetModal();
+    await updateBetTriggerVisibility();
 
     if (locationConfig && locationConfig.useWiFiCheck) {
       showWiFiMode();

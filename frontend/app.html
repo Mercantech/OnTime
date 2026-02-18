@@ -111,6 +111,11 @@
           <span class="game-preview-name">Dagens flag</span>
           <span class="game-preview-desc">Gæt landet</span>
         </a>
+        <a href="/spil/coinflip" class="game-preview-card game-preview-coinflip">
+          <span class="game-preview-icon" aria-hidden="true">🪙</span>
+          <span class="game-preview-name">Coinflip</span>
+          <span class="game-preview-desc">1 pt/dag – krone eller plat</span>
+        </a>
       </div>
     </section>
 
@@ -146,8 +151,8 @@
   </main>
   <footer class="app-footer"><span id="app-version" class="app-version" aria-hidden="true"></span></footer>
 
-  <!-- Bet-popup (modal i hjørnet) -->
-  <button type="button" id="bet-trigger" class="bet-trigger" aria-label="Åbn bet">Bet</button>
+  <!-- Bet-popup (modal i hjørnet) – vises kun når der er et bet (som notification) -->
+  <button type="button" id="bet-trigger" class="bet-trigger" aria-label="Åbn bet" hidden>Bet</button>
   <div id="bet-modal-overlay" class="bet-modal-overlay" hidden aria-hidden="true"></div>
   <div id="bet-modal" class="bet-modal" role="dialog" aria-labelledby="bet-modal-title" aria-modal="true" hidden>
     <div class="bet-modal-header">
