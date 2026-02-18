@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/casino.css">
+</head>
+<body class="casino-page">
+  <main class="casino-main">
+    <div class="casino-machine">
+      <h1 class="casino-title">🎰 Enarmet bandit</h1>
+      <p class="casino-cost">1 point pr. dag – huset vinder altid.</p>
+      <div class="slot-reels" id="slot-reels" aria-live="polite">
+        <div class="reel" id="reel1"><span class="reel-symbol">?</span></div>
+        <div class="reel" id="reel2"><span class="reel-symbol">?</span></div>
+        <div class="reel" id="reel3"><span class="reel-symbol">?</span></div>
+      </div>
+      <button type="button" id="slot-lever" class="slot-lever" disabled>Træk</button>
+      <p id="slot-message" class="slot-message" hidden></p>
+      <p id="slot-badge" class="slot-badge" hidden></p>
+      <p class="casino-balance">Dine point: <strong id="casino-balance">–</strong></p>
+    </div>
+    <a href="/app" class="casino-back">← Tilbage til app</a>
+  </main>
+  <script src="js/casino.js"></script>
+</body>
+</html>

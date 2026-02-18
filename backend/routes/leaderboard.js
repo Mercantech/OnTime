@@ -41,7 +41,8 @@ router.get('/class', auth, async (req, res) => {
       `SELECT u.id, u.name,
               COALESCE(ci.total, 0)::int AS checkin_points,
               COALESCE(gm.total, 0)::int AS game_points,
-              (COALESCE(ci.total, 0) + COALESCE(gm.total, 0))::int AS total_points
+              COALESCE(pt.total, 0)::int AS ledger_points,
+              (COALESCE(ci.total, 0) + COALESCE(gm.total, 0) + COALESCE(pt.total, 0))::int AS total_points
        FROM users u
        LEFT JOIN (
          SELECT user_id, SUM(points)::int AS total
@@ -57,8 +58,15 @@ router.get('/class', auth, async (req, res) => {
            AND play_date < (date_trunc('month', CURRENT_DATE)::date + interval '1 month')::date
          GROUP BY user_id
        ) gm ON gm.user_id = u.id
+       LEFT JOIN (
+         SELECT user_id, SUM(delta)::int AS total
+         FROM point_transactions
+         WHERE created_at >= date_trunc('month', CURRENT_DATE)
+           AND created_at < date_trunc('month', CURRENT_DATE) + interval '1 month'
+         GROUP BY user_id
+       ) pt ON pt.user_id = u.id
        WHERE u.class_id = $1
-       GROUP BY u.id, u.name, ci.total, gm.total
+       GROUP BY u.id, u.name, ci.total, gm.total, pt.total
        ORDER BY total_points DESC, u.name`,
       [id]
     );
@@ -102,7 +110,7 @@ router.get('/class', auth, async (req, res) => {
 router.get('/my-stats', auth, async (req, res) => {
   try {
     const maxPossible = getMaxPossiblePoints();
-    const [checkinRes, gameRes] = await Promise.all([
+    const [checkinRes, gameRes, ledgerRes] = await Promise.all([
       pool.query(
         `SELECT COALESCE(SUM(points), 0)::int AS total
          FROM check_ins
@@ -119,8 +127,16 @@ router.get('/my-stats', auth, async (req, res) => {
            AND play_date < (date_trunc('month', CURRENT_DATE)::date + interval '1 month')::date`,
         [req.userId]
       ),
+      pool.query(
+        `SELECT COALESCE(SUM(delta), 0)::int AS total
+         FROM point_transactions
+         WHERE user_id = $1
+           AND created_at >= date_trunc('month', CURRENT_DATE)
+           AND created_at < date_trunc('month', CURRENT_DATE) + interval '1 month'`,
+        [req.userId]
+      ),
     ]);
-    const total = (checkinRes.rows[0].total || 0) + (gameRes.rows[0].total || 0);
+    const total = (checkinRes.rows[0].total || 0) + (gameRes.rows[0].total || 0) + (ledgerRes.rows[0].total || 0);
     res.json({
       totalPoints: total,
       maxPossible,

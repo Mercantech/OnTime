@@ -101,6 +101,8 @@ async function fillClassSelects() {
   const elUserClass = document.getElementById('user-class');
   const elFilterClass = document.getElementById('filter-class');
   const elImportClass = document.getElementById('import-class');
+  const elBetClass = document.getElementById('bet-class');
+  const elBetFilterClass = document.getElementById('bet-filter-class');
   if (elUserClass) elUserClass.innerHTML = def + opts;
   if (elFilterClass) elFilterClass.innerHTML = defAll + opts;
   if (elImportClass) {
@@ -108,6 +110,184 @@ async function fillClassSelects() {
     elImportClass.disabled = false;
     const status = document.getElementById('import-class-status');
     if (status) status.textContent = classes.length ? classes.length + ' klasse(r)' : 'Opret en klasse under "Ny klasse" først.';
+  }
+  if (elBetClass) {
+    elBetClass.innerHTML = def + opts;
+    elBetClass.disabled = false;
+  }
+  if (elBetFilterClass) {
+    elBetFilterClass.innerHTML = def + opts;
+    elBetFilterClass.disabled = false;
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+
+function betStatusText(status) {
+  if (status === 'open') return 'Åben';
+  if (status === 'locked') return 'Låst';
+  if (status === 'resolved') return 'Afgjort';
+  if (status === 'refunded') return 'Refunderet';
+  return status || '–';
+}
+
+function formatPoints(n) {
+  const x = Number(n || 0);
+  return String(Math.round(x));
+}
+
+async function loadBetsAdmin(classId) {
+  const el = document.getElementById('bet-admin-list');
+  if (!el) return;
+  if (!classId) {
+    el.textContent = 'Vælg en klasse…';
+    return;
+  }
+  try {
+    const res = await api('/api/bets?classId=' + encodeURIComponent(String(classId)));
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      el.innerHTML = '<p class="muted">' + escapeHtml(data.error || 'Kunne ikke hente bets.') + '</p>';
+      return;
+    }
+    const bets = Array.isArray(data.bets) ? data.bets : [];
+    if (!bets.length) {
+      el.innerHTML = '<p class="muted">Ingen bets for denne klasse.</p>';
+      return;
+    }
+
+    el.innerHTML = bets.map((b) => {
+      const options = Array.isArray(b.options) ? b.options : [];
+      const status = String(b.status || '');
+      const isOpen = status === 'open';
+      const isLocked = status === 'locked';
+      const isFinal = status === 'resolved' || status === 'refunded';
+      const winnerId = b.winnerOptionId;
+      const winner = winnerId ? options.find((o) => o.id === winnerId) : null;
+      const info = winner ? ('Vinder: ' + escapeHtml(winner.label)) : '';
+
+      const optionsHtml = options.map((o) => {
+        const isWinner = winnerId && o.id === winnerId;
+        return (
+          '<div class="bet-option ' + (isWinner ? 'winner' : '') + '">' +
+            '<span class="bet-option-label">' + escapeHtml(o.label) + (isWinner ? ' <span class="bet-winner-badge">Vinder</span>' : '') + '</span>' +
+            '<span class="bet-option-pot">' + formatPoints(o.pot) + ' pt</span>' +
+          '</div>'
+        );
+      }).join('');
+
+      return (
+        '<div class="bet-item bet-admin-item" data-bet-id="' + b.id + '">' +
+          '<div class="bet-head">' +
+            '<div>' +
+              '<div class="bet-title">' + escapeHtml(b.title || '') + '</div>' +
+              '<div class="bet-meta">Status: <strong>' + escapeHtml(betStatusText(status)) + '</strong> · Pulje: <strong>' + formatPoints(b.totalPot) + ' pt</strong>' + (info ? ' · ' + info : '') + '</div>' +
+              (b.description ? '<div class="bet-desc">' + escapeHtml(b.description) + '</div>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="bet-options">' + optionsHtml + '</div>' +
+          '<div class="bet-admin-actions">' +
+            (isOpen ? '<button type="button" class="btn-bet-lock" data-action="lock">Lås</button>' : '') +
+            (isLocked ? '<button type="button" class="btn-bet-lock" data-action="unlock">Åbn igen</button>' : '') +
+            (!isFinal ? (
+              '<div class="bet-resolve">' +
+                '<label>Vinder</label>' +
+                '<select class="bet-winner-select">' +
+                  options.map((o) => '<option value="' + o.id + '">' + escapeHtml(o.label) + '</option>').join('') +
+                '</select>' +
+                '<button type="button" class="btn-bet-resolve"' + (isLocked ? '' : ' title="Tip: Lås bettet først"') + '>Afgør</button>' +
+                '<button type="button" class="btn-bet-refund danger">Refundér alle</button>' +
+              '</div>'
+            ) : '') +
+            '<p class="bet-inline-message" hidden></p>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    el.querySelectorAll('.bet-admin-item').forEach((wrap) => {
+      const betId = wrap.getAttribute('data-bet-id');
+      const msg = wrap.querySelector('.bet-inline-message');
+      const showInline = (text, isError) => {
+        if (!msg) return;
+        msg.hidden = false;
+        msg.className = 'bet-inline-message ' + (isError ? 'error' : 'success');
+        msg.textContent = text;
+      };
+
+      const lockBtn = wrap.querySelector('.btn-bet-lock');
+      if (lockBtn) {
+        lockBtn.addEventListener('click', async () => {
+          const action = lockBtn.getAttribute('data-action');
+          const locked = action === 'lock';
+          lockBtn.disabled = true;
+          showInline('Opdaterer…', false);
+          const res = await api('/api/bets/' + betId + '/lock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ locked }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            lockBtn.disabled = false;
+            showInline(data.error || 'Kunne ikke opdatere', true);
+            return;
+          }
+          showInline('OK ✓', false);
+          loadBetsAdmin(classId);
+        });
+      }
+
+      const resolveBtn = wrap.querySelector('.btn-bet-resolve');
+      if (resolveBtn) {
+        resolveBtn.addEventListener('click', async () => {
+          const sel = wrap.querySelector('.bet-winner-select');
+          const winnerOptionId = sel ? sel.value : '';
+          if (!winnerOptionId) return;
+          if (!confirm('Afgør dette bet og udbetal puljen?')) return;
+          resolveBtn.disabled = true;
+          showInline('Afgør…', false);
+          const res = await api('/api/bets/' + betId + '/resolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ winnerOptionId: parseInt(winnerOptionId, 10) }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            resolveBtn.disabled = false;
+            showInline(data.error || 'Kunne ikke afgøre', true);
+            return;
+          }
+          showInline('Afgjort ✓', false);
+          loadBetsAdmin(classId);
+        });
+      }
+
+      const refundBtn = wrap.querySelector('.btn-bet-refund');
+      if (refundBtn) {
+        refundBtn.addEventListener('click', async () => {
+          if (!confirm('Refundér alle indsatser på dette bet?')) return;
+          refundBtn.disabled = true;
+          showInline('Refunderer…', false);
+          const res = await api('/api/bets/' + betId + '/refund', { method: 'POST' });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            refundBtn.disabled = false;
+            showInline(data.error || 'Kunne ikke refundere', true);
+            return;
+          }
+          showInline('Refunderet ✓', false);
+          loadBetsAdmin(classId);
+        });
+      }
+    });
+  } catch (e) {
+    console.error('loadBetsAdmin:', e);
+    el.innerHTML = '<p class="muted">Kunne ikke hente bets.</p>';
   }
 }
 
@@ -334,6 +514,49 @@ document.getElementById('form-ip-range').addEventListener('submit', async (e) =>
   renderIpRangeList(await loadIpRanges());
 });
 
+document.getElementById('form-bet-create').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const classId = document.getElementById('bet-class').value;
+  const title = document.getElementById('bet-title').value.trim();
+  const description = document.getElementById('bet-desc').value.trim();
+  const optionsRaw = document.getElementById('bet-options').value;
+  const options = optionsRaw.split('\n').map((s) => s.trim()).filter(Boolean);
+  if (!classId) {
+    showMessage('bet-message', 'Vælg en klasse.', true);
+    return;
+  }
+  if (!title) {
+    showMessage('bet-message', 'Titel kræves.', true);
+    return;
+  }
+  if (options.length < 2) {
+    showMessage('bet-message', 'Angiv mindst 2 valgmuligheder (én pr. linje).', true);
+    return;
+  }
+  const res = await api('/api/bets', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ classId: parseInt(classId, 10), title, description: description || undefined, options }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    showMessage('bet-message', data.error || 'Kunne ikke oprette bet', true);
+    return;
+  }
+  showMessage('bet-message', 'Bet oprettet ✓');
+  document.getElementById('bet-title').value = '';
+  document.getElementById('bet-desc').value = '';
+  document.getElementById('bet-options').value = '';
+
+  const filter = document.getElementById('bet-filter-class').value;
+  if (filter) loadBetsAdmin(parseInt(filter, 10));
+});
+
+document.getElementById('bet-filter-class').addEventListener('change', async () => {
+  const classId = document.getElementById('bet-filter-class').value;
+  await loadBetsAdmin(classId ? parseInt(classId, 10) : null);
+});
+
 document.getElementById('logout').addEventListener('click', () => {
   localStorage.removeItem('ontime_token');
   window.location.href = '/';
@@ -345,5 +568,9 @@ async function init() {
   renderUserList(await loadUsers());
   renderIpRangeList(await loadIpRanges());
   setGivePointsDateToToday();
+  const betFilter = document.getElementById('bet-filter-class');
+  if (betFilter && betFilter.value) {
+    await loadBetsAdmin(parseInt(betFilter.value, 10));
+  }
 }
 init();

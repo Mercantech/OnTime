@@ -1,0 +1,138 @@
+/* Casino easter egg – skjult side /casino */
+.casino-page {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #0d0d12 0%, #1a0f1a 35%, #0f1218 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.casino-main {
+  text-align: center;
+  max-width: 360px;
+}
+
+.casino-machine {
+  background: linear-gradient(180deg, #2a2530 0%, #1e1a24 100%);
+  border: 3px solid #3d3545;
+  border-radius: 24px;
+  padding: 1.75rem;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 8px 32px rgba(0,0,0,0.5),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.casino-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #e8e8ed;
+  text-shadow: 0 0 20px rgba(255,215,0,0.2);
+}
+
+.casino-cost {
+  margin: 0 0 1.25rem;
+  font-size: 0.8rem;
+  color: #9090a0;
+}
+
+.slot-reels {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.slot-reels .reel {
+  width: 4.5rem;
+  height: 4.5rem;
+  background: #0f0f14;
+  border: 3px solid #3d3545;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.slot-reels .reel-symbol {
+  font-size: 2.25rem;
+  line-height: 1;
+}
+
+.slot-reels.spinning .reel-symbol {
+  animation: reel-spin 0.15s linear infinite;
+}
+
+@keyframes reel-spin {
+  0% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(-4px); opacity: 0.8; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.slot-lever {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(180deg, #c41e1e 0%, #8b0000 100%);
+  border: 2px solid #e63939;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #5c0000, 0 6px 12px rgba(0,0,0,0.3);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.slot-lever:hover:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 #5c0000, 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.slot-lever:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 #5c0000, 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.slot-lever:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.slot-message {
+  margin: 1rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  min-height: 1.5em;
+}
+
+.slot-message.win { color: #22c55e; }
+.slot-message.lose { color: #9090a0; }
+
+.slot-badge {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: #fbbf24;
+}
+
+.casino-balance {
+  margin: 1.25rem 0 0;
+  font-size: 0.9rem;
+  color: #9090a0;
+}
+
+.casino-balance strong { color: #e8e8ed; }
+
+.casino-back {
+  display: inline-block;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: #606070;
+  text-decoration: none;
+}
+
+.casino-back:hover { color: #9090a0; }

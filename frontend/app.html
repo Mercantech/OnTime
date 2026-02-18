@@ -144,6 +144,22 @@
       <div id="leaderboard">Indlæser…</div>
     </section>
   </main>
+  <footer class="app-footer"><span id="app-version" class="app-version" aria-hidden="true"></span></footer>
+
+  <!-- Bet-popup (modal i hjørnet) -->
+  <button type="button" id="bet-trigger" class="bet-trigger" aria-label="Åbn bet">Bet</button>
+  <div id="bet-modal-overlay" class="bet-modal-overlay" hidden aria-hidden="true"></div>
+  <div id="bet-modal" class="bet-modal" role="dialog" aria-labelledby="bet-modal-title" aria-modal="true" hidden>
+    <div class="bet-modal-header">
+      <h2 id="bet-modal-title" class="bet-modal-title">Bet</h2>
+      <button type="button" id="bet-modal-close" class="bet-modal-close" aria-label="Luk">×</button>
+    </div>
+    <div class="bet-modal-body">
+      <p class="bet-modal-hint">Sæt point på et udfald. Puljen fordeles blandt dem der rammer vinderen.</p>
+      <div id="bets-list" class="bets-list">Indlæser…</div>
+    </div>
+  </div>
+
   <script src="js/app.js"></script>
 </body>
 </html>

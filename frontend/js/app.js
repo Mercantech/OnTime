@@ -345,6 +345,7 @@ const BADGE_ICONS = {
   nytaarsdag: '🎉',
   syden: '🪄',
   hakke_stifter: '🍺',
+  one_armed_bandit: '🎰',
 };
 
 async function loadBadges() {
@@ -811,6 +812,185 @@ async function loadWordle() {
   if (state.status === 'won') awardIfWin();
 }
 
+async function loadVersion() {
+  const el = document.getElementById('app-version');
+  if (!el) return;
+  try {
+    const res = await fetch('/api/version');
+    const data = await res.json().catch(() => ({}));
+    if (data.version) el.textContent = data.version;
+  } catch (_) {}
+}
+
+function betStatusText(status) {
+  if (status === 'open') return 'Åben';
+  if (status === 'locked') return 'Låst';
+  if (status === 'resolved') return 'Afgjort';
+  if (status === 'refunded') return 'Refunderet';
+  return status || '–';
+}
+
+function formatPoints(n) {
+  const x = Number(n || 0);
+  return String(Math.round(x));
+}
+
+function potentialPayout(stake, totalPot, optionPot) {
+  const s = Number(stake || 0);
+  const t = Number(totalPot || 0);
+  const o = Number(optionPot || 0);
+  if (s <= 0 || t <= 0 || o <= 0) return 0;
+  return Math.floor((s * t) / o);
+}
+
+async function loadBets() {
+  const el = document.getElementById('bets-list');
+  if (!el) return;
+  try {
+    const res = await api('/api/bets');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      el.innerHTML = '<p class="muted">' + escapeHtml(data.error || 'Kunne ikke hente bets.') + '</p>';
+      return;
+    }
+    const bets = Array.isArray(data.bets) ? data.bets : [];
+    if (!bets.length) {
+      el.innerHTML = '<p class="muted">Ingen bets lige nu.</p>';
+      return;
+    }
+
+    el.innerHTML = bets.map((b) => {
+      const options = Array.isArray(b.options) ? b.options : [];
+      const my = b.myWager;
+      const status = String(b.status || '');
+      const isOpen = status === 'open';
+      const isResolved = status === 'resolved';
+      const winnerId = b.winnerOptionId;
+      const winner = winnerId ? options.find((o) => o.id === winnerId) : null;
+
+      const optionsHtml = options.map((o) => {
+        const isWinner = winnerId && o.id === winnerId;
+        const myStake = (my && my.optionId === o.id) ? my.points : 0;
+        const maybe = myStake ? potentialPayout(myStake, b.totalPot, o.pot) : 0;
+        const extra = myStake ? ('<span class="bet-option-maybe">· hvis den vinder: ~' + formatPoints(maybe) + ' pt</span>') : '';
+        return (
+          '<div class="bet-option ' + (isWinner ? 'winner' : '') + '">' +
+          '<span class="bet-option-label">' + escapeHtml(o.label) + (isWinner ? ' <span class="bet-winner-badge">Vinder</span>' : '') + '</span>' +
+          '<span class="bet-option-pot">' + formatPoints(o.pot) + ' pt</span>' +
+          extra +
+          '</div>'
+        );
+      }).join('');
+
+      const myHtml = my
+        ? '<div class="bet-my">Din indsats: <strong>' + formatPoints(my.points) + ' pt</strong> på <strong>' + escapeHtml((options.find(o => o.id === my.optionId)?.label) || '—') + '</strong></div>'
+        : '<div class="bet-my muted">Du har ikke satset endnu.</div>';
+
+      const formDisabled = !isOpen ? 'disabled' : '';
+      const btnText = isOpen ? (my ? 'Opdater indsats' : 'Sæt indsats') : 'Låst';
+      const infoLine = isResolved && winner ? ('Vinder: ' + escapeHtml(winner.label)) : '';
+
+      return (
+        '<div class="bet-item bet-status-' + escapeHtml(status) + '" data-bet-id="' + b.id + '">' +
+          '<div class="bet-head">' +
+            '<div>' +
+              '<div class="bet-title">' + escapeHtml(b.title || '') + '</div>' +
+              '<div class="bet-meta">Status: <strong>' + escapeHtml(betStatusText(status)) + '</strong> · Pulje: <strong>' + formatPoints(b.totalPot) + ' pt</strong>' + (infoLine ? ' · ' + infoLine : '') + '</div>' +
+              (b.description ? '<div class="bet-desc">' + escapeHtml(b.description) + '</div>' : '') +
+            '</div>' +
+          '</div>' +
+          myHtml +
+          '<div class="bet-options">' + optionsHtml + '</div>' +
+          '<form class="bet-form" data-bet-id="' + b.id + '">' +
+            '<label>Mulighed</label>' +
+            '<select name="optionId" ' + formDisabled + '>' +
+              options.map((o) => '<option value="' + o.id + '"' + (my && my.optionId === o.id ? ' selected' : '') + '>' + escapeHtml(o.label) + '</option>').join('') +
+            '</select>' +
+            '<label>Point</label>' +
+            '<input name="points" type="number" min="1" max="10000" value="' + escapeHtml(String(my ? my.points : 10)) + '" ' + formDisabled + '>' +
+            '<button type="submit" ' + (isOpen ? '' : 'disabled') + '>' + escapeHtml(btnText) + '</button>' +
+            (!isOpen ? '<p class="muted bet-locked-hint">Dette bet er ikke åbent (låst/afgjort/refunderet).</p>' : '<p class="bet-inline-message" hidden></p>') +
+          '</form>' +
+        '</div>'
+      );
+    }).join('');
+
+    el.querySelectorAll('.bet-form').forEach((form) => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const betId = form.getAttribute('data-bet-id');
+        const msg = form.querySelector('.bet-inline-message');
+        const optionId = form.querySelector('select[name="optionId"]').value;
+        const points = form.querySelector('input[name="points"]').value;
+        if (msg) {
+          msg.hidden = false;
+          msg.className = 'bet-inline-message';
+          msg.textContent = 'Gemmer…';
+        }
+        const res = await api('/api/bets/' + betId + '/wager', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ optionId: parseInt(optionId, 10), points: parseInt(points, 10) }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          if (msg) {
+            msg.hidden = false;
+            msg.className = 'bet-inline-message error';
+            msg.textContent = data.error || 'Kunne ikke gemme indsats.';
+          }
+          return;
+        }
+        if (msg) {
+          msg.hidden = false;
+          msg.className = 'bet-inline-message success';
+          msg.textContent = 'Gemte indsats ✓';
+          setTimeout(() => { if (msg) msg.hidden = true; }, 2000);
+        }
+        loadMyStats();
+        loadLeaderboard();
+        loadBets();
+      });
+    });
+  } catch (e) {
+    console.error('loadBets:', e);
+    el.innerHTML = '<p class="muted">Kunne ikke hente bets.</p>';
+  }
+}
+
+function openBetModal() {
+  const overlay = document.getElementById('bet-modal-overlay');
+  const modal = document.getElementById('bet-modal');
+  if (overlay) overlay.hidden = false;
+  if (overlay) overlay.setAttribute('aria-hidden', 'false');
+  if (modal) modal.hidden = false;
+  if (modal) modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('bet-modal-open');
+  loadBets();
+}
+
+function closeBetModal() {
+  const overlay = document.getElementById('bet-modal-overlay');
+  const modal = document.getElementById('bet-modal');
+  if (overlay) overlay.hidden = true;
+  if (overlay) overlay.setAttribute('aria-hidden', 'true');
+  if (modal) modal.hidden = true;
+  if (modal) modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('bet-modal-open');
+}
+
+function setupBetModal() {
+  const trigger = document.getElementById('bet-trigger');
+  const overlay = document.getElementById('bet-modal-overlay');
+  const closeBtn = document.getElementById('bet-modal-close');
+  if (trigger) trigger.addEventListener('click', openBetModal);
+  if (overlay) overlay.addEventListener('click', closeBetModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeBetModal);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('bet-modal-open')) closeBetModal();
+  });
+}
+
 async function init() {
   try {
     await loadLocationConfig();
@@ -824,6 +1004,8 @@ async function init() {
     await loadBurndown();
     await loadRecent();
     await loadCalendar();
+    loadVersion();
+    setupBetModal();
 
     if (locationConfig && locationConfig.useWiFiCheck) {
       showWiFiMode();

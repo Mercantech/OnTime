@@ -1,6 +1,7 @@
 const express = require('express');
 const config = require('../config');
 const { getDbIpRanges } = require('../ipRanges');
+const { getVersion } = require('../version');
 
 const router = express.Router();
 
@@ -9,6 +10,7 @@ router.get('/', async (req, res) => {
   const dbRanges = await getDbIpRanges();
   const useWiFiCheck = envRanges.length > 0 || dbRanges.length > 0;
   res.json({
+    version: getVersion(),
     schoolLat: config.SCHOOL_LAT,
     schoolLng: config.SCHOOL_LNG,
     radiusMeters: config.ALLOWED_RADIUS_METERS,

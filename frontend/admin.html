@@ -81,6 +81,33 @@
         </div>
       </aside>
       <div class="admin-content">
+        <section class="card">
+          <h2>Bets (betting)</h2>
+          <p class="card-hint">Opret et bet pr. klasse med valgmuligheder. Lås bettet før du afgør eller refunderer.</p>
+          <form id="form-bet-create" class="bet-create-form">
+            <label for="bet-class">Klasse</label>
+            <select id="bet-class" required disabled>
+              <option value="">Indlæser klasser…</option>
+            </select>
+            <label for="bet-title">Titel</label>
+            <input type="text" id="bet-title" placeholder="fx Hvem vinder fredagsquizzen?" required maxlength="120">
+            <label for="bet-desc">Beskrivelse (valgfri)</label>
+            <textarea id="bet-desc" placeholder="Kort beskrivelse…"></textarea>
+            <label for="bet-options">Valgmuligheder (én pr. linje)</label>
+            <textarea id="bet-options" placeholder="Mulighed 1&#10;Mulighed 2&#10;Mulighed 3" required></textarea>
+            <button type="submit">Opret bet</button>
+          </form>
+          <p id="bet-message" class="message" hidden></p>
+        </section>
+        <section class="card">
+          <h2>Administrér bets</h2>
+          <p class="card-hint">Vælg klasse for at se betliste.</p>
+          <label for="bet-filter-class">Klasse</label>
+          <select id="bet-filter-class" required disabled>
+            <option value="">Indlæser klasser…</option>
+          </select>
+          <div id="bet-admin-list" class="bets-admin-list">Vælg en klasse…</div>
+        </section>
         <section class="card card-users">
           <h2>Oversigt over alle brugere</h2>
           <p class="user-count">Antal: <strong id="user-count">0</strong> – Filter: <select id="filter-class"><option value="">Alle klasser</option></select></p>

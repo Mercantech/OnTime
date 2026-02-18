@@ -27,6 +27,7 @@ const BADGE_DEFS = [
   { key: 'nytaarsdag', name: 'Nytårsdag', description: 'Stemplet ind 1. januar 🎉', secret: true },
   { key: 'syden', name: 'Kl. 11:11', description: 'Stemplet ind kl. 11:11 – ønske dig noget 🪄', secret: true },
   { key: 'hakke_stifter', name: 'Hakke stifter', description: 'Har du været ude og hakke stifter? 🍺', secret: true },
+  { key: 'one_armed_bandit', name: 'Enarmet bandit', description: 'Trak i den enarmede på casinoet 🎰', secret: true },
 ];
 
 /** Returnerer brugerens badges; beregner og gemmer nye præstationer. */

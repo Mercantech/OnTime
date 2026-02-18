@@ -1137,3 +1137,265 @@ main.app-main.admin-main {
 .btn-toggle-admin:hover:not(:disabled) { background: var(--accent); color: #fff; }
 .btn-toggle-admin:disabled { opacity: 0.6; cursor: not-allowed; }
 
+/* Footer version – meget diskret */
+.app-footer {
+  text-align: center;
+  padding: 1.5rem 1rem 1rem;
+  margin-top: auto;
+}
+.app-version {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  opacity: 0.28;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Bets (popup i hjørnet) ---------- */
+.bet-trigger {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 900;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--surface);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+.bet-trigger:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.bet-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+}
+
+.bet-modal {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 1001;
+  width: min(92vw, 380px);
+  max-height: min(85vh, 520px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bet-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.bet-modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.bet-modal-close {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bet-modal-close:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+.bet-modal-body {
+  padding: 0.85rem 1rem 1rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+body.bet-modal-open { overflow: hidden; }
+.bet-modal-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0 0 0.75rem;
+}
+
+.bets-list {
+  display: grid;
+  gap: 0.75rem;
+}
+.bet-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  padding: 0.85rem;
+}
+.bet-item .bet-title { font-size: 0.95rem; }
+.bet-item .bet-meta { font-size: 0.8rem; margin-bottom: 0.35rem; }
+.bet-item .bet-desc { font-size: 0.85rem; margin: 0.25rem 0; }
+.bet-item .bet-my { margin: 0.4rem 0 0.5rem; font-size: 0.85rem; }
+.bet-item .bet-options { gap: 0.4rem; margin: 0.4rem 0 0.6rem; }
+.bet-item .bet-option { padding: 0.5rem 0.6rem; }
+.bet-item .bet-form label { margin: 0.2rem 0 0.1rem; font-size: 0.85rem; }
+.bet-item .bet-form select,
+.bet-item .bet-form input[type="number"] { padding: 0.55rem 0.65rem; font-size: 0.9rem; }
+.bet-item .bet-form button { margin-top: 0.5rem; padding: 0.6rem 0.75rem; font-size: 0.9rem; }
+.bet-title {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.15rem;
+}
+.bet-meta {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+.bet-desc {
+  color: var(--text);
+  font-size: 0.92rem;
+  margin: 0.35rem 0 0.25rem;
+}
+.bet-my {
+  margin: 0.5rem 0 0.75rem;
+  font-size: 0.92rem;
+}
+.bet-options {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0.9rem;
+}
+.bet-option {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.bet-option.winner {
+  border-color: rgba(34, 197, 94, 0.65);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15) inset;
+}
+.bet-option-label { font-weight: 600; }
+.bet-option-pot { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.bet-option-maybe {
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.bet-winner-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.12rem 0.4rem;
+  border: 1px solid rgba(34, 197, 94, 0.7);
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 0.75rem;
+  vertical-align: middle;
+}
+.bet-form label {
+  display: block;
+  margin: 0.3rem 0 0.2rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.bet-form select,
+.bet-form input[type="number"] {
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+.bet-form button {
+  margin-top: 0.6rem;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.bet-form button:disabled { opacity: 0.6; cursor: not-allowed; }
+.bet-inline-message {
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+}
+.bet-inline-message.success { color: var(--accent); }
+.bet-inline-message.error { color: var(--danger); }
+.bet-locked-hint { margin-top: 0.6rem; }
+.bet-admin-actions {
+  display: grid;
+  gap: 0.6rem;
+}
+.bet-resolve {
+  display: grid;
+  gap: 0.4rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+}
+.bet-admin-actions button {
+  padding: 0.55rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.bet-admin-actions button:hover:not(:disabled) { border-color: var(--text-muted); }
+.bet-admin-actions button:disabled { opacity: 0.6; cursor: not-allowed; }
+.bet-admin-actions .danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.bet-admin-actions .danger:hover:not(:disabled) {
+  background: var(--danger);
+  color: #fff;
+}
+.bets-admin-list {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 0.75rem;
+}
+.bet-create-form textarea {
+  width: 100%;
+  min-height: 72px;
+  padding: 0.7rem 0.85rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  resize: vertical;
+}
+

@@ -10,9 +10,12 @@ const adminRoutes = require('./routes/admin');
 const classDashboardRoutes = require('./routes/classDashboard');
 const badgesRoutes = require('./routes/badges');
 const gamesRoutes = require('./routes/games');
+const betsRoutes = require('./routes/bets');
+const casinoRoutes = require('./routes/casino');
 const config = require('./config');
 const { run: runMigrations } = require('./migrate');
 const { run: ensureAdmin } = require('./ensureAdmin');
+const { getVersion } = require('./version');
 
 const app = express();
 app.set('trust proxy', 1); // Så klient-IP bruges ved WiFi-tjek bag proxy
@@ -27,6 +30,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/public/class', classDashboardRoutes);
 app.use('/api/badges', badgesRoutes);
 app.use('/api/games', gamesRoutes);
+app.use('/api/bets', betsRoutes);
+app.use('/api/casino', casinoRoutes);
 
 const frontendDir = path.join(__dirname, process.env.NODE_ENV === 'production' ? 'frontend' : path.join('..', 'frontend'));
 app.use(express.static(frontendDir, {
@@ -42,6 +47,10 @@ function noCacheHeaders(res) {
   res.set('Pragma', 'no-cache');
   res.set('Expires', '0');
 }
+
+app.get('/api/version', (req, res) => {
+  res.json({ version: getVersion() });
+});
 
 app.get('/', (req, res) => {
   noCacheHeaders(res);
@@ -75,13 +84,17 @@ app.get('/spil', (req, res) => {
   noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'games.html'));
 });
+app.get('/casino', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'casino.html'));
+});
 
 const PORT = config.port;
 runMigrations()
   .then(() => ensureAdmin())
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`OnTime server kører på http://localhost:${PORT}`);
+      console.log(`OnTime server kører på http://localhost:${PORT} (${getVersion()})`);
     });
   })
   .catch((e) => {
