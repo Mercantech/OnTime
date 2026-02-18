@@ -193,23 +193,32 @@ router.get('/recent', auth, async (req, res) => {
   }
 });
 
-/** Streak: antal på hinanden følgende hverdage med indstempling (lørdag/søndag medtages ikke) */
+/** Formater dato som YYYY-MM-DD i serverens lokale tidszone (Europe/Copenhagen). */
+function toLocalDateString(date) {
+  const d = new Date(date);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+/** Streak: antal på hinanden følgende hverdage med indstempling (lørdag/søndag medtages ikke). Bruger serverens lokale dato (Europe/Copenhagen), ikke DB-tidszone. */
 router.get('/streak', auth, async (req, res) => {
   try {
+    const today = new Date();
+    const todayStr = toLocalDateString(today);
+    const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const firstStr = toLocalDateString(firstOfMonth);
+
     const r = await pool.query(
       `SELECT check_date FROM check_ins
-       WHERE user_id = $1 AND check_date >= date_trunc('month', CURRENT_DATE)::date
-         AND check_date <= CURRENT_DATE
+       WHERE user_id = $1 AND check_date >= $2::date AND check_date <= $3::date
        ORDER BY check_date DESC`,
-      [req.userId]
+      [req.userId, firstStr, todayStr]
     );
-    const checkedDates = new Set(r.rows.map(row => row.check_date.toISOString().slice(0, 10)));
-    const today = new Date();
+    const checkedDates = new Set(r.rows.map(row => toLocalDateString(row.check_date)));
     let streak = 0;
     const d = new Date(today);
     while (d.getMonth() === today.getMonth()) {
-      const day = d.getDay(); // 0=søn, 6=lør – kun hverdage tæller
-      const key = d.toISOString().slice(0, 10);
+      const day = d.getDay();
+      const key = toLocalDateString(d);
       if (day !== 0 && day !== 6) {
         if (checkedDates.has(key)) streak++;
         else break;

@@ -11,7 +11,7 @@ const BADGE_DEFS = [
   { key: 'streak_7', name: 'Seks-syv', description: '7 dages streak – 6-7? Nej, 7! 😏 🥚', secret: true },
   { key: 'streak_10', name: 'Streak 10', description: '10 hverdage i træk' },
   { key: 'perfect_week', name: 'Perfekt uge', description: '5/5 hverdage med 45 point i én uge' },
-  { key: 'early_bird', name: 'Tidlig fugl', description: '5 indstemplinger før kl. 07:15' },
+  { key: 'early_bird', name: 'Tidlig fugl', description: '1 Indstemplinger før kl. 07:15' },
   { key: 'wordle_win', name: 'Wordle', description: 'Vandt Wordle (spillet)' },
   { key: 'flag_win', name: 'Dagens flag', description: 'Gættede dagens flag korrekt' },
   { key: 'before_7', name: 'Før kl. 7', description: 'Kom inden kl. 7 om morgenen 🥚', secret: true },
@@ -166,7 +166,7 @@ router.get('/me', auth, async (req, res) => {
       const t = new Date(c.checked_at);
       return t.getHours() < 7 || (t.getHours() === 7 && t.getMinutes() < 15);
     }).length;
-    if (earlyCount >= 5 && !earned.has('early_bird')) toAward.push('early_bird');
+    if (earlyCount >= 1 && !earned.has('early_bird')) toAward.push('early_bird');
 
     const byWeek = new Map();
     checkIns.forEach((c) => {

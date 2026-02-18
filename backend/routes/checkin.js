@@ -147,7 +147,7 @@ router.post('/', auth, async (req, res) => {
   if (day === 0 || day === 6) {
     return res.status(400).json({ error: 'Indstempling er kun mulig på hverdage.' });
   }
-  const today = now.toISOString().slice(0, 10);
+  const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
   const latVal = lat == null ? null : Math.round(lat * 100) / 100;
   const lngVal = lng == null ? null : Math.round(lng * 100) / 100;
   try {
