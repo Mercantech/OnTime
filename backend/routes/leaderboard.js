@@ -219,37 +219,41 @@ router.get('/recent', auth, async (req, res) => {
   }
 });
 
-/** Formater dato som YYYY-MM-DD i serverens lokale tidszone (Europe/Copenhagen). */
-function toLocalDateString(date) {
-  const d = new Date(date);
-  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+/** Dato i Europe/Copenhagen som YYYY-MM-DD (til streak så "i dag" er dansk dag). */
+function getTodayCopenhagenStr() {
+  const f = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Copenhagen', year: 'numeric', month: '2-digit', day: '2-digit' });
+  const parts = f.formatToParts(new Date());
+  const get = (type) => parts.find((p) => p.type === type)?.value || '';
+  return get('year') + '-' + get('month') + '-' + get('day');
 }
 
-/** Streak: antal på hinanden følgende hverdage med indstempling (lørdag/søndag medtages ikke). Bruger serverens lokale dato (Europe/Copenhagen), ikke DB-tidszone. */
+/** Streak: antal på hinanden følgende hverdage med indstempling (lørdag/søndag medtages ikke). Nulstilles først når en hverdag mangler. */
 router.get('/streak', auth, async (req, res) => {
   try {
-    const today = new Date();
-    const todayStr = toLocalDateString(today);
-    const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const firstStr = toLocalDateString(firstOfMonth);
+    const todayStr = getTodayCopenhagenStr();
+    const [y, m] = todayStr.split('-').map(Number);
+    const firstStr = String(y) + '-' + String(m).padStart(2, '0') + '-01';
 
     const r = await pool.query(
-      `SELECT check_date FROM check_ins
+      `SELECT to_char(check_date, 'YYYY-MM-DD') AS d FROM check_ins
        WHERE user_id = $1 AND check_date >= $2::date AND check_date <= $3::date
        ORDER BY check_date DESC`,
       [req.userId, firstStr, todayStr]
     );
-    const checkedDates = new Set(r.rows.map(row => toLocalDateString(row.check_date)));
+    const checkedDates = new Set(r.rows.map((row) => row.d));
+
     let streak = 0;
-    const d = new Date(today);
-    while (d.getMonth() === today.getMonth()) {
-      const day = d.getDay();
-      const key = toLocalDateString(d);
-      if (day !== 0 && day !== 6) {
-        if (checkedDates.has(key)) streak++;
+    let current = todayStr;
+    while (current >= firstStr) {
+      const utcMidday = new Date(current + 'T12:00:00Z');
+      const dow = utcMidday.getUTCDay();
+      if (dow !== 0 && dow !== 6) {
+        if (checkedDates.has(current)) streak++;
         else break;
       }
-      d.setDate(d.getDate() - 1);
+      const [yy, mm, dd] = current.split('-').map(Number);
+      const prev = new Date(Date.UTC(yy, mm - 1, dd - 1));
+      current = prev.getUTCFullYear() + '-' + String(prev.getUTCMonth() + 1).padStart(2, '0') + '-' + String(prev.getUTCDate()).padStart(2, '0');
     }
     res.json({ currentStreak: streak });
   } catch (e) {
