@@ -540,10 +540,11 @@ main.app-main.dashboard {
 .flag-img { max-width: 320px; width: 100%; height: auto; border-radius: var(--radius); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 .flag-attempts { margin: 0 0 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
 .flag-attempts-lost { color: var(--text); font-weight: 600; }
-.flag-guess-row { display: flex; gap: 0.5rem; align-items: center; width: 100%; max-width: 320px; }
-.flag-combobox-wrap { position: relative; flex: 1; min-width: 0; }
+.flag-guess-row { display: flex; gap: 0.5rem; align-items: stretch; width: 100%; max-width: 360px; }
+.flag-combobox-wrap { position: relative; flex: 1; min-width: 180px; }
+.flag-guess-row .btn-checkin { width: auto; flex-shrink: 0; min-width: 4.5rem; }
 .flag-input { width: 100%; padding: 0.5rem 0.75rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 1rem; box-sizing: border-box; }
-.flag-dropdown { position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px; padding: 0; list-style: none; max-height: 220px; overflow-y: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); z-index: 20; box-shadow: var(--shadow); }
+.flag-dropdown { position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px; padding: 0; list-style: none; max-height: 220px; overflow-y: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); z-index: 20; box-shadow: var(--shadow); min-width: 100%; }
 .flag-dropdown-item { padding: 0.5rem 0.75rem; cursor: pointer; color: var(--text); border-radius: 0; }
 .flag-dropdown-item:hover { background: var(--border); }
 .flag-dropdown-item-active { background: var(--border); }

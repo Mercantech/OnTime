@@ -6,6 +6,20 @@ const { getDbIpRanges } = require('../ipRanges');
 
 const router = express.Router();
 
+const TZ = 'Europe/Copenhagen';
+
+/** Dato i YYYY-MM-DD og ugedag i Europe/Copenhagen (så indstempling følger dansk dag). */
+function getTodayInCopenhagen(now) {
+  const f = new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' });
+  const parts = f.formatToParts(now);
+  const get = (type) => parts.find((p) => p.type === type)?.value || '';
+  const y = get('year');
+  const m = get('month');
+  const d = get('day');
+  const weekday = get('weekday');
+  return { dateStr: `${y}-${m}-${d}`, weekday };
+}
+
 function getClientIp(req) {
   const forwarded = req.headers['x-forwarded-for'];
   if (forwarded) {
@@ -143,11 +157,10 @@ router.post('/', auth, async (req, res) => {
 
   const now = new Date();
   const points = config.calculatePoints(now);
-  const day = now.getDay();
-  if (day === 0 || day === 6) {
+  const { dateStr: today, weekday } = getTodayInCopenhagen(now);
+  if (weekday === 'Sat' || weekday === 'Sun') {
     return res.status(400).json({ error: 'Indstempling er kun mulig på hverdage.' });
   }
-  const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
   const latVal = lat == null ? null : Math.round(lat * 100) / 100;
   const lngVal = lng == null ? null : Math.round(lng * 100) / 100;
   try {

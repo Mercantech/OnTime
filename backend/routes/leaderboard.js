@@ -5,6 +5,16 @@ const { auth } = require('../middleware/auth');
 
 const router = express.Router();
 
+/** Formatér et Date fra DB (DATE er midnat i serverens tidszone) som YYYY-MM-DD uden UTC-forskydning. */
+function toDateString(d) {
+  if (d == null) return '';
+  const date = d instanceof Date ? d : new Date(d);
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+  const day = date.getDate();
+  return y + '-' + String(m).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+}
+
 /** GDPR: vis kun fornavn + forbogstav på efternavn; ved duplikater tilføjes ét bogstav mere. */
 function uniqueDisplayNames(names) {
   const result = [];
@@ -169,15 +179,15 @@ router.get('/burndown', auth, async (req, res) => {
       `SELECT check_date, points FROM check_ins
        WHERE user_id = $1 AND check_date >= $2 AND check_date <= $3
        ORDER BY check_date`,
-      [req.userId, monthStart.toISOString().slice(0, 10), now.toISOString().slice(0, 10)]
+      [req.userId, toDateString(monthStart), toDateString(now)]
     );
     const pointsByDate = {};
     r.rows.forEach(row => {
-      pointsByDate[row.check_date.toISOString().slice(0, 10)] = row.points;
+      pointsByDate[toDateString(row.check_date)] = row.points;
     });
     let cum = 0;
     const actual = days.map(date => {
-      const key = date.toISOString().slice(0, 10);
+      const key = toDateString(date);
       cum += pointsByDate[key] || 0;
       return cum;
     });
@@ -199,7 +209,7 @@ router.get('/recent', auth, async (req, res) => {
       [req.userId]
     );
     res.json(r.rows.map(row => ({
-      date: row.check_date.toISOString().slice(0, 10),
+      date: toDateString(row.check_date),
       time: row.checked_at,
       points: row.points,
     })));
@@ -257,7 +267,7 @@ router.get('/calendar', auth, async (req, res) => {
          AND checked_at < date_trunc('month', CURRENT_DATE) + interval '1 month'`,
       [req.userId]
     );
-    res.json(r.rows.map(row => row.check_date.toISOString().slice(0, 10)));
+    res.json(r.rows.map(row => toDateString(row.check_date)));
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Serverfejl' });
