@@ -215,12 +215,21 @@ async function getUserMonthPointsTotal(client, userId) {
 
 const COINFLIP_MAX_FLIPS_PER_DAY = 100;
 
+/** Dato i Europe/Copenhagen som YYYY-MM-DD (så "i dag" matcher brugerens dag). */
+function getTodayCopenhagenStr() {
+  const f = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Copenhagen', year: 'numeric', month: '2-digit', day: '2-digit' });
+  const parts = f.formatToParts(new Date());
+  const get = (type) => parts.find((p) => p.type === type)?.value || '';
+  return get('year') + '-' + get('month') + '-' + get('day');
+}
+
 async function getFlipCountToday(client, userId) {
+  const todayStr = getTodayCopenhagenStr();
   const r = await client.query(
     `SELECT COUNT(*)::int AS n FROM point_transactions
      WHERE user_id = $1 AND reason = 'Coinflip' AND delta = -$2
-       AND created_at >= CURRENT_DATE AND created_at < CURRENT_DATE + interval '1 day'`,
-    [userId, COINFLIP_COST]
+       AND (created_at AT TIME ZONE 'Europe/Copenhagen')::date = $3::date`,
+    [userId, COINFLIP_COST, todayStr]
   );
   return r.rows[0]?.n ?? 0;
 }

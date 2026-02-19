@@ -154,12 +154,15 @@ router.get('/me', auth, async (req, res) => {
     const checkDates = new Set(
       checkIns.map((c) => (c.check_date instanceof Date ? c.check_date : new Date(c.check_date)).toISOString().slice(0, 10))
     );
+    const todayStr =
+      today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
     const hakkeStifter = checkIns.some((c) => {
       const d = c.check_date instanceof Date ? new Date(c.check_date.getTime()) : new Date(c.check_date);
       if (d.getDay() !== 4) return false;
       d.setDate(d.getDate() + 1);
-      const friday = d.toISOString().slice(0, 10);
-      return !checkDates.has(friday);
+      const fridayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      if (fridayStr >= todayStr) return false;
+      return !checkDates.has(fridayStr);
     });
     if (hakkeStifter && !earned.has('hakke_stifter')) toAward.push('hakke_stifter');
 
