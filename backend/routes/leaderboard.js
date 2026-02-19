@@ -248,8 +248,12 @@ router.get('/streak', auth, async (req, res) => {
       const utcMidday = new Date(current + 'T12:00:00Z');
       const dow = utcMidday.getUTCDay();
       if (dow !== 0 && dow !== 6) {
-        if (checkedDates.has(current)) streak++;
-        else break;
+        if (checkedDates.has(current)) {
+          streak++;
+        } else {
+          if (current !== todayStr) break;
+          /* I dag er hverdag men ikke stemplet – nulstiller ikke, tæller bare ikke i dag med */
+        }
       }
       const [yy, mm, dd] = current.split('-').map(Number);
       const prev = new Date(Date.UTC(yy, mm - 1, dd - 1));
