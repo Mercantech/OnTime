@@ -156,12 +156,17 @@ router.get('/me', auth, async (req, res) => {
     );
     const todayStr =
       today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+    const cutoff = new Date(today);
+    cutoff.setDate(cutoff.getDate() - 3);
+    const cutoffStr =
+      cutoff.getFullYear() + '-' + String(cutoff.getMonth() + 1).padStart(2, '0') + '-' + String(cutoff.getDate()).padStart(2, '0');
     const hakkeStifter = checkIns.some((c) => {
       const d = c.check_date instanceof Date ? new Date(c.check_date.getTime()) : new Date(c.check_date);
       if (d.getDay() !== 4) return false;
       d.setDate(d.getDate() + 1);
       const fridayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       if (fridayStr >= todayStr) return false;
+      if (fridayStr >= cutoffStr) return false;
       return !checkDates.has(fridayStr);
     });
     if (hakkeStifter && !earned.has('hakke_stifter')) toAward.push('hakke_stifter');
@@ -220,3 +225,4 @@ router.get('/me', auth, async (req, res) => {
 });
 
 module.exports = router;
+module.exports.BADGE_DEFS = BADGE_DEFS;

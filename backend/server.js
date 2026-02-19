@@ -92,6 +92,11 @@ app.get('/casino', (req, res) => {
   res.sendFile(path.join(frontendDir, 'casino.html'));
 });
 
+app.get('/profil/:id', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'profil.html'));
+});
+
 const PORT = config.port;
 runMigrations()
   .then(() => ensureAdmin())

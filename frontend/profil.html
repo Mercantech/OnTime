@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Profil</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1><a href="/app" class="header-home">OnTime</a></h1>
+    <a href="/spil" class="admin-link">Spil</a>
+    <span id="user-name" class="user-info"></span>
+    <button id="logout" class="btn-logout">Log ud</button>
+  </header>
+  <main class="app-main profile-page">
+    <div id="profile-loading" class="profile-loading">Indlæser profil…</div>
+    <div id="profile-error" class="profile-error" hidden></div>
+    <div id="profile-card" class="card profile-card" hidden>
+      <div class="profile-header">
+        <div class="profile-avatar" id="profile-avatar" aria-hidden="true"></div>
+        <div class="profile-meta">
+          <h2 id="profile-name" class="profile-name"></h2>
+          <p id="profile-class" class="profile-class"></p>
+          <div class="profile-stats-inline">
+            <span id="profile-points" class="profile-points"></span>
+            <span id="profile-rank" class="profile-rank"></span>
+          </div>
+        </div>
+      </div>
+      <section class="profile-badges-section">
+        <h3>Badges</h3>
+        <div id="profile-badges" class="profile-badges-grid"></div>
+      </section>
+    </div>
+    <p><a href="/app" class="admin-link">← Tilbage til app</a></p>
+  </main>
+  <script src="/js/profil.js"></script>
+</body>
+</html>

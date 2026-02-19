@@ -2,6 +2,7 @@ const express = require('express');
 const { pool } = require('../db');
 const config = require('../config');
 const { auth } = require('../middleware/auth');
+const { BADGE_DEFS } = require('./badges');
 
 const router = express.Router();
 
@@ -276,6 +277,73 @@ router.get('/calendar', auth, async (req, res) => {
       [req.userId]
     );
     res.json(r.rows.map(row => toDateString(row.check_date)));
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+/** Offentlig profil: navn, klasse, point denne måned, badges (til /profil/:id). Kræver auth. */
+router.get('/profile/:userId', auth, async (req, res) => {
+  try {
+    const targetId = parseInt(req.params.userId, 10);
+    if (!targetId || targetId < 1) return res.status(400).json({ error: 'Ugyldig bruger' });
+
+    const userRow = await pool.query(
+      `SELECT u.id, u.name, c.name AS class_name
+       FROM users u
+       LEFT JOIN classes c ON c.id = u.class_id
+       WHERE u.id = $1`,
+      [targetId]
+    );
+    if (userRow.rows.length === 0) return res.status(404).json({ error: 'Bruger ikke fundet' });
+    const user = userRow.rows[0];
+
+    const [pointsRes, badgesRes, rankRes] = await Promise.all([
+      pool.query(
+        `SELECT (
+          COALESCE((SELECT SUM(points)::int FROM check_ins WHERE user_id = $1 AND checked_at >= date_trunc('month', CURRENT_DATE) AND checked_at < date_trunc('month', CURRENT_DATE) + interval '1 month'), 0)
+          + COALESCE((SELECT SUM(points)::int FROM game_completions WHERE user_id = $1 AND play_date >= date_trunc('month', CURRENT_DATE)::date AND play_date < (date_trunc('month', CURRENT_DATE)::date + interval '1 month')::date), 0)
+          + COALESCE((SELECT SUM(delta)::int FROM point_transactions WHERE user_id = $1 AND created_at >= date_trunc('month', CURRENT_DATE) AND created_at < date_trunc('month', CURRENT_DATE) + interval '1 month'), 0)
+        )::int AS total`,
+        [targetId]
+      ),
+      pool.query('SELECT badge_key, earned_at FROM user_badges WHERE user_id = $1 ORDER BY earned_at', [targetId]),
+      pool.query(
+        `SELECT u.id, (COALESCE(ci.total, 0) + COALESCE(gm.total, 0) + COALESCE(pt.total, 0))::int AS total_points
+         FROM users u
+         LEFT JOIN (SELECT user_id, SUM(points)::int AS total FROM check_ins WHERE checked_at >= date_trunc('month', CURRENT_DATE) AND checked_at < date_trunc('month', CURRENT_DATE) + interval '1 month' GROUP BY user_id) ci ON ci.user_id = u.id
+         LEFT JOIN (SELECT user_id, SUM(points)::int AS total FROM game_completions WHERE play_date >= date_trunc('month', CURRENT_DATE)::date AND play_date < (date_trunc('month', CURRENT_DATE)::date + interval '1 month')::date GROUP BY user_id) gm ON gm.user_id = u.id
+         LEFT JOIN (SELECT user_id, SUM(delta)::int AS total FROM point_transactions WHERE created_at >= date_trunc('month', CURRENT_DATE) AND created_at < date_trunc('month', CURRENT_DATE) + interval '1 month' GROUP BY user_id) pt ON pt.user_id = u.id
+         WHERE u.class_id = (SELECT class_id FROM users WHERE id = $1)
+         ORDER BY total_points DESC`,
+        [targetId]
+      ),
+    ]);
+
+    const totalPoints = pointsRes.rows[0]?.total ?? 0;
+    const badgeDefByKey = new Map(BADGE_DEFS.map((b) => [b.key, b]));
+    const badges = badgesRes.rows.map((r) => {
+      const def = badgeDefByKey.get(r.badge_key);
+      return {
+        key: r.badge_key,
+        name: def?.name ?? r.badge_key,
+        description: def?.description ?? '',
+        earnedAt: r.earned_at.toISOString().slice(0, 10),
+        secret: !!def?.secret,
+      };
+    });
+    const rank =
+      rankRes.rows.findIndex((r) => r.id === targetId) + 1 || null;
+
+    res.json({
+      userId: user.id,
+      name: user.name,
+      className: user.class_name || null,
+      totalPoints,
+      rankInClass: rank > 0 ? rank : null,
+      badges,
+    });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Serverfejl' });

@@ -233,7 +233,7 @@ async function loadLeaderboard() {
         podiumEl.innerHTML = order.map((s, i) =>
           '<div class="podium-place ' + places[i] + '">' +
           '<span class="podium-avatar">' + s.rank + '</span>' +
-          '<span class="podium-name">' + escapeHtml(s.name) + gameIcons(s.gamesToday) + '</span>' +
+          '<span class="podium-name"><a href="/profil/' + (s.userId || '') + '" class="podium-profile-link">' + escapeHtml(s.name) + '</a>' + gameIcons(s.gamesToday) + '</span>' +
           '<span class="podium-points">' + s.totalPoints + ' pt</span>' +
           '<div class="podium-step">' + s.rank + '. plads</div></div>'
         ).join('');
@@ -244,7 +244,7 @@ async function loadLeaderboard() {
     if (listEl) {
       const rest = students.slice(3);
       listEl.innerHTML = rest.length
-        ? '<ul class="leaderboard-list">' + rest.map(s => `<li><span class="rank">${s.rank}</span><span class="name">${escapeHtml(s.name)}${gameIcons(s.gamesToday)}</span><span class="points">${s.totalPoints} pt (${s.percentage}%)</span></li>`).join('') + '</ul>'
+        ? '<ul class="leaderboard-list">' + rest.map(s => `<li><span class="rank">${s.rank}</span><span class="name"><a href="/profil/${s.userId || ''}" class="leaderboard-profile-link">${escapeHtml(s.name)}</a>${gameIcons(s.gamesToday)}</span><span class="points">${s.totalPoints} pt (${s.percentage}%)</span></li>`).join('') + '</ul>'
         : students.length > 0 ? '<p class="muted">Kun top 3 i klassen.</p>' : '<p class="muted">Ingen data</p>';
     }
     const classPctEl = document.getElementById('stat-class-pct');

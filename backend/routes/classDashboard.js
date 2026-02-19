@@ -91,6 +91,7 @@ router.get('/:name', async (req, res) => {
 
     const students = studentsRes.rows.map((row, i) => ({
       rank: i + 1,
+      userId: row.id,
       name: displayNames[i],
       totalPoints: row.total_points,
       gamesToday: gamesTodayByUser[row.id] || [],
