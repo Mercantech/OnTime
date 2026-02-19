@@ -403,15 +403,25 @@ async function loadRecent() {
       return;
     }
     el.innerHTML = list.map(r => {
-      const d = new Date(r.date);
       const t = new Date(r.time);
-      const dateStr = d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short' });
       const timeStr = t.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
+      const dateStr = formatDateOnlyForDisplay(r.date);
       return `<li><span class="recent-date">${dateStr} kl. ${timeStr}</span><span class="recent-points">${r.points} pt</span></li>`;
     }).join('');
   } catch (e) {
     el.innerHTML = '<li class="muted">Kunne ikke hente</li>';
   }
+}
+
+function formatDateOnlyForDisplay(isoDateStr) {
+  if (!isoDateStr || !/^\d{4}-\d{2}-\d{2}$/.test(isoDateStr)) return isoDateStr || '';
+  const [y, m, day] = isoDateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, day);
+  return date.toLocaleDateString('da-DK', { day: 'numeric', month: 'short' });
+}
+
+function localDateKey(year, month, day) {
+  return year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
 }
 
 function renderCalendarHeatmap(container, checkInDates) {
@@ -429,7 +439,7 @@ function renderCalendarHeatmap(container, checkInDates) {
   const cells = [];
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(year, month, d);
-    const key = date.toISOString().slice(0, 10);
+    const key = localDateKey(year, month, d);
     const isWeekend = date.getDay() === 0 || date.getDay() === 6;
     const hasCheckin = set.has(key);
     let cls = 'day-cell';

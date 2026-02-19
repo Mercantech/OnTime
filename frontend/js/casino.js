@@ -212,5 +212,32 @@ flipBtn?.addEventListener('click', async () => {
   }, 800);
 });
 
+const menuEl = document.getElementById('casino-menu');
+const viewSlotEl = document.getElementById('casino-view-slot');
+const viewCoinflipEl = document.getElementById('casino-view-coinflip');
+
+function showMenu() {
+  if (menuEl) menuEl.hidden = false;
+  if (viewSlotEl) viewSlotEl.hidden = true;
+  if (viewCoinflipEl) viewCoinflipEl.hidden = true;
+}
+
+function showSlot() {
+  if (menuEl) menuEl.hidden = true;
+  if (viewSlotEl) viewSlotEl.hidden = false;
+  if (viewCoinflipEl) viewCoinflipEl.hidden = true;
+}
+
+function showCoinflip() {
+  if (menuEl) menuEl.hidden = true;
+  if (viewSlotEl) viewSlotEl.hidden = true;
+  if (viewCoinflipEl) viewCoinflipEl.hidden = false;
+}
+
+document.getElementById('casino-go-coinflip')?.addEventListener('click', showCoinflip);
+document.getElementById('casino-go-slot')?.addEventListener('click', showSlot);
+document.getElementById('casino-back-from-slot')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
+document.getElementById('casino-back-from-coinflip')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
+
 setReels('?', '?', '?');
 loadStatus();

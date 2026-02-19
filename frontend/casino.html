@@ -10,36 +10,58 @@
 <body class="casino-page">
   <main class="casino-main">
     <h1 class="casino-page-title">🎰 Casino</h1>
+    <p class="casino-balance casino-balance-top">Dine point: <strong id="casino-balance">–</strong></p>
 
-    <div class="casino-machine">
-      <h2 class="casino-title">Enarmet bandit</h2>
-      <p class="casino-cost">1 point pr. dag – huset vinder altid.</p>
-      <div class="slot-reels" id="slot-reels" aria-live="polite">
-        <div class="reel" id="reel1"><span class="reel-symbol">?</span></div>
-        <div class="reel" id="reel2"><span class="reel-symbol">?</span></div>
-        <div class="reel" id="reel3"><span class="reel-symbol">?</span></div>
+    <!-- Menu: vælg spil -->
+    <div id="casino-menu" class="casino-menu">
+      <div class="casino-menu-grid">
+        <button type="button" id="casino-go-coinflip" class="casino-menu-card">
+          <span class="casino-menu-icon">🪙</span>
+          <span class="casino-menu-name">Coinflip</span>
+          <span class="casino-menu-desc">1 pt/dag – krone eller plat</span>
+        </button>
+        <button type="button" id="casino-go-slot" class="casino-menu-card">
+          <span class="casino-menu-icon">🎰</span>
+          <span class="casino-menu-name">Enarmet bandit</span>
+          <span class="casino-menu-desc">1 pt/dag – slot med symboler</span>
+        </button>
       </div>
-      <button type="button" id="slot-lever" class="slot-lever" disabled>Træk</button>
-      <p id="slot-message" class="slot-message" hidden></p>
-      <p id="slot-badge" class="slot-badge" hidden></p>
     </div>
 
-    <div class="casino-divider"></div>
-
-    <div class="casino-coinflip">
-      <h2 class="casino-title">🪙 Coinflip</h2>
-      <p class="casino-cost">1 point pr. dag. Krone = 2 point + ikon på leaderboard.</p>
-      <div class="coinflip-coin-wrap" id="coin-wrap">
-        <div class="coinflip-coin" id="coin">
-          <span class="coin-front">🪙</span>
-          <span class="coin-back">🪙</span>
+    <!-- View: Enarmet bandit -->
+    <div id="casino-view-slot" class="casino-view" hidden>
+      <a href="#" id="casino-back-from-slot" class="casino-back-link">← Casino</a>
+      <div class="casino-machine">
+        <h2 class="casino-title">Enarmet bandit</h2>
+        <p class="casino-cost">1 point pr. dag – huset vinder altid.</p>
+        <div class="slot-reels" id="slot-reels" aria-live="polite">
+          <div class="reel" id="reel1"><span class="reel-symbol">?</span></div>
+          <div class="reel" id="reel2"><span class="reel-symbol">?</span></div>
+          <div class="reel" id="reel3"><span class="reel-symbol">?</span></div>
         </div>
+        <button type="button" id="slot-lever" class="slot-lever" disabled>Træk</button>
+        <p id="slot-message" class="slot-message" hidden></p>
+        <p id="slot-badge" class="slot-badge" hidden></p>
       </div>
-      <button type="button" id="flip-btn" class="coinflip-btn" disabled>Flip (1 pt)</button>
-      <p id="flip-message" class="flip-message" hidden></p>
     </div>
 
-    <p class="casino-balance">Dine point: <strong id="casino-balance">–</strong></p>
+    <!-- View: Coinflip -->
+    <div id="casino-view-coinflip" class="casino-view" hidden>
+      <a href="#" id="casino-back-from-coinflip" class="casino-back-link">← Casino</a>
+      <div class="casino-coinflip">
+        <h2 class="casino-title">🪙 Coinflip</h2>
+        <p class="casino-cost">1 point pr. dag. Krone = 2 point + ikon på leaderboard.</p>
+        <div class="coinflip-coin-wrap" id="coin-wrap">
+          <div class="coinflip-coin" id="coin">
+            <span class="coin-front">🪙</span>
+            <span class="coin-back">🪙</span>
+          </div>
+        </div>
+        <button type="button" id="flip-btn" class="coinflip-btn" disabled>Flip (1 pt)</button>
+        <p id="flip-message" class="flip-message" hidden></p>
+      </div>
+    </div>
+
     <a href="/app" class="casino-back">← Tilbage til app</a>
   </main>
   <script src="js/casino.js"></script>
