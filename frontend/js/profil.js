@@ -15,6 +15,32 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+const BADGE_ICONS = {
+  first_checkin: '⭐',
+  streak_3: '🔥',
+  streak_5: '🔥',
+  streak_7: '😏',
+  streak_10: '🏆',
+  perfect_week: '✓',
+  early_bird: '🌅',
+  wordle_win: '🟩',
+  flag_win: '🏳️',
+  before_7: '⏰',
+  exactly_8: '8️⃣',
+  month_top: '👑',
+  april_20: '🌿',
+  midnight: '🌙',
+  exactly_1234: '🔢',
+  date_13: '🍀',
+  pi_day: '🥧',
+  agent_007: '🕵️',
+  programmer_day: '💻',
+  nytaarsdag: '🎉',
+  syden: '🪄',
+  hakke_stifter: '🍺',
+  one_armed_bandit: '🎰',
+};
+
 function getUserIdFromPath() {
   const m = /^\/profil\/(\d+)$/.exec(window.location.pathname);
   return m ? m[1] : null;
@@ -95,19 +121,25 @@ async function loadProfile() {
       const badges = Array.isArray(data.badges) ? data.badges : [];
       badgesEl.innerHTML = badges.length
         ? badges
-            .map(
-              (b) =>
+            .map((b) => {
+              const secret = !!b.secret;
+              const icon = BADGE_ICONS[b.key] || '•';
+              const title = secret ? b.name + ' – ' + (b.description || '') : (b.description || b.name);
+              const nameHtml = '<span class="badge-name">' + escapeHtml(b.name) + '</span>';
+              const dateHtml = b.earnedAt ? '<span class="badge-date">' + escapeHtml(b.earnedAt) + '</span>' : '';
+              return (
                 '<div class="badge-item earned badge--' +
                 escapeHtml(b.key || '') +
+                (secret ? ' badge-secret' : '') +
                 '" title="' +
-                escapeHtml(b.description || '') +
+                escapeHtml(title) +
                 '">' +
-                '<span class="badge-name">' +
-                escapeHtml(b.name) +
-                '</span>' +
-                (b.earnedAt ? '<span class="badge-date">' + escapeHtml(b.earnedAt) + '</span>' : '') +
+                '<span class="badge-icon">' + icon + '</span>' +
+                nameHtml +
+                dateHtml +
                 '</div>'
-            )
+              );
+            })
             .join('')
         : '<p class="muted">Ingen badges endnu.</p>';
     }

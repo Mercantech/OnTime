@@ -562,15 +562,9 @@ main.app-main.dashboard {
 .profile-class { margin: 0; font-size: 0.95rem; color: var(--text-muted); }
 .profile-stats-inline { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem; font-size: 0.95rem; color: var(--text-muted); }
 .profile-points { font-weight: 600; color: var(--text); }
-.profile-badges-section h3 { margin: 0 0 0.75rem; font-size: 1rem; color: var(--text-muted); }
-.profile-badges-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 0.75rem;
-}
-.profile-badges-grid .badge-item { padding: 0.75rem; }
-.profile-badges-grid .badge-name { font-size: 0.8rem; }
-.profile-badges-grid .badge-date { font-size: 0.65rem; margin-top: 0.25rem; }
+.profile-badges-section { margin-top: 0.5rem; }
+.profile-badges-section .profile-badges-title { margin: 0 0 0.5rem; font-size: 1.1rem; }
+.profile-badges-section .badges-row { margin-top: 0.5rem; }
 
 /* Fireworks ved vundet spil */
 .game-fireworks-wrap {
