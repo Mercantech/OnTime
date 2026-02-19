@@ -227,9 +227,9 @@ async function getFlipCountToday(client, userId) {
   const todayStr = getTodayCopenhagenStr();
   const r = await client.query(
     `SELECT COUNT(*)::int AS n FROM point_transactions
-     WHERE user_id = $1 AND reason = 'Coinflip' AND delta = -$2
+     WHERE user_id = $1 AND reason = 'Coinflip' AND delta = $2
        AND (created_at AT TIME ZONE 'Europe/Copenhagen')::date = $3::date`,
-    [userId, COINFLIP_COST, todayStr]
+    [userId, -COINFLIP_COST, todayStr]
   );
   return r.rows[0]?.n ?? 0;
 }
