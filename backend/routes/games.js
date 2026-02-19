@@ -213,31 +213,36 @@ async function getUserMonthPointsTotal(client, userId) {
   return r.rows[0]?.total_points ?? 0;
 }
 
-async function hasFlippedToday(client, userId) {
+const COINFLIP_MAX_FLIPS_PER_DAY = 100;
+
+async function getFlipCountToday(client, userId) {
   const r = await client.query(
-    `SELECT 1 FROM point_transactions
+    `SELECT COUNT(*)::int AS n FROM point_transactions
      WHERE user_id = $1 AND reason = 'Coinflip' AND delta = -$2
-       AND created_at >= CURRENT_DATE AND created_at < CURRENT_DATE + interval '1 day'
-     LIMIT 1`,
+       AND created_at >= CURRENT_DATE AND created_at < CURRENT_DATE + interval '1 day'`,
     [userId, COINFLIP_COST]
   );
-  return r.rows.length > 0;
+  return r.rows[0]?.n ?? 0;
 }
 
-/** Coinflip status: kan brugeren flippe i dag, saldo */
+/** Coinflip status: saldo, hvor mange flips i dag, om der er flips tilbage (max 100/dag). */
 router.get('/coinflip/status', async (req, res) => {
   try {
     const userId = req.userId;
     const client = await pool.connect();
     try {
-      const [balance, flippedToday] = await Promise.all([
+      const [balance, flipCountToday] = await Promise.all([
         getUserMonthPointsTotal(client, userId),
-        hasFlippedToday(client, userId),
+        getFlipCountToday(client, userId),
       ]);
+      const flipsRemaining = Math.max(0, COINFLIP_MAX_FLIPS_PER_DAY - flipCountToday);
+      const canFlip = balance >= COINFLIP_COST && flipsRemaining > 0;
       res.json({
         balance,
-        canFlip: balance >= COINFLIP_COST && !flippedToday,
-        alreadyFlippedToday: flippedToday,
+        canFlip,
+        flipsUsedToday: flipCountToday,
+        flipsRemainingToday: flipsRemaining,
+        maxFlipsPerDay: COINFLIP_MAX_FLIPS_PER_DAY,
         cost: COINFLIP_COST,
       });
     } finally {
@@ -249,20 +254,20 @@ router.get('/coinflip/status', async (req, res) => {
   }
 });
 
-/** Coinflip: 1 point, 50% vinder 2 point + vises på leaderboard (game_completions). */
+/** Coinflip: 1 point per flip, max 100 flips/dag. 50% vinder 2 point. */
 router.post('/coinflip/flip', async (req, res) => {
   const userId = req.userId;
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const [balance, flippedToday] = await Promise.all([
+    const [balance, flipCountToday] = await Promise.all([
       getUserMonthPointsTotal(client, userId),
-      hasFlippedToday(client, userId),
+      getFlipCountToday(client, userId),
     ]);
 
-    if (flippedToday) {
+    if (flipCountToday >= COINFLIP_MAX_FLIPS_PER_DAY) {
       await client.query('ROLLBACK');
-      return res.status(400).json({ error: 'Du har allerede flippet i dag. Kom tilbage i morgen!' });
+      return res.status(400).json({ error: 'Du har brugt alle ' + COINFLIP_MAX_FLIPS_PER_DAY + ' flips i dag. Kom tilbage i morgen!' });
     }
     if (balance < COINFLIP_COST) {
       await client.query('ROLLBACK');

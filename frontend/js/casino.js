@@ -80,15 +80,14 @@ async function loadStatus() {
     if (badgeEl) badgeEl.hidden = true;
 
     if (flipBtn) flipBtn.disabled = !coinData.canFlip;
-    if (flipMessageEl) {
-      if (coinData.alreadyFlippedToday) {
-        flipMessageEl.hidden = false;
-        flipMessageEl.className = 'flip-message lose';
-        flipMessageEl.textContent = 'Du har allerede flippet i dag. Kom tilbage i morgen!';
-      } else {
-        flipMessageEl.hidden = true;
-      }
+    const flipsLeftEl = document.getElementById('coinflip-flips-left');
+    if (flipsLeftEl) {
+      const remaining = coinData.flipsRemainingToday ?? 0;
+      const max = coinData.maxFlipsPerDay ?? 100;
+      flipsLeftEl.textContent = remaining > 0 ? `${remaining} flips tilbage i dag (max ${max})` : `Du har brugt alle ${max} flips i dag.`;
+      flipsLeftEl.hidden = false;
     }
+    if (flipMessageEl) flipMessageEl.hidden = true;
   } catch (e) {
     console.error('loadStatus:', e);
     if (balanceEl) balanceEl.textContent = '–';
@@ -185,19 +184,29 @@ flipBtn?.addEventListener('click', async () => {
   if (flipBtn.disabled) return;
   flipBtn.disabled = true;
   if (flipMessageEl) flipMessageEl.hidden = true;
-  if (coinEl) coinEl.classList.add('flipping');
+  if (coinEl) {
+    coinEl.classList.remove('flip-result-win', 'flip-result-lose');
+    coinEl.classList.add('flipping');
+  }
 
   const res = await api('/api/games/coinflip/flip', { method: 'POST' });
   const data = await res.json().catch(() => ({}));
 
+  const flipDurationMs = 1100;
   setTimeout(() => {
-    if (coinEl) coinEl.classList.remove('flipping');
+    if (coinEl) {
+      coinEl.classList.remove('flipping');
+      if (res.ok) {
+        coinEl.classList.add(data.win ? 'flip-result-win' : 'flip-result-lose');
+      }
+    }
     if (!res.ok) {
       if (flipMessageEl) {
         flipMessageEl.hidden = false;
         flipMessageEl.className = 'flip-message lose';
         flipMessageEl.textContent = data.error || 'Noget gik galt.';
       }
+      flipBtn.disabled = false;
       loadStatus();
       return;
     }
@@ -205,11 +214,14 @@ flipBtn?.addEventListener('click', async () => {
       flipMessageEl.hidden = false;
       flipMessageEl.className = 'flip-message ' + (data.win ? 'win' : 'lose');
       flipMessageEl.textContent = data.win
-        ? 'Krone! Du vandt 2 point og får ikon på leaderboard.'
-        : 'Plat. Bedre held næste gang!';
+        ? 'Krone! Du vandt 2 point.'
+        : 'Plat. Prøv igen!';
     }
     loadStatus();
-  }, 800);
+    if (coinEl) {
+      setTimeout(() => coinEl.classList.remove('flip-result-win', 'flip-result-lose'), 600);
+    }
+  }, flipDurationMs);
 });
 
 const menuEl = document.getElementById('casino-menu');
@@ -232,6 +244,7 @@ function showCoinflip() {
   if (menuEl) menuEl.hidden = true;
   if (viewSlotEl) viewSlotEl.hidden = true;
   if (viewCoinflipEl) viewCoinflipEl.hidden = false;
+  loadStatus();
 }
 
 document.getElementById('casino-go-coinflip')?.addEventListener('click', showCoinflip);
