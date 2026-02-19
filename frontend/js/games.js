@@ -9,6 +9,75 @@ const api = (path, opts = {}) =>
     headers: { ...opts.headers, Authorization: `Bearer ${token}` },
   });
 
+// ---------- Lyd og animation ved vundet/tabt spil ----------
+let gameAudioCtx = null;
+function getAudioCtx() {
+  if (!gameAudioCtx) gameAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return gameAudioCtx;
+}
+
+function playTone(freq, startTime, duration, type) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = type || 'sine';
+  osc.frequency.setValueAtTime(freq, startTime);
+  gain.gain.setValueAtTime(0.15, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+  osc.start(startTime);
+  osc.stop(startTime + duration);
+}
+
+function playGameWin() {
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    const now = ctx.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((freq, i) => playTone(freq, now + i * 0.12, 0.2, 'square'));
+    showFireworks();
+  } catch (e) {}
+}
+
+function playGameLose() {
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    const now = ctx.currentTime;
+    playTone(349, now, 0.25, 'square');
+    playTone(262, now + 0.2, 0.35, 'square');
+    playTone(175, now + 0.45, 0.4, 'square');
+  } catch (e) {}
+}
+
+function showFireworks() {
+  const wrap = document.createElement('div');
+  wrap.className = 'game-fireworks-wrap';
+  wrap.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(wrap);
+  const colors = ['#22c55e', '#eab308', '#f97316', '#ec4899'];
+  for (let b = 0; b < 3; b++) {
+    setTimeout(() => {
+      const cx = 0.2 + Math.random() * 0.6;
+      const cy = 0.2 + Math.random() * 0.5;
+      for (let i = 0; i < 24; i++) {
+        const p = document.createElement('div');
+        p.className = 'game-firework-particle';
+        const angle = (i / 24) * Math.PI * 2 + Math.random() * 0.5;
+        const dist = 80 + Math.random() * 60;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist;
+        p.style.cssText = `left:${cx * 100}%;top:${cy * 100}%;--tx:${tx}px;--ty:${ty}px;background:${color}`;
+        wrap.appendChild(p);
+      }
+    }, b * 280);
+  }
+  setTimeout(() => wrap.remove(), 2200);
+}
+
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str == null ? '' : str;
@@ -151,7 +220,7 @@ async function loadWordle() {
   function render() {
     rebuildKeyStates();
     if (state.status === 'won') statusEl.textContent = 'Du vandt Wordle i dag. Flot!';
-    else if (state.status === 'lost') statusEl.textContent = 'Øv. Dagens ord var: ' + state.answer.toLocaleUpperCase('da-DK') + '.';
+    else if (state.status === 'lost') statusEl.textContent = 'Øv. Du har brugt alle forsøg. Lev i evig undren!';
     else statusEl.textContent = 'Gæt dagens ord (' + state.dateKey + ').';
 
     const rowHtml = [];
@@ -200,11 +269,21 @@ async function loadWordle() {
       const score = scoreWordleGuess(guess, state.answer);
       state.guesses.push({ word: guess, score });
       state.current = '';
-      if (guess === state.answer) state.status = 'won';
-      else if (state.guesses.length >= 6) state.status = 'lost';
-      persist();
-      render();
-      awardIfWin();
+      if (guess === state.answer) {
+        state.status = 'won';
+        persist();
+        render();
+        awardIfWin();
+        playGameWin();
+      } else if (state.guesses.length >= 6) {
+        state.status = 'lost';
+        persist();
+        render();
+        playGameLose();
+      } else {
+        persist();
+        render();
+      }
       return;
     }
     if (key === '⌫') {
@@ -442,6 +521,7 @@ async function initFlagGame() {
         state.won = true;
         state.countryName = data.countryName || null;
         renderFlagUI();
+        playGameWin();
         return;
       }
 
@@ -459,6 +539,7 @@ async function initFlagGame() {
 
       if (state.lost) {
         renderFlagUI();
+        playGameLose();
         return;
       }
       feedbackEl.textContent = 'Forkert. Du har ' + state.attemptsLeft + ' forsøg tilbage.';

@@ -733,7 +733,7 @@ async function loadWordle() {
     rebuildKeyStates();
 
     if (state.status === 'won') statusEl.textContent = 'Du vandt Wordle i dag. Flot!';
-    else if (state.status === 'lost') statusEl.textContent = 'Øv. Dagens ord var: ' + state.answer.toLocaleUpperCase('da-DK') + '.';
+    else if (state.status === 'lost') statusEl.textContent = 'Øv. Du har brugt alle forsøg. Lev i evig undren!';
     else statusEl.textContent = 'Gæt dagens ord (' + state.dateKey + ').';
 
     const rowHtml = [];
@@ -783,11 +783,21 @@ async function loadWordle() {
       const score = scoreWordleGuess(guess, state.answer);
       state.guesses.push({ word: guess, score });
       state.current = '';
-      if (guess === state.answer) state.status = 'won';
-      else if (state.guesses.length >= 6) state.status = 'lost';
-      persist();
-      render();
-      awardIfWin();
+      if (guess === state.answer) {
+        state.status = 'won';
+        persist();
+        render();
+        awardIfWin();
+        if (typeof playGameWin === 'function') playGameWin();
+      } else if (state.guesses.length >= 6) {
+        state.status = 'lost';
+        persist();
+        render();
+        if (typeof playGameLose === 'function') playGameLose();
+      } else {
+        persist();
+        render();
+      }
       return;
     }
 
