@@ -541,7 +541,12 @@ main.app-main.dashboard {
 .flag-attempts { margin: 0 0 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
 .flag-attempts-lost { color: var(--text); font-weight: 600; }
 .flag-guess-row { display: flex; gap: 0.5rem; align-items: center; width: 100%; max-width: 320px; }
-.flag-input { flex: 1; padding: 0.5rem 0.75rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 1rem; }
+.flag-combobox-wrap { position: relative; flex: 1; min-width: 0; }
+.flag-input { width: 100%; padding: 0.5rem 0.75rem; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 1rem; box-sizing: border-box; }
+.flag-dropdown { position: absolute; left: 0; right: 0; top: 100%; margin-top: 2px; padding: 0; list-style: none; max-height: 220px; overflow-y: auto; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); z-index: 20; box-shadow: var(--shadow); }
+.flag-dropdown-item { padding: 0.5rem 0.75rem; cursor: pointer; color: var(--text); border-radius: 0; }
+.flag-dropdown-item:hover { background: var(--border); }
+.flag-dropdown-item-active { background: var(--border); }
 .flag-feedback { margin: 0; font-size: 0.95rem; }
 .flag-feedback-correct { color: var(--accent); font-weight: 600; }
 .flag-feedback-wrong { color: var(--text-muted); }
@@ -976,12 +981,13 @@ main.app-main.admin-main {
   min-height: 0;
 }
 
+/* Sidebar = 1/4 af siden (de 2 første kolonner) */
 .admin-sidebar {
   display: flex;
-  width: 380px;
-  max-width: 42%;
+  width: 25%;
+  min-width: 280px;
+  max-width: 420px;
   flex-shrink: 0;
-  min-width: 0;
   background: var(--surface-2);
   border-right: 1px solid var(--border);
   overflow: hidden;
@@ -1007,31 +1013,37 @@ main.app-main.admin-main {
   margin-bottom: 0;
 }
 
+/* Indhold med bets + oversigt = halvdelen (resten af siden) */
 .admin-content {
   flex: 1;
+  width: 75%;
   min-width: 320px;
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
+  min-height: 0;
+  overflow: hidden;
 }
 
-.admin-content > .card {
+/* Bets og Administrér bets: fast højde (scroll internt hvis nødvendigt) så oversigten får plads */
+.admin-content > .card:not(.card-users) {
   flex-shrink: 0;
+  max-height: 40vh;
+  overflow-y: auto;
+  margin-bottom: 1rem;
 }
 
 .admin-content .card-users {
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  min-height: 280px;
   margin: 0;
 }
 
 .admin-content .card-users .user-table-wrap {
   flex: 1;
-  min-height: 240px;
+  min-height: 300px;
   overflow: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -1123,10 +1135,11 @@ main.app-main.admin-main {
 
 @media (max-width: 900px) {
   .admin-dashboard { flex-direction: column; height: auto; min-height: calc(100vh - 4rem); }
-  .admin-sidebar { width: 100%; max-width: none; flex-direction: column; border-right: none; border-bottom: 1px solid var(--border); }
+  .admin-sidebar { width: 100%; min-width: 0; max-width: none; flex-direction: column; border-right: none; border-bottom: 1px solid var(--border); }
   .admin-sidebar-col { border-right: none; border-bottom: 1px solid var(--border); }
   .admin-sidebar-col:last-child { border-bottom: none; }
-  .admin-content { min-width: 0; }
+  .admin-content { width: 100%; min-width: 0; overflow-y: auto; }
+  .admin-content > .card:not(.card-users) { max-height: none; }
   .admin-content .card-users .user-table-wrap { min-height: 300px; }
 }
 

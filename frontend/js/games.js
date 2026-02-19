@@ -246,11 +246,14 @@ async function initFlagGame() {
   const attemptsEl = document.getElementById('flag-attempts');
   const guessRowEl = document.getElementById('flag-guess-row');
   const inputEl = document.getElementById('flag-guess');
+  const dropdownEl = document.getElementById('flag-dropdown');
   const submitBtn = document.getElementById('flag-submit');
   const feedbackEl = document.getElementById('flag-feedback');
   if (!statusEl || !wrapEl || !imgEl || !attemptsEl || !guessRowEl || !inputEl || !submitBtn || !feedbackEl) return;
 
   let state = { won: false, lost: false, attemptsUsed: 0, attemptsLeft: 3, countryName: null };
+  let countryOptions = [];
+  let dropdownHighlight = -1;
 
   function renderFlagUI() {
     feedbackEl.hidden = true;
@@ -285,12 +288,20 @@ async function initFlagGame() {
   }
 
   try {
-    const [flagRes, statusRes] = await Promise.all([
+    const [flagRes, statusRes, countriesRes] = await Promise.all([
       api('/api/games/daily-flag'),
       api('/api/games/flag/status'),
+      api('/api/games/flag/countries'),
     ]);
     const flagData = await flagRes.json().catch(() => ({}));
     const statusData = await statusRes.json().catch(() => ({}));
+    const countriesList = await countriesRes.json().catch(() => []);
+
+    countryOptions = countriesList.map((c) => {
+      const value = c.name_da || c.name;
+      const label = c.name_da && c.name_da !== c.name ? `${c.name_da} (${c.name})` : c.name;
+      return { label, value };
+    });
 
     if (!flagData.flagUrl) {
       statusEl.textContent = 'Kunne ikke hente dagens flag.';
@@ -310,6 +321,106 @@ async function initFlagGame() {
   } catch (e) {
     statusEl.textContent = 'Fejl ved indlæsning.';
     return;
+  }
+
+  function hideDropdown() {
+    if (dropdownEl) {
+      dropdownEl.hidden = true;
+      dropdownEl.innerHTML = '';
+      dropdownHighlight = -1;
+      inputEl.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function showDropdown(items) {
+    if (!dropdownEl) return;
+    dropdownEl.innerHTML = '';
+    items.forEach((opt, i) => {
+      const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.textContent = opt.label;
+      li.dataset.value = opt.value;
+      li.className = 'flag-dropdown-item';
+      if (i === dropdownHighlight) li.classList.add('flag-dropdown-item-active');
+      li.addEventListener('click', () => {
+        inputEl.value = opt.value;
+        hideDropdown();
+        inputEl.focus();
+      });
+      dropdownEl.appendChild(li);
+    });
+    dropdownEl.hidden = items.length === 0;
+    inputEl.setAttribute('aria-expanded', items.length > 0 ? 'true' : 'false');
+  }
+
+  function filterAndShowDropdown() {
+    if (inputEl.disabled) { hideDropdown(); return; }
+    const q = (inputEl.value || '').trim().toLowerCase();
+    if (!q) {
+      showDropdown(countryOptions.slice(0, 12));
+      dropdownHighlight = 0;
+      return;
+    }
+    const filtered = countryOptions.filter(
+      (o) => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q)
+    );
+    dropdownHighlight = filtered.length > 0 ? 0 : -1;
+    showDropdown(filtered.slice(0, 20));
+    if (dropdownEl && !dropdownEl.hidden) {
+      const items = dropdownEl.querySelectorAll('.flag-dropdown-item');
+      items.forEach((el, i) => el.classList.toggle('flag-dropdown-item-active', i === dropdownHighlight));
+    }
+  }
+
+  function selectHighlighted() {
+    const items = dropdownEl.querySelectorAll('.flag-dropdown-item');
+    if (dropdownHighlight >= 0 && items[dropdownHighlight]) {
+      inputEl.value = items[dropdownHighlight].dataset.value || '';
+      hideDropdown();
+      return true;
+    }
+    return false;
+  }
+
+  if (dropdownEl) {
+    inputEl.addEventListener('focus', filterAndShowDropdown);
+    inputEl.addEventListener('input', filterAndShowDropdown);
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        hideDropdown();
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const items = dropdownEl.querySelectorAll('.flag-dropdown-item');
+        if (items.length === 0) return;
+        dropdownHighlight = (dropdownHighlight + 1) % items.length;
+        items.forEach((el, i) => el.classList.toggle('flag-dropdown-item-active', i === dropdownHighlight));
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const items = dropdownEl.querySelectorAll('.flag-dropdown-item');
+        if (items.length === 0) return;
+        dropdownHighlight = dropdownHighlight <= 0 ? items.length - 1 : dropdownHighlight - 1;
+        items.forEach((el, i) => el.classList.toggle('flag-dropdown-item-active', i === dropdownHighlight));
+        return;
+      }
+      if (e.key === 'Enter') {
+        if (dropdownEl && !dropdownEl.hidden && selectHighlighted()) {
+          e.preventDefault();
+          return;
+        }
+        e.preventDefault();
+        submitGuess();
+        return;
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (inputEl.disabled) return;
+      const wrap = inputEl.closest('.flag-combobox-wrap');
+      if (wrap && !wrap.contains(e.target)) hideDropdown();
+    });
   }
 
   async function submitGuess() {
@@ -335,7 +446,7 @@ async function initFlagGame() {
       }
 
       if (data.invalidGuess) {
-        feedbackEl.textContent = data.message || 'Det er ikke et land fra listen. Brug det officielle engelske navn.';
+        feedbackEl.textContent = data.message || 'Det er ikke et land fra listen. Vælg eller skriv et land fra listen (dansk eller engelsk).';
         feedbackEl.className = 'flag-feedback flag-feedback-wrong';
         submitBtn.disabled = false;
         return;
@@ -362,9 +473,6 @@ async function initFlagGame() {
   }
 
   submitBtn.addEventListener('click', submitGuess);
-  inputEl.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') submitGuess();
-  });
 }
 
 // ---------- Init (kun det spil der matcher URL) ----------

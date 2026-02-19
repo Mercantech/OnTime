@@ -31,10 +31,35 @@ function getDailyCountry(countries, dateStr) {
   return countries[idx];
 }
 
-/** Tjek om gættet matcher et land i listen (præcist navn fra JSON). */
+/** Tjek om gættet matcher et land i listen (engelsk eller dansk navn). */
 function guessMatchesCountry(guessNorm, countries) {
-  return countries.some((c) => normalizeCountryName(c.name) === guessNorm);
+  return countries.some((c) => {
+    if (normalizeCountryName(c.name) === guessNorm) return true;
+    if (c.name_da && normalizeCountryName(c.name_da) === guessNorm) return true;
+    return false;
+  });
 }
+
+/** Returnér det officielle (engelske) navn for et gæt (engelsk eller dansk). */
+function guessToCountryName(guessNorm, countries) {
+  const c = countries.find((c) => {
+    if (normalizeCountryName(c.name) === guessNorm) return true;
+    if (c.name_da && normalizeCountryName(c.name_da) === guessNorm) return true;
+    return false;
+  });
+  return c ? c.name : null;
+}
+
+/** Liste over lande til søgebar dropdown (engelsk + dansk navn). */
+router.get('/flag/countries', auth, (req, res) => {
+  try {
+    const countries = loadCountries();
+    res.json(countries.map((c) => ({ name: c.name, name_da: c.name_da || c.name })));
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
 
 /** Hent dagens flag (kun flag-URL og kode, ikke landets navn). */
 router.get('/daily-flag', auth, async (req, res) => {
@@ -98,7 +123,6 @@ router.post('/flag/guess', auth, async (req, res) => {
     const countries = loadCountries();
     const today = new Date().toISOString().slice(0, 10);
     const daily = getDailyCountry(countries, today);
-    const expectedName = normalizeCountryName(daily.name);
 
     // Allerede vundet i dag?
     const winRow = await pool.query(
@@ -111,7 +135,7 @@ router.post('/flag/guess', auth, async (req, res) => {
 
     // Gættet skal være et land fra listen
     if (!guessMatchesCountry(guessNorm, countries)) {
-      return res.json({ correct: false, invalidGuess: true, message: 'Det er ikke et land fra listen. Prøv med det officielle engelske navn (f.eks. Denmark, Germany).' });
+      return res.json({ correct: false, invalidGuess: true, message: 'Det er ikke et land fra listen. Vælg eller skriv et land fra listen (dansk eller engelsk).' });
     }
 
     // Hent nuværende forsøg
@@ -129,7 +153,8 @@ router.post('/flag/guess', auth, async (req, res) => {
       });
     }
 
-    if (guessNorm === expectedName) {
+    const matchedName = guessToCountryName(guessNorm, countries);
+    if (matchedName && matchedName === daily.name) {
       const now = new Date();
       await pool.query(
         `INSERT INTO game_completions (user_id, game_key, play_date, points, completed_at)

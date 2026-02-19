@@ -15,7 +15,7 @@
   </header>
   <main class="app-main games-page">
     <h2 class="games-title">Dagens flag</h2>
-    <p class="games-intro">Gæt hvilket land dagens flag tilhører. Skriv landets navn på engelsk. Du har 3 forsøg.</p>
+    <p class="games-intro">Gæt hvilket land dagens flag tilhører. Vælg eller skriv landets navn (dansk eller engelsk). Du har 3 forsøg.</p>
     <section id="flag" class="card dashboard-card game-card">
       <div id="flag-game" class="flag-game">
         <div id="flag-status" class="flag-status muted">Indlæser…</div>
@@ -23,7 +23,10 @@
           <img id="flag-img" src="" alt="Dagens flag" class="flag-img">
           <p id="flag-attempts" class="flag-attempts" hidden aria-live="polite"></p>
           <div id="flag-guess-row" class="flag-guess-row">
-            <input type="text" id="flag-guess" class="flag-input" placeholder="Landets navn (engelsk)" autocomplete="off">
+            <div class="flag-combobox-wrap">
+              <input type="text" id="flag-guess" class="flag-input" placeholder="Søg eller vælg land…" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="flag-dropdown">
+              <ul id="flag-dropdown" class="flag-dropdown" role="listbox" hidden></ul>
+            </div>
             <button type="button" id="flag-submit" class="btn-checkin">Gæt</button>
           </div>
           <p id="flag-feedback" class="flag-feedback" hidden></p>
