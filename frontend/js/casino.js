@@ -112,7 +112,7 @@ async function loadStatus() {
       bjHandsLeftEl.textContent = rem > 0 ? `${rem} hænder tilbage i dag (max ${max})` : `Du har brugt alle ${max} hænder i dag.`;
     }
     const bjStartBtn = document.getElementById('blackjack-start');
-    if (bjStartBtn) bjStartBtn.disabled = !blackjackData.canStart;
+    if (bjStartBtn && blackjackRes.ok) bjStartBtn.disabled = !blackjackData.canStart;
   } catch (e) {
     console.error('loadStatus:', e);
     if (balanceEl) balanceEl.textContent = '–';
@@ -287,10 +287,46 @@ function showRoulette() {
   if (viewRouletteEl) viewRouletteEl.hidden = false;
   if (viewBlackjackEl) viewBlackjackEl.hidden = true;
   loadStatus();
+  buildRouletteWheel();
   const resultEl = document.getElementById('roulette-result');
   const msgEl = document.getElementById('roulette-message');
   if (resultEl) resultEl.hidden = true;
   if (msgEl) msgEl.hidden = true;
+}
+
+// Roulettehjul: 37 segmenter (europæisk) – 1 grøn, 18 rød, 18 sort
+const ROULETTE_SEGMENTS = ['green', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black', 'red', 'black'];
+let rouletteRotation = 0;
+
+function buildRouletteWheel() {
+  const wheelEl = document.getElementById('roulette-wheel');
+  if (!wheelEl) return;
+  const n = ROULETTE_SEGMENTS.length;
+  const degPer = 360 / n;
+  const colors = { red: '#dc2626', black: '#1f2937', green: '#16a34a' };
+  const stops = ROULETTE_SEGMENTS.map((color, i) => `${colors[color]} ${i * degPer}deg ${(i + 1) * degPer}deg`);
+  wheelEl.style.background = `conic-gradient(${stops.join(', ')})`;
+}
+
+function getRandomSegmentForResult(result) {
+  const indices = ROULETTE_SEGMENTS.map((c, i) => (c === result ? i : -1)).filter(i => i >= 0);
+  return indices[Math.floor(Math.random() * indices.length)];
+}
+
+function spinRouletteWheelToResult(result, onComplete) {
+  const wheelEl = document.getElementById('roulette-wheel');
+  if (!wheelEl) { onComplete?.(); return; }
+  const n = ROULETTE_SEGMENTS.length;
+  const segmentIndex = getRandomSegmentForResult(result);
+  const segmentAngle = 360 / n;
+  const extraSpins = 5;
+  rouletteRotation += extraSpins * 360 - segmentIndex * segmentAngle;
+  wheelEl.classList.add('spinning');
+  wheelEl.style.transform = `rotate(${rouletteRotation}deg)`;
+  setTimeout(() => {
+    wheelEl.classList.remove('spinning');
+    onComplete?.();
+  }, 4500);
 }
 
 function showBlackjack() {
@@ -390,7 +426,13 @@ function updateBlackjackUI(data) {
 
   if (data.canHit !== undefined) {
     if (startBtn) startBtn.hidden = true;
-    if (hitStandEl) hitStandEl.hidden = false;
+    if (hitStandEl) {
+      hitStandEl.hidden = false;
+      const hitBtn = document.getElementById('blackjack-hit');
+      const standBtn = document.getElementById('blackjack-stand');
+      if (hitBtn) hitBtn.disabled = false;
+      if (standBtn) standBtn.disabled = false;
+    }
     if (msgEl) msgEl.hidden = true;
   }
 }
@@ -412,22 +454,28 @@ async function spinRoulette(bet) {
   });
   const data = await res.json().catch(() => ({}));
 
-  if (resultEl) {
-    resultEl.hidden = false;
-    resultEl.className = 'roulette-result roulette-result-' + (data.result || '');
-    resultEl.textContent = data.result === 'red' ? '🔴 Rød' : '⚫ Sort';
+  if (!res.ok) {
+    if (resultEl) { resultEl.hidden = false; resultEl.className = 'roulette-result'; resultEl.textContent = ''; }
+    if (msgEl) { msgEl.hidden = false; msgEl.className = 'flip-message lose'; msgEl.textContent = data.error || 'Noget gik galt.'; }
+    await loadStatus();
+    if (btnRed) btnRed.disabled = false;
+    if (btnBlack) btnBlack.disabled = false;
+    return;
   }
-  if (msgEl) {
-    msgEl.hidden = false;
-    if (!res.ok) {
-      msgEl.className = 'flip-message lose';
-      msgEl.textContent = data.error || 'Noget gik galt.';
-    } else {
-      msgEl.className = 'flip-message ' + (data.win ? 'win' : 'lose');
-      msgEl.textContent = data.win ? 'Du vandt ' + (data.payout || 2) + ' point!' : 'Desværre – du tabte.';
+
+  spinRouletteWheelToResult(data.result, () => {
+    if (resultEl) {
+      resultEl.hidden = false;
+      resultEl.className = 'roulette-result roulette-result-' + (data.result || '');
+      resultEl.textContent = data.result === 'red' ? '🔴 Rød' : data.result === 'black' ? '⚫ Sort' : '🟢 Grøn (0)';
     }
-  }
-  await loadStatus();
+    if (msgEl) {
+      msgEl.hidden = false;
+      msgEl.className = 'flip-message ' + (data.win ? 'win' : 'lose');
+      msgEl.textContent = data.win ? 'Du vandt ' + (data.payout || 2) + ' point!' : data.result === 'green' ? 'Grøn (0) – huset vinder.' : 'Desværre – du tabte.';
+    }
+    loadStatus();
+  });
 }
 
 document.getElementById('casino-go-coinflip')?.addEventListener('click', showCoinflip);

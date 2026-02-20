@@ -168,6 +168,42 @@
   font-size: 0.9rem;
   color: var(--text-muted, #9090a0);
 }
+.roulette-wheel-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 1rem auto;
+}
+.roulette-pointer {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 20px solid #fbbf24;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  z-index: 2;
+  pointer-events: none;
+}
+.roulette-wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #2d2d35;
+  border: 4px solid #2d2d35;
+  box-shadow:
+    inset 0 0 0 3px rgba(255,255,255,0.08),
+    0 0 0 4px #1a1a22,
+    0 8px 24px rgba(0,0,0,0.5);
+  transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+  will-change: transform;
+}
+.roulette-wheel.spinning {
+  transition: transform 4.5s cubic-bezier(0.15, 0.6, 0.1, 1);
+}
 .roulette-bet-buttons {
   display: flex;
   gap: 1rem;
@@ -206,6 +242,7 @@
 }
 .roulette-result-red { background: rgba(220, 38, 38, 0.2); color: #fca5a5; }
 .roulette-result-black { background: rgba(31, 41, 55, 0.6); color: #d1d5db; }
+.roulette-result-green { background: rgba(22, 163, 74, 0.25); color: #86efac; }
 
 /* Blackjack */
 .casino-blackjack { margin-bottom: 0.5rem; }

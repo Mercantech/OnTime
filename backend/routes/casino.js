@@ -221,8 +221,9 @@ router.post('/roulette/spin', async (req, res) => {
       [userId, -ROULETTE_COST, 'Roulette']
     );
 
-    const result = Math.random() < 0.5 ? 'red' : 'black';
-    const win = result === bet;
+    const r = Math.random();
+    const result = r < 1 / 37 ? 'green' : r < 19 / 37 ? 'red' : 'black';
+    const win = result !== 'green' && result === bet;
     if (win) {
       await client.query(
         `INSERT INTO point_transactions (user_id, delta, reason) VALUES ($1, $2, $3)`,
