@@ -53,6 +53,7 @@ async function hasBadge(client, userId) {
 
 const ROULETTE_COST = 1;
 const ROULETTE_WIN_PAYOUT = 2;
+const ROULETTE_GREEN_PAYOUT = 15;
 const ROULETTE_SPINS_PER_DAY = 3;
 
 async function getRouletteSpinsToday(client, userId) {
@@ -185,6 +186,7 @@ router.get('/roulette/status', async (req, res) => {
         maxSpinsPerDay: ROULETTE_SPINS_PER_DAY,
         cost: ROULETTE_COST,
         winPayout: ROULETTE_WIN_PAYOUT,
+        greenPayout: ROULETTE_GREEN_PAYOUT,
       });
     } finally {
       client.release();
@@ -195,10 +197,11 @@ router.get('/roulette/status', async (req, res) => {
   }
 });
 
-/** Roulette: vælg rød eller sort, 1 pt, 50% vinder 2 pt. Max 3 spil/dag. */
+/** Roulette: vælg rød, sort eller grøn. 1 pt. Rød/sort: 2 pt ved gevinst. Grøn: 15 pt ved gevinst. Max 3 spil/dag. */
 router.post('/roulette/spin', async (req, res) => {
   const userId = req.userId;
-  const bet = (req.body && req.body.bet) === 'black' ? 'black' : 'red';
+  const rawBet = req.body && req.body.bet;
+  const bet = rawBet === 'green' ? 'green' : rawBet === 'black' ? 'black' : 'red';
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -223,16 +226,17 @@ router.post('/roulette/spin', async (req, res) => {
 
     const r = Math.random();
     const result = r < 1 / 37 ? 'green' : r < 19 / 37 ? 'red' : 'black';
-    const win = result !== 'green' && result === bet;
-    if (win) {
+    const win = result === bet;
+    const payout = win ? (bet === 'green' ? ROULETTE_GREEN_PAYOUT : ROULETTE_WIN_PAYOUT) : 0;
+    if (payout > 0) {
       await client.query(
         `INSERT INTO point_transactions (user_id, delta, reason) VALUES ($1, $2, $3)`,
-        [userId, ROULETTE_WIN_PAYOUT, 'Roulette gevinst']
+        [userId, payout, 'Roulette gevinst']
       );
     }
 
     await client.query('COMMIT');
-    res.json({ result, win, payout: win ? ROULETTE_WIN_PAYOUT : 0 });
+    res.json({ result, win, payout });
   } catch (e) {
     await client.query('ROLLBACK');
     console.error(e);

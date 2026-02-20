@@ -96,8 +96,10 @@ async function loadStatus() {
     const rouletteCanSpin = rouletteData.canSpin ?? false;
     const rouletteBetRed = document.getElementById('roulette-bet-red');
     const rouletteBetBlack = document.getElementById('roulette-bet-black');
+    const rouletteBetGreen = document.getElementById('roulette-bet-green');
     if (rouletteBetRed) rouletteBetRed.disabled = !rouletteCanSpin;
     if (rouletteBetBlack) rouletteBetBlack.disabled = !rouletteCanSpin;
+    if (rouletteBetGreen) rouletteBetGreen.disabled = !rouletteCanSpin;
     const rouletteSpinsLeftEl = document.getElementById('roulette-spins-left');
     if (rouletteSpinsLeftEl) {
       const rem = rouletteData.spinsRemainingToday ?? 0;
@@ -440,10 +442,12 @@ function updateBlackjackUI(data) {
 async function spinRoulette(bet) {
   const btnRed = document.getElementById('roulette-bet-red');
   const btnBlack = document.getElementById('roulette-bet-black');
+  const btnGreen = document.getElementById('roulette-bet-green');
   const resultEl = document.getElementById('roulette-result');
   const msgEl = document.getElementById('roulette-message');
   if (btnRed) btnRed.disabled = true;
   if (btnBlack) btnBlack.disabled = true;
+  if (btnGreen) btnGreen.disabled = true;
   if (msgEl) { msgEl.hidden = false; msgEl.textContent = 'Spinner…'; msgEl.className = 'flip-message'; }
   if (resultEl) resultEl.hidden = true;
 
@@ -454,12 +458,13 @@ async function spinRoulette(bet) {
   });
   const data = await res.json().catch(() => ({}));
 
-  if (!res.ok) {
+    if (!res.ok) {
     if (resultEl) { resultEl.hidden = false; resultEl.className = 'roulette-result'; resultEl.textContent = ''; }
     if (msgEl) { msgEl.hidden = false; msgEl.className = 'flip-message lose'; msgEl.textContent = data.error || 'Noget gik galt.'; }
     await loadStatus();
     if (btnRed) btnRed.disabled = false;
     if (btnBlack) btnBlack.disabled = false;
+    if (btnGreen) btnGreen.disabled = false;
     return;
   }
 
@@ -472,7 +477,7 @@ async function spinRoulette(bet) {
     if (msgEl) {
       msgEl.hidden = false;
       msgEl.className = 'flip-message ' + (data.win ? 'win' : 'lose');
-      msgEl.textContent = data.win ? 'Du vandt ' + (data.payout || 2) + ' point!' : data.result === 'green' ? 'Grøn (0) – huset vinder.' : 'Desværre – du tabte.';
+      msgEl.textContent = data.win ? 'Du vandt ' + (data.payout || 0) + ' point!' : 'Desværre – du tabte.';
     }
     loadStatus();
   });
@@ -488,6 +493,7 @@ document.getElementById('casino-back-from-roulette')?.addEventListener('click', 
 document.getElementById('casino-back-from-blackjack')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
 document.getElementById('roulette-bet-red')?.addEventListener('click', () => spinRoulette('red'));
 document.getElementById('roulette-bet-black')?.addEventListener('click', () => spinRoulette('black'));
+document.getElementById('roulette-bet-green')?.addEventListener('click', () => spinRoulette('green'));
 
 document.getElementById('blackjack-start')?.addEventListener('click', async () => {
   const startBtn = document.getElementById('blackjack-start');
