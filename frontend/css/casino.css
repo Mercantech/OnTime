@@ -160,6 +160,167 @@
 .flip-message.win { color: var(--accent); }
 .flip-message.lose { color: #9090a0; }
 
+/* Roulette */
+.casino-roulette { margin-bottom: 0.5rem; }
+.casino-roulette .casino-title { font-size: 1.15rem; }
+.roulette-spins-left {
+  margin: 0.5rem 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-muted, #9090a0);
+}
+.roulette-bet-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+.roulette-bet {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.roulette-bet:hover:not(:disabled) { transform: scale(1.03); }
+.roulette-bet:disabled { opacity: 0.6; cursor: not-allowed; }
+.roulette-bet-red {
+  background: linear-gradient(145deg, #dc2626 0%, #b91c1c 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);
+}
+.roulette-bet-black {
+  background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.roulette-result {
+  margin: 1.25rem 0 0;
+  padding: 0.75rem 1.25rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+  border-radius: var(--radius);
+}
+.roulette-result-red { background: rgba(220, 38, 38, 0.2); color: #fca5a5; }
+.roulette-result-black { background: rgba(31, 41, 55, 0.6); color: #d1d5db; }
+
+/* Blackjack */
+.casino-blackjack { margin-bottom: 0.5rem; }
+.casino-blackjack .casino-title { font-size: 1.15rem; }
+.blackjack-hands-left {
+  margin: 0.5rem 0 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-muted, #9090a0);
+}
+.blackjack-table {
+  background: linear-gradient(180deg, #1a2e1a 0%, #0f1f0f 100%);
+  border: 3px solid #2d4a2d;
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin: 1rem 0;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
+}
+.blackjack-dealer,
+.blackjack-player {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.blackjack-dealer:last-child,
+.blackjack-player:last-child { margin-bottom: 0; }
+.blackjack-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #9090a0;
+}
+.blackjack-cards {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  min-height: 4rem;
+}
+.blackjack-card {
+  width: 3rem;
+  height: 4.2rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  background: #fff;
+  border: 2px solid #e5e5e5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.blackjack-card-red { color: #dc2626; }
+.blackjack-card-black { color: #1f2937; }
+.blackjack-card-rank { line-height: 1.1; }
+.blackjack-card-suit { font-size: 1.1rem; line-height: 1; }
+.blackjack-card-hidden {
+  background: linear-gradient(145deg, #334155 0%, #1e293b 100%);
+  border-color: #475569;
+}
+.blackjack-card-hidden .blackjack-card-rank,
+.blackjack-card-hidden .blackjack-card-suit { display: none; }
+.blackjack-card-back {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  background: repeating-linear-gradient(
+    -45deg,
+    #475569,
+    #475569 4px,
+    #334155 4px,
+    #334155 8px
+  );
+}
+.blackjack-value {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e8e8ed;
+}
+.blackjack-actions {
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+.blackjack-hit-stand {
+  display: flex;
+  gap: 1rem;
+}
+.blackjack-btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+}
+.blackjack-btn:hover:not(:disabled) { transform: scale(1.02); }
+.blackjack-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.blackjack-btn-start {
+  background: linear-gradient(145deg, #16a34a 0%, #15803d 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.4);
+}
+.blackjack-btn-hit {
+  background: linear-gradient(145deg, #2563eb 0%, #1d4ed8 100%);
+  color: #fff;
+}
+.blackjack-btn-stand {
+  background: linear-gradient(145deg, #ca8a04 0%, #a16207 100%);
+  color: #fff;
+}
+
 .casino-machine {
   background: linear-gradient(180deg, #2a2530 0%, #1e1a24 100%);
   border: 3px solid #3d3545;

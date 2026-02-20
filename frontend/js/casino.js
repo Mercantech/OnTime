@@ -52,19 +52,23 @@ function reelLand(reelEl) {
 
 async function loadStatus() {
   try {
-    const [slotRes, coinRes] = await Promise.all([
+    const [slotRes, coinRes, rouletteRes, blackjackRes] = await Promise.all([
       api('/api/casino/status'),
       api('/api/games/coinflip/status'),
+      api('/api/casino/roulette/status'),
+      api('/api/casino/blackjack/status'),
     ]);
     const slotData = await slotRes.json().catch(() => ({}));
     const coinData = await coinRes.json().catch(() => ({}));
+    const rouletteData = await rouletteRes.json().catch(() => ({}));
+    const blackjackData = await blackjackRes.json().catch(() => ({}));
 
     if (slotRes.status === 401 || coinRes.status === 401) {
       window.location.href = '/';
       return;
     }
 
-    const balance = slotData.balance ?? coinData.balance ?? '–';
+    const balance = slotData.balance ?? coinData.balance ?? rouletteData.balance ?? blackjackData.balance ?? '–';
     if (balanceEl) balanceEl.textContent = balance;
 
     if (leverBtn) leverBtn.disabled = !slotData.canSpin;
@@ -88,6 +92,27 @@ async function loadStatus() {
       flipsLeftEl.hidden = false;
     }
     if (flipMessageEl) flipMessageEl.hidden = true;
+
+    const rouletteCanSpin = rouletteData.canSpin ?? false;
+    const rouletteBetRed = document.getElementById('roulette-bet-red');
+    const rouletteBetBlack = document.getElementById('roulette-bet-black');
+    if (rouletteBetRed) rouletteBetRed.disabled = !rouletteCanSpin;
+    if (rouletteBetBlack) rouletteBetBlack.disabled = !rouletteCanSpin;
+    const rouletteSpinsLeftEl = document.getElementById('roulette-spins-left');
+    if (rouletteSpinsLeftEl) {
+      const rem = rouletteData.spinsRemainingToday ?? 0;
+      const max = rouletteData.maxSpinsPerDay ?? 3;
+      rouletteSpinsLeftEl.textContent = rem > 0 ? `${rem} spin tilbage i dag (max ${max})` : `Du har brugt alle ${max} spin i dag.`;
+    }
+
+    const bjHandsLeftEl = document.getElementById('blackjack-hands-left');
+    if (bjHandsLeftEl) {
+      const rem = blackjackData.handsRemainingToday ?? 0;
+      const max = blackjackData.maxHandsPerDay ?? 3;
+      bjHandsLeftEl.textContent = rem > 0 ? `${rem} hænder tilbage i dag (max ${max})` : `Du har brugt alle ${max} hænder i dag.`;
+    }
+    const bjStartBtn = document.getElementById('blackjack-start');
+    if (bjStartBtn) bjStartBtn.disabled = !blackjackData.canStart;
   } catch (e) {
     console.error('loadStatus:', e);
     if (balanceEl) balanceEl.textContent = '–';
@@ -227,30 +252,242 @@ flipBtn?.addEventListener('click', async () => {
 const menuEl = document.getElementById('casino-menu');
 const viewSlotEl = document.getElementById('casino-view-slot');
 const viewCoinflipEl = document.getElementById('casino-view-coinflip');
+const viewRouletteEl = document.getElementById('casino-view-roulette');
+const viewBlackjackEl = document.getElementById('casino-view-blackjack');
 
 function showMenu() {
   if (menuEl) menuEl.hidden = false;
   if (viewSlotEl) viewSlotEl.hidden = true;
   if (viewCoinflipEl) viewCoinflipEl.hidden = true;
+  if (viewRouletteEl) viewRouletteEl.hidden = true;
+  if (viewBlackjackEl) viewBlackjackEl.hidden = true;
 }
 
 function showSlot() {
   if (menuEl) menuEl.hidden = true;
   if (viewSlotEl) viewSlotEl.hidden = false;
   if (viewCoinflipEl) viewCoinflipEl.hidden = true;
+  if (viewRouletteEl) viewRouletteEl.hidden = true;
+  if (viewBlackjackEl) viewBlackjackEl.hidden = true;
 }
 
 function showCoinflip() {
   if (menuEl) menuEl.hidden = true;
   if (viewSlotEl) viewSlotEl.hidden = true;
   if (viewCoinflipEl) viewCoinflipEl.hidden = false;
+  if (viewRouletteEl) viewRouletteEl.hidden = true;
+  if (viewBlackjackEl) viewBlackjackEl.hidden = true;
   loadStatus();
+}
+
+function showRoulette() {
+  if (menuEl) menuEl.hidden = true;
+  if (viewSlotEl) viewSlotEl.hidden = true;
+  if (viewCoinflipEl) viewCoinflipEl.hidden = true;
+  if (viewRouletteEl) viewRouletteEl.hidden = false;
+  if (viewBlackjackEl) viewBlackjackEl.hidden = true;
+  loadStatus();
+  const resultEl = document.getElementById('roulette-result');
+  const msgEl = document.getElementById('roulette-message');
+  if (resultEl) resultEl.hidden = true;
+  if (msgEl) msgEl.hidden = true;
+}
+
+function showBlackjack() {
+  if (menuEl) menuEl.hidden = true;
+  if (viewSlotEl) viewSlotEl.hidden = true;
+  if (viewCoinflipEl) viewCoinflipEl.hidden = true;
+  if (viewRouletteEl) viewRouletteEl.hidden = true;
+  if (viewBlackjackEl) viewBlackjackEl.hidden = false;
+  loadStatus();
+  const msgEl = document.getElementById('blackjack-message');
+  if (msgEl) msgEl.hidden = true;
+  const hitStandEl = document.getElementById('blackjack-hit-stand');
+  if (hitStandEl) hitStandEl.hidden = true;
+  const startBtn = document.getElementById('blackjack-start');
+  if (startBtn) startBtn.hidden = false;
+  document.getElementById('blackjack-dealer-cards').innerHTML = '';
+  document.getElementById('blackjack-player-cards').innerHTML = '';
+  const dealerValEl = document.getElementById('blackjack-dealer-value');
+  const playerValEl = document.getElementById('blackjack-player-value');
+  if (dealerValEl) { dealerValEl.hidden = true; dealerValEl.textContent = ''; }
+  if (playerValEl) { playerValEl.hidden = true; playerValEl.textContent = ''; }
+}
+
+const SUIT_SYMBOLS = { H: '♥', D: '♦', C: '♣', S: '♠' };
+const SUIT_RED = { H: true, D: true, C: false, S: false };
+
+function renderBlackjackCard(cardStr, hidden) {
+  const span = document.createElement('span');
+  span.className = 'blackjack-card';
+  if (hidden) {
+    span.classList.add('blackjack-card-hidden');
+    span.setAttribute('aria-label', 'Skjult kort');
+    span.innerHTML = '<span class="blackjack-card-back"></span>';
+    return span;
+  }
+  const rank = cardStr.slice(0, -1);
+  const suit = cardStr.slice(-1);
+  const isRed = SUIT_RED[suit];
+  span.classList.add(isRed ? 'blackjack-card-red' : 'blackjack-card-black');
+  span.innerHTML = `<span class="blackjack-card-rank">${rank}</span><span class="blackjack-card-suit">${SUIT_SYMBOLS[suit]}</span>`;
+  span.setAttribute('aria-label', `${rank} ${SUIT_SYMBOLS[suit]}`);
+  return span;
+}
+
+function renderBlackjackHand(containerEl, hand, opts = {}) {
+  if (!containerEl) return;
+  containerEl.innerHTML = '';
+  const secondHidden = opts.secondCardHidden;
+  (hand || []).forEach((card, i) => {
+    const isHidden = card == null || (secondHidden && i === 1);
+    containerEl.appendChild(renderBlackjackCard(card || '??', isHidden));
+  });
+}
+
+function updateBlackjackUI(data) {
+  const dealerCardsEl = document.getElementById('blackjack-dealer-cards');
+  const playerCardsEl = document.getElementById('blackjack-player-cards');
+  const dealerValEl = document.getElementById('blackjack-dealer-value');
+  const playerValEl = document.getElementById('blackjack-player-value');
+  const hitStandEl = document.getElementById('blackjack-hit-stand');
+  const startBtn = document.getElementById('blackjack-start');
+  const msgEl = document.getElementById('blackjack-message');
+
+  if (data.dealerHand) {
+    renderBlackjackHand(dealerCardsEl, data.dealerHand);
+    if (dealerValEl) {
+      dealerValEl.hidden = false;
+      dealerValEl.textContent = 'Dealer: ' + (data.dealerValue ?? '');
+    }
+  } else if (data.dealerVisible) {
+    const hand = [...data.dealerVisible];
+    if (data.dealerHidden) hand.push(null);
+    renderBlackjackHand(dealerCardsEl, hand, { secondCardHidden: true });
+    if (dealerValEl) dealerValEl.hidden = true;
+  }
+
+  if (data.playerHand) {
+    renderBlackjackHand(playerCardsEl, data.playerHand);
+    if (playerValEl) {
+      playerValEl.hidden = false;
+      playerValEl.textContent = 'Dig: ' + (data.playerValue ?? '');
+    }
+  }
+
+  const hasResult = data.result !== undefined;
+  if (hasResult) {
+    if (startBtn) { startBtn.hidden = false; startBtn.disabled = false; }
+    if (hitStandEl) hitStandEl.hidden = true;
+    if (msgEl) {
+      msgEl.hidden = false;
+      msgEl.className = 'flip-message ' + (data.result === 'win' || data.result === 'blackjack' ? 'win' : data.result === 'push' ? '' : 'lose');
+      msgEl.textContent = data.message || '';
+    }
+    loadStatus();
+    return;
+  }
+
+  if (data.canHit !== undefined) {
+    if (startBtn) startBtn.hidden = true;
+    if (hitStandEl) hitStandEl.hidden = false;
+    if (msgEl) msgEl.hidden = true;
+  }
+}
+
+async function spinRoulette(bet) {
+  const btnRed = document.getElementById('roulette-bet-red');
+  const btnBlack = document.getElementById('roulette-bet-black');
+  const resultEl = document.getElementById('roulette-result');
+  const msgEl = document.getElementById('roulette-message');
+  if (btnRed) btnRed.disabled = true;
+  if (btnBlack) btnBlack.disabled = true;
+  if (msgEl) { msgEl.hidden = false; msgEl.textContent = 'Spinner…'; msgEl.className = 'flip-message'; }
+  if (resultEl) resultEl.hidden = true;
+
+  const res = await api('/api/casino/roulette/spin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bet }),
+  });
+  const data = await res.json().catch(() => ({}));
+
+  if (resultEl) {
+    resultEl.hidden = false;
+    resultEl.className = 'roulette-result roulette-result-' + (data.result || '');
+    resultEl.textContent = data.result === 'red' ? '🔴 Rød' : '⚫ Sort';
+  }
+  if (msgEl) {
+    msgEl.hidden = false;
+    if (!res.ok) {
+      msgEl.className = 'flip-message lose';
+      msgEl.textContent = data.error || 'Noget gik galt.';
+    } else {
+      msgEl.className = 'flip-message ' + (data.win ? 'win' : 'lose');
+      msgEl.textContent = data.win ? 'Du vandt ' + (data.payout || 2) + ' point!' : 'Desværre – du tabte.';
+    }
+  }
+  await loadStatus();
 }
 
 document.getElementById('casino-go-coinflip')?.addEventListener('click', showCoinflip);
 document.getElementById('casino-go-slot')?.addEventListener('click', showSlot);
+document.getElementById('casino-go-roulette')?.addEventListener('click', showRoulette);
+document.getElementById('casino-go-blackjack')?.addEventListener('click', showBlackjack);
 document.getElementById('casino-back-from-slot')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
 document.getElementById('casino-back-from-coinflip')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
+document.getElementById('casino-back-from-roulette')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
+document.getElementById('casino-back-from-blackjack')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
+document.getElementById('roulette-bet-red')?.addEventListener('click', () => spinRoulette('red'));
+document.getElementById('roulette-bet-black')?.addEventListener('click', () => spinRoulette('black'));
+
+document.getElementById('blackjack-start')?.addEventListener('click', async () => {
+  const startBtn = document.getElementById('blackjack-start');
+  const msgEl = document.getElementById('blackjack-message');
+  if (startBtn?.disabled) return;
+  startBtn.disabled = true;
+  if (msgEl) { msgEl.hidden = true; msgEl.textContent = ''; }
+  const res = await api('/api/casino/blackjack/start', { method: 'POST' });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (msgEl) { msgEl.hidden = false; msgEl.className = 'flip-message lose'; msgEl.textContent = data.error || 'Noget gik galt.'; }
+    loadStatus();
+    startBtn.disabled = false;
+    return;
+  }
+  updateBlackjackUI(data);
+  loadStatus();
+});
+
+document.getElementById('blackjack-hit')?.addEventListener('click', async () => {
+  const res = await api('/api/casino/blackjack/hit', { method: 'POST' });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msgEl = document.getElementById('blackjack-message');
+    if (msgEl) { msgEl.hidden = false; msgEl.className = 'flip-message lose'; msgEl.textContent = data.error || 'Noget gik galt.'; }
+    loadStatus();
+    return;
+  }
+  updateBlackjackUI(data);
+});
+
+document.getElementById('blackjack-stand')?.addEventListener('click', async () => {
+  const hitBtn = document.getElementById('blackjack-hit');
+  const standBtn = document.getElementById('blackjack-stand');
+  if (hitBtn) hitBtn.disabled = true;
+  if (standBtn) standBtn.disabled = true;
+  const res = await api('/api/casino/blackjack/stand', { method: 'POST' });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const msgEl = document.getElementById('blackjack-message');
+    if (msgEl) { msgEl.hidden = false; msgEl.className = 'flip-message lose'; msgEl.textContent = data.error || 'Noget gik galt.'; }
+    loadStatus();
+    if (hitBtn) hitBtn.disabled = false;
+    if (standBtn) standBtn.disabled = false;
+    return;
+  }
+  updateBlackjackUI(data);
+});
 
 setReels('?', '?', '?');
 loadStatus();

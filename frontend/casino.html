@@ -25,6 +25,16 @@
           <span class="casino-menu-name">Enarmet bandit</span>
           <span class="casino-menu-desc">1 pt/dag – slot med symboler</span>
         </button>
+        <button type="button" id="casino-go-roulette" class="casino-menu-card">
+          <span class="casino-menu-icon">🎡</span>
+          <span class="casino-menu-name">Roulette</span>
+          <span class="casino-menu-desc">1 pt per spin – rød eller sort, 3 spin/dag</span>
+        </button>
+        <button type="button" id="casino-go-blackjack" class="casino-menu-card">
+          <span class="casino-menu-icon">🃏</span>
+          <span class="casino-menu-name">Blackjack</span>
+          <span class="casino-menu-desc">1 pt per hånd – mod robotdealer, 3 hænder/dag</span>
+        </button>
       </div>
     </div>
 
@@ -42,6 +52,52 @@
         <button type="button" id="slot-lever" class="slot-lever" disabled>Træk</button>
         <p id="slot-message" class="slot-message" hidden></p>
         <p id="slot-badge" class="slot-badge" hidden></p>
+      </div>
+    </div>
+
+    <!-- View: Roulette -->
+    <div id="casino-view-roulette" class="casino-view" hidden>
+      <a href="#" id="casino-back-from-roulette" class="casino-back-link">← Casino</a>
+      <div class="casino-roulette">
+        <h2 class="casino-title">🎡 Roulette</h2>
+        <p class="casino-cost">1 point per spin – vælg rød eller sort. 3 spin per dag. Gevinst: 2 point.</p>
+        <p class="roulette-spins-left" id="roulette-spins-left"></p>
+        <div class="roulette-bet-buttons">
+          <button type="button" id="roulette-bet-red" class="roulette-bet roulette-bet-red" disabled>Rød</button>
+          <button type="button" id="roulette-bet-black" class="roulette-bet roulette-bet-black" disabled>Sort</button>
+        </div>
+        <div id="roulette-result" class="roulette-result" hidden></div>
+        <p id="roulette-message" class="flip-message" hidden></p>
+      </div>
+    </div>
+
+    <!-- View: Blackjack -->
+    <div id="casino-view-blackjack" class="casino-view" hidden>
+      <a href="#" id="casino-back-from-blackjack" class="casino-back-link">← Casino</a>
+      <div class="casino-blackjack">
+        <h2 class="casino-title">🃏 Blackjack</h2>
+        <p class="casino-cost">1 point per hånd – mod robotdealer. Dealer stand ved 17. 3 hænder per dag. Gevinst: 2 point.</p>
+        <p class="blackjack-hands-left" id="blackjack-hands-left"></p>
+        <div class="blackjack-table">
+          <div class="blackjack-dealer">
+            <p class="blackjack-label">Dealer</p>
+            <div id="blackjack-dealer-cards" class="blackjack-cards"></div>
+            <p id="blackjack-dealer-value" class="blackjack-value" hidden></p>
+          </div>
+          <div class="blackjack-player">
+            <p class="blackjack-label">Dig</p>
+            <div id="blackjack-player-cards" class="blackjack-cards"></div>
+            <p id="blackjack-player-value" class="blackjack-value" hidden></p>
+          </div>
+        </div>
+        <div class="blackjack-actions">
+          <button type="button" id="blackjack-start" class="blackjack-btn blackjack-btn-start">Start hånd (1 pt)</button>
+          <div id="blackjack-hit-stand" class="blackjack-hit-stand" hidden>
+            <button type="button" id="blackjack-hit" class="blackjack-btn blackjack-btn-hit">Hit</button>
+            <button type="button" id="blackjack-stand" class="blackjack-btn blackjack-btn-stand">Stand</button>
+          </div>
+        </div>
+        <p id="blackjack-message" class="flip-message" hidden></p>
       </div>
     </div>
 

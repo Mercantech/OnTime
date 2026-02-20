@@ -480,6 +480,12 @@ main.app-main.dashboard {
 .badge-item.earned.badge--hakke_stifter { border-color: #d97706; background: rgba(217, 119, 6, 0.12); }
 .badge-item.earned.badge--wordle_win { border-color: #22c55e; background: rgba(34, 197, 94, 0.12); }
 .badge-item.earned.badge--flag_win { border-color: #0ea5e9; background: rgba(14, 165, 233, 0.12); }
+.badge-item.earned.badge--one_armed_bandit {
+  border-color: #eab308;
+  background: rgba(234, 179, 8, 0.18);
+  box-shadow: 0 0 16px rgba(234, 179, 8, 0.4);
+}
+.badge-item.earned.badge--one_armed_bandit .badge-icon { filter: none; }
 
 /* Spil – forhåndsvisning på dashboard */
 .games-preview .card-hint { margin-bottom: 1rem; }
