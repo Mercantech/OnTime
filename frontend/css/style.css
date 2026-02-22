@@ -1069,6 +1069,10 @@ main.app-main.dashboard {
   opacity: 0.9;
 }
 .lb-game-link:hover { opacity: 1; text-decoration: none; }
+.lb-game-icon {
+  opacity: 0.9;
+  cursor: default;
+}
 .leaderboard-profile-link,
 .podium-profile-link {
   color: inherit;

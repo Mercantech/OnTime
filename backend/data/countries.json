@@ -3,1020 +3,1190 @@
     "code": "af",
     "name": "Afghanistan",
     "name_da": "Afghanistan",
-    "capital": "Kabul"
+    "capital": "Kabul",
+    "capital_da": "Kabul"
   },
   {
     "code": "al",
     "name": "Albania",
     "name_da": "Albanien",
-    "capital": "Tirana"
+    "capital": "Tirana",
+    "capital_da": "Tirana"
   },
   {
     "code": "dz",
     "name": "Algeria",
     "name_da": "Algeriet",
-    "capital": "Algiers"
+    "capital": "Algiers",
+    "capital_da": "Alger"
   },
   {
     "code": "ao",
     "name": "Angola",
     "name_da": "Angola",
-    "capital": "Luanda"
+    "capital": "Luanda",
+    "capital_da": "Luanda"
   },
   {
     "code": "ar",
     "name": "Argentina",
     "name_da": "Argentina",
-    "capital": "Buenos Aires"
+    "capital": "Buenos Aires",
+    "capital_da": "Buenos Aires"
   },
   {
     "code": "am",
     "name": "Armenia",
     "name_da": "Armenien",
-    "capital": "Yerevan"
+    "capital": "Yerevan",
+    "capital_da": "Yerevan"
   },
   {
     "code": "au",
     "name": "Australia",
     "name_da": "Australien",
-    "capital": "Canberra"
+    "capital": "Canberra",
+    "capital_da": "Canberra"
   },
   {
     "code": "at",
     "name": "Austria",
     "name_da": "Østrig",
-    "capital": "Vienna"
+    "capital": "Vienna",
+    "capital_da": "Wien"
   },
   {
     "code": "az",
     "name": "Azerbaijan",
     "name_da": "Aserbajdsjan",
-    "capital": "Baku"
+    "capital": "Baku",
+    "capital_da": "Baku"
   },
   {
     "code": "bh",
     "name": "Bahrain",
     "name_da": "Bahrain",
-    "capital": "Manama"
+    "capital": "Manama",
+    "capital_da": "Manama"
   },
   {
     "code": "bd",
     "name": "Bangladesh",
     "name_da": "Bangladesh",
-    "capital": "Dhaka"
+    "capital": "Dhaka",
+    "capital_da": "Dhaka"
   },
   {
     "code": "by",
     "name": "Belarus",
     "name_da": "Hviderusland",
-    "capital": "Minsk"
+    "capital": "Minsk",
+    "capital_da": "Minsk"
   },
   {
     "code": "be",
     "name": "Belgium",
     "name_da": "Belgien",
-    "capital": "Brussels"
+    "capital": "Brussels",
+    "capital_da": "Brussel"
   },
   {
     "code": "bj",
     "name": "Benin",
     "name_da": "Benin",
-    "capital": "Porto-Novo"
+    "capital": "Porto-Novo",
+    "capital_da": "Porto-Novo"
   },
   {
     "code": "bt",
     "name": "Bhutan",
     "name_da": "Bhutan",
-    "capital": "Thimphu"
+    "capital": "Thimphu",
+    "capital_da": "Thimphu"
   },
   {
     "code": "bo",
     "name": "Bolivia",
     "name_da": "Bolivia",
-    "capital": "Sucre"
+    "capital": "Sucre",
+    "capital_da": "Sucre"
   },
   {
     "code": "ba",
     "name": "Bosnia and Herzegovina",
     "name_da": "Bosnien-Hercegovina",
-    "capital": "Sarajevo"
+    "capital": "Sarajevo",
+    "capital_da": "Sarajevo"
   },
   {
     "code": "bw",
     "name": "Botswana",
     "name_da": "Botswana",
-    "capital": "Gaborone"
+    "capital": "Gaborone",
+    "capital_da": "Gaborone"
   },
   {
     "code": "br",
     "name": "Brazil",
     "name_da": "Brasilien",
-    "capital": "Brasília"
+    "capital": "Brasília",
+    "capital_da": "Brasília"
   },
   {
     "code": "bn",
     "name": "Brunei",
     "name_da": "Brunei",
-    "capital": "Bandar Seri Begawan"
+    "capital": "Bandar Seri Begawan",
+    "capital_da": "Bandar Seri Begawan"
   },
   {
     "code": "bg",
     "name": "Bulgaria",
     "name_da": "Bulgarien",
-    "capital": "Sofia"
+    "capital": "Sofia",
+    "capital_da": "Sofia"
   },
   {
     "code": "bf",
     "name": "Burkina Faso",
     "name_da": "Burkina Faso",
-    "capital": "Ouagadougou"
+    "capital": "Ouagadougou",
+    "capital_da": "Ouagadougou"
   },
   {
     "code": "bi",
     "name": "Burundi",
     "name_da": "Burundi",
-    "capital": "Gitega"
+    "capital": "Gitega",
+    "capital_da": "Gitega"
   },
   {
     "code": "kh",
     "name": "Cambodia",
     "name_da": "Cambodja",
-    "capital": "Phnom Penh"
+    "capital": "Phnom Penh",
+    "capital_da": "Phnom Penh"
   },
   {
     "code": "cm",
     "name": "Cameroon",
     "name_da": "Cameroun",
-    "capital": "Yaoundé"
+    "capital": "Yaoundé",
+    "capital_da": "Yaoundé"
   },
   {
     "code": "ca",
     "name": "Canada",
     "name_da": "Canada",
-    "capital": "Ottawa"
+    "capital": "Ottawa",
+    "capital_da": "Ottawa"
   },
   {
     "code": "cf",
     "name": "Central African Republic",
     "name_da": "Centralafrikanske Republik",
-    "capital": "Bangui"
+    "capital": "Bangui",
+    "capital_da": "Bangui"
   },
   {
     "code": "td",
     "name": "Chad",
     "name_da": "Tchad",
-    "capital": "N'Djamena"
+    "capital": "N'Djamena",
+    "capital_da": "N'Djamena"
   },
   {
     "code": "cl",
     "name": "Chile",
     "name_da": "Chile",
-    "capital": "Santiago"
+    "capital": "Santiago",
+    "capital_da": "Santiago"
   },
   {
     "code": "cn",
     "name": "China",
     "name_da": "Kina",
-    "capital": "Beijing"
+    "capital": "Beijing",
+    "capital_da": "Peking"
   },
   {
     "code": "co",
     "name": "Colombia",
     "name_da": "Colombia",
-    "capital": "Bogotá"
+    "capital": "Bogotá",
+    "capital_da": "Bogotá"
   },
   {
     "code": "cg",
     "name": "Republic of the Congo",
     "name_da": "Republikken Congo",
-    "capital": "Brazzaville"
+    "capital": "Brazzaville",
+    "capital_da": "Brazzaville"
   },
   {
     "code": "cd",
     "name": "DR Congo",
     "name_da": "Demokratiske Republik Congo",
-    "capital": "Kinshasa"
+    "capital": "Kinshasa",
+    "capital_da": "Kinshasa"
   },
   {
     "code": "cr",
     "name": "Costa Rica",
     "name_da": "Costa Rica",
-    "capital": "San José"
+    "capital": "San José",
+    "capital_da": "San José"
   },
   {
     "code": "hr",
     "name": "Croatia",
     "name_da": "Kroatien",
-    "capital": "Zagreb"
+    "capital": "Zagreb",
+    "capital_da": "Zagreb"
   },
   {
     "code": "cu",
     "name": "Cuba",
     "name_da": "Cuba",
-    "capital": "Havana"
+    "capital": "Havana",
+    "capital_da": "Havanna"
   },
   {
     "code": "cy",
     "name": "Cyprus",
     "name_da": "Cypern",
-    "capital": "Nicosia"
+    "capital": "Nicosia",
+    "capital_da": "Nicosia"
   },
   {
     "code": "cz",
     "name": "Czechia",
     "name_da": "Tjekkiet",
-    "capital": "Prague"
+    "capital": "Prague",
+    "capital_da": "Prag"
   },
   {
     "code": "dk",
     "name": "Denmark",
     "name_da": "Danmark",
-    "capital": "Copenhagen"
+    "capital": "Copenhagen",
+    "capital_da": "København"
   },
   {
     "code": "dj",
     "name": "Djibouti",
     "name_da": "Djibouti",
-    "capital": "Djibouti"
+    "capital": "Djibouti",
+    "capital_da": "Djibouti"
   },
   {
     "code": "do",
     "name": "Dominican Republic",
     "name_da": "Den Dominikanske Republik",
-    "capital": "Santo Domingo"
+    "capital": "Santo Domingo",
+    "capital_da": "Santo Domingo"
   },
   {
     "code": "ec",
     "name": "Ecuador",
     "name_da": "Ecuador",
-    "capital": "Quito"
+    "capital": "Quito",
+    "capital_da": "Quito"
   },
   {
     "code": "eg",
     "name": "Egypt",
     "name_da": "Egypten",
-    "capital": "Cairo"
+    "capital": "Cairo",
+    "capital_da": "Kairo"
   },
   {
     "code": "sv",
     "name": "El Salvador",
     "name_da": "El Salvador",
-    "capital": "San Salvador"
+    "capital": "San Salvador",
+    "capital_da": "San Salvador"
   },
   {
     "code": "gq",
     "name": "Equatorial Guinea",
     "name_da": "Ækvatorialguinea",
-    "capital": "Malabo"
+    "capital": "Malabo",
+    "capital_da": "Malabo"
   },
   {
     "code": "er",
     "name": "Eritrea",
     "name_da": "Eritrea",
-    "capital": "Asmara"
+    "capital": "Asmara",
+    "capital_da": "Asmara"
   },
   {
     "code": "ee",
     "name": "Estonia",
     "name_da": "Estland",
-    "capital": "Tallinn"
+    "capital": "Tallinn",
+    "capital_da": "Tallinn"
   },
   {
     "code": "sz",
     "name": "Eswatini",
     "name_da": "Eswatini",
-    "capital": "Mbabane"
+    "capital": "Mbabane",
+    "capital_da": "Mbabane"
   },
   {
     "code": "et",
     "name": "Ethiopia",
     "name_da": "Etiopien",
-    "capital": "Addis Ababa"
+    "capital": "Addis Ababa",
+    "capital_da": "Addis Ababa"
   },
   {
     "code": "fi",
     "name": "Finland",
     "name_da": "Finland",
-    "capital": "Helsinki"
+    "capital": "Helsinki",
+    "capital_da": "Helsingfors"
   },
   {
     "code": "fr",
     "name": "France",
     "name_da": "Frankrig",
-    "capital": "Paris"
+    "capital": "Paris",
+    "capital_da": "Paris"
   },
   {
     "code": "ga",
     "name": "Gabon",
     "name_da": "Gabon",
-    "capital": "Libreville"
+    "capital": "Libreville",
+    "capital_da": "Libreville"
   },
   {
     "code": "gm",
     "name": "Gambia",
     "name_da": "Gambia",
-    "capital": "Banjul"
+    "capital": "Banjul",
+    "capital_da": "Banjul"
   },
   {
     "code": "ge",
     "name": "Georgia",
     "name_da": "Georgien",
-    "capital": "Tbilisi"
+    "capital": "Tbilisi",
+    "capital_da": "Tbilisi"
   },
   {
     "code": "de",
     "name": "Germany",
     "name_da": "Tyskland",
-    "capital": "Berlin"
+    "capital": "Berlin",
+    "capital_da": "Berlin"
   },
   {
     "code": "gh",
     "name": "Ghana",
     "name_da": "Ghana",
-    "capital": "Accra"
+    "capital": "Accra",
+    "capital_da": "Accra"
   },
   {
     "code": "gr",
     "name": "Greece",
     "name_da": "Grækenland",
-    "capital": "Athens"
+    "capital": "Athens",
+    "capital_da": "Athen"
   },
   {
     "code": "gt",
     "name": "Guatemala",
     "name_da": "Guatemala",
-    "capital": "Guatemala City"
+    "capital": "Guatemala City",
+    "capital_da": "Guatemala"
   },
   {
     "code": "gn",
     "name": "Guinea",
     "name_da": "Guinea",
-    "capital": "Conakry"
+    "capital": "Conakry",
+    "capital_da": "Conakry"
   },
   {
     "code": "gw",
     "name": "Guinea-Bissau",
     "name_da": "Guinea-Bissau",
-    "capital": "Bissau"
+    "capital": "Bissau",
+    "capital_da": "Bissau"
   },
   {
     "code": "ht",
     "name": "Haiti",
     "name_da": "Haiti",
-    "capital": "Port-au-Prince"
+    "capital": "Port-au-Prince",
+    "capital_da": "Port-au-Prince"
   },
   {
     "code": "hn",
     "name": "Honduras",
     "name_da": "Honduras",
-    "capital": "Tegucigalpa"
+    "capital": "Tegucigalpa",
+    "capital_da": "Tegucigalpa"
   },
   {
     "code": "hk",
     "name": "Hong Kong",
     "name_da": "Hongkong",
-    "capital": "City of Victoria"
+    "capital": "City of Victoria",
+    "capital_da": "Victoria"
   },
   {
     "code": "hu",
     "name": "Hungary",
     "name_da": "Ungarn",
-    "capital": "Budapest"
+    "capital": "Budapest",
+    "capital_da": "Budapest"
   },
   {
     "code": "is",
     "name": "Iceland",
     "name_da": "Island",
-    "capital": "Reykjavik"
+    "capital": "Reykjavik",
+    "capital_da": "Reykjavik"
   },
   {
     "code": "in",
     "name": "India",
     "name_da": "Indien",
-    "capital": "New Delhi"
+    "capital": "New Delhi",
+    "capital_da": "New Delhi"
   },
   {
     "code": "id",
     "name": "Indonesia",
     "name_da": "Indonesien",
-    "capital": "Jakarta"
+    "capital": "Jakarta",
+    "capital_da": "Jakarta"
   },
   {
     "code": "ir",
     "name": "Iran",
     "name_da": "Iran",
-    "capital": "Tehran"
+    "capital": "Tehran",
+    "capital_da": "Tehran"
   },
   {
     "code": "iq",
     "name": "Iraq",
     "name_da": "Irak",
-    "capital": "Baghdad"
+    "capital": "Baghdad",
+    "capital_da": "Baghdad"
   },
   {
     "code": "ie",
     "name": "Ireland",
     "name_da": "Irland",
-    "capital": "Dublin"
+    "capital": "Dublin",
+    "capital_da": "Dublin"
   },
   {
     "code": "il",
     "name": "Israel",
     "name_da": "Israel",
-    "capital": "Jerusalem"
+    "capital": "Jerusalem",
+    "capital_da": "Jerusalem"
   },
   {
     "code": "ci",
     "name": "Ivory Coast",
     "name_da": "Elfenbenskysten",
-    "capital": "Yamoussoukro"
+    "capital": "Yamoussoukro",
+    "capital_da": "Yamoussoukro"
   },
   {
     "code": "it",
     "name": "Italy",
     "name_da": "Italien",
-    "capital": "Rome"
+    "capital": "Rome",
+    "capital_da": "Rom"
   },
   {
     "code": "jm",
     "name": "Jamaica",
     "name_da": "Jamaica",
-    "capital": "Kingston"
+    "capital": "Kingston",
+    "capital_da": "Kingston"
   },
   {
     "code": "jp",
     "name": "Japan",
     "name_da": "Japan",
-    "capital": "Tokyo"
+    "capital": "Tokyo",
+    "capital_da": "Tokyo"
   },
   {
     "code": "jo",
     "name": "Jordan",
     "name_da": "Jordan",
-    "capital": "Amman"
+    "capital": "Amman",
+    "capital_da": "Amman"
   },
   {
     "code": "kz",
     "name": "Kazakhstan",
     "name_da": "Kasakhstan",
-    "capital": "Astana"
+    "capital": "Astana",
+    "capital_da": "Astana"
   },
   {
     "code": "ke",
     "name": "Kenya",
     "name_da": "Kenya",
-    "capital": "Nairobi"
+    "capital": "Nairobi",
+    "capital_da": "Nairobi"
   },
   {
     "code": "xk",
     "name": "Kosovo",
     "name_da": "Kosovo",
-    "capital": "Pristina"
+    "capital": "Pristina",
+    "capital_da": "Pristina"
   },
   {
     "code": "kw",
     "name": "Kuwait",
     "name_da": "Kuwait",
-    "capital": "Kuwait City"
+    "capital": "Kuwait City",
+    "capital_da": "Kuwait City"
   },
   {
     "code": "kg",
     "name": "Kyrgyzstan",
     "name_da": "Kirgisistan",
-    "capital": "Bishkek"
+    "capital": "Bishkek",
+    "capital_da": "Bishkek"
   },
   {
     "code": "la",
     "name": "Laos",
     "name_da": "Laos",
-    "capital": "Vientiane"
+    "capital": "Vientiane",
+    "capital_da": "Vientiane"
   },
   {
     "code": "lv",
     "name": "Latvia",
     "name_da": "Letland",
-    "capital": "Riga"
+    "capital": "Riga",
+    "capital_da": "Riga"
   },
   {
     "code": "lb",
     "name": "Lebanon",
     "name_da": "Libanon",
-    "capital": "Beirut"
+    "capital": "Beirut",
+    "capital_da": "Beirut"
   },
   {
     "code": "ls",
     "name": "Lesotho",
     "name_da": "Lesotho",
-    "capital": "Maseru"
+    "capital": "Maseru",
+    "capital_da": "Maseru"
   },
   {
     "code": "lr",
     "name": "Liberia",
     "name_da": "Liberia",
-    "capital": "Monrovia"
+    "capital": "Monrovia",
+    "capital_da": "Monrovia"
   },
   {
     "code": "ly",
     "name": "Libya",
     "name_da": "Libyen",
-    "capital": "Tripoli"
+    "capital": "Tripoli",
+    "capital_da": "Tripoli"
   },
   {
     "code": "li",
     "name": "Liechtenstein",
     "name_da": "Liechtenstein",
-    "capital": "Vaduz"
+    "capital": "Vaduz",
+    "capital_da": "Vaduz"
   },
   {
     "code": "lt",
     "name": "Lithuania",
     "name_da": "Litauen",
-    "capital": "Vilnius"
+    "capital": "Vilnius",
+    "capital_da": "Vilnius"
   },
   {
     "code": "lu",
     "name": "Luxembourg",
     "name_da": "Luxembourg",
-    "capital": "Luxembourg"
+    "capital": "Luxembourg",
+    "capital_da": "Luxembourg"
   },
   {
     "code": "mg",
     "name": "Madagascar",
     "name_da": "Madagaskar",
-    "capital": "Antananarivo"
+    "capital": "Antananarivo",
+    "capital_da": "Antananarivo"
   },
   {
     "code": "mw",
     "name": "Malawi",
     "name_da": "Malawi",
-    "capital": "Lilongwe"
+    "capital": "Lilongwe",
+    "capital_da": "Lilongwe"
   },
   {
     "code": "my",
     "name": "Malaysia",
     "name_da": "Malaysia",
-    "capital": "Kuala Lumpur"
+    "capital": "Kuala Lumpur",
+    "capital_da": "Kuala Lumpur"
   },
   {
     "code": "mv",
     "name": "Maldives",
     "name_da": "Maldiverne",
-    "capital": "Malé"
+    "capital": "Malé",
+    "capital_da": "Malé"
   },
   {
     "code": "ml",
     "name": "Mali",
     "name_da": "Mali",
-    "capital": "Bamako"
+    "capital": "Bamako",
+    "capital_da": "Bamako"
   },
   {
     "code": "mt",
     "name": "Malta",
     "name_da": "Malta",
-    "capital": "Valletta"
+    "capital": "Valletta",
+    "capital_da": "Valletta"
   },
   {
     "code": "mr",
     "name": "Mauritania",
     "name_da": "Mauretanien",
-    "capital": "Nouakchott"
+    "capital": "Nouakchott",
+    "capital_da": "Nouakchott"
   },
   {
     "code": "mu",
     "name": "Mauritius",
     "name_da": "Mauritius",
-    "capital": "Port Louis"
+    "capital": "Port Louis",
+    "capital_da": "Port Louis"
   },
   {
     "code": "mx",
     "name": "Mexico",
     "name_da": "Mexico",
-    "capital": "Mexico City"
+    "capital": "Mexico City",
+    "capital_da": "Mexico City"
   },
   {
     "code": "md",
     "name": "Moldova",
     "name_da": "Moldova",
-    "capital": "Chișinău"
+    "capital": "Chișinău",
+    "capital_da": "Chișinău"
   },
   {
     "code": "mc",
     "name": "Monaco",
     "name_da": "Monaco",
-    "capital": "Monaco"
+    "capital": "Monaco",
+    "capital_da": "Monaco"
   },
   {
     "code": "mn",
     "name": "Mongolia",
     "name_da": "Mongoliet",
-    "capital": "Ulan Bator"
+    "capital": "Ulan Bator",
+    "capital_da": "Ulan Bator"
   },
   {
     "code": "me",
     "name": "Montenegro",
     "name_da": "Montenegro",
-    "capital": "Podgorica"
+    "capital": "Podgorica",
+    "capital_da": "Podgorica"
   },
   {
     "code": "ma",
     "name": "Morocco",
     "name_da": "Marokko",
-    "capital": "Rabat"
+    "capital": "Rabat",
+    "capital_da": "Rabat"
   },
   {
     "code": "mz",
     "name": "Mozambique",
     "name_da": "Mozambique",
-    "capital": "Maputo"
+    "capital": "Maputo",
+    "capital_da": "Maputo"
   },
   {
     "code": "mm",
     "name": "Myanmar",
     "name_da": "Myanmar",
-    "capital": "Naypyidaw"
+    "capital": "Naypyidaw",
+    "capital_da": "Naypyidaw"
   },
   {
     "code": "na",
     "name": "Namibia",
     "name_da": "Namibia",
-    "capital": "Windhoek"
+    "capital": "Windhoek",
+    "capital_da": "Windhoek"
   },
   {
     "code": "np",
     "name": "Nepal",
     "name_da": "Nepal",
-    "capital": "Kathmandu"
+    "capital": "Kathmandu",
+    "capital_da": "Kathmandu"
   },
   {
     "code": "nl",
     "name": "Netherlands",
     "name_da": "Holland",
-    "capital": "Amsterdam"
+    "capital": "Amsterdam",
+    "capital_da": "Amsterdam"
   },
   {
     "code": "nz",
     "name": "New Zealand",
     "name_da": "New Zealand",
-    "capital": "Wellington"
+    "capital": "Wellington",
+    "capital_da": "Wellington"
   },
   {
     "code": "ni",
     "name": "Nicaragua",
     "name_da": "Nicaragua",
-    "capital": "Managua"
+    "capital": "Managua",
+    "capital_da": "Managua"
   },
   {
     "code": "ne",
     "name": "Niger",
     "name_da": "Niger",
-    "capital": "Niamey"
+    "capital": "Niamey",
+    "capital_da": "Niamey"
   },
   {
     "code": "ng",
     "name": "Nigeria",
     "name_da": "Nigeria",
-    "capital": "Abuja"
+    "capital": "Abuja",
+    "capital_da": "Abuja"
   },
   {
     "code": "kp",
     "name": "North Korea",
     "name_da": "Nordkorea",
-    "capital": "Pyongyang"
+    "capital": "Pyongyang",
+    "capital_da": "Pyongyang"
   },
   {
     "code": "mk",
     "name": "North Macedonia",
     "name_da": "Nordmakedonien",
-    "capital": "Skopje"
+    "capital": "Skopje",
+    "capital_da": "Skopje"
   },
   {
     "code": "no",
     "name": "Norway",
     "name_da": "Norge",
-    "capital": "Oslo"
+    "capital": "Oslo",
+    "capital_da": "Oslo"
   },
   {
     "code": "om",
     "name": "Oman",
     "name_da": "Oman",
-    "capital": "Muscat"
+    "capital": "Muscat",
+    "capital_da": "Muscat"
   },
   {
     "code": "pk",
     "name": "Pakistan",
     "name_da": "Pakistan",
-    "capital": "Islamabad"
+    "capital": "Islamabad",
+    "capital_da": "Islamabad"
   },
   {
     "code": "ps",
     "name": "Palestine",
     "name_da": "Palæstina",
-    "capital": "Ramallah"
+    "capital": "Ramallah",
+    "capital_da": "Ramallah"
   },
   {
     "code": "pa",
     "name": "Panama",
     "name_da": "Panama",
-    "capital": "Panama City"
+    "capital": "Panama City",
+    "capital_da": "Panama by"
   },
   {
     "code": "pg",
     "name": "Papua New Guinea",
     "name_da": "Papua Ny Guinea",
-    "capital": "Port Moresby"
+    "capital": "Port Moresby",
+    "capital_da": "Port Moresby"
   },
   {
     "code": "py",
     "name": "Paraguay",
     "name_da": "Paraguay",
-    "capital": "Asunción"
+    "capital": "Asunción",
+    "capital_da": "Asunción"
   },
   {
     "code": "pe",
     "name": "Peru",
     "name_da": "Peru",
-    "capital": "Lima"
+    "capital": "Lima",
+    "capital_da": "Lima"
   },
   {
     "code": "ph",
     "name": "Philippines",
     "name_da": "Filippinerne",
-    "capital": "Manila"
+    "capital": "Manila",
+    "capital_da": "Manila"
   },
   {
     "code": "pl",
     "name": "Poland",
     "name_da": "Polen",
-    "capital": "Warsaw"
+    "capital": "Warsaw",
+    "capital_da": "Warszawa"
   },
   {
     "code": "pt",
     "name": "Portugal",
     "name_da": "Portugal",
-    "capital": "Lisbon"
+    "capital": "Lisbon",
+    "capital_da": "Lissabon"
   },
   {
     "code": "pr",
     "name": "Puerto Rico",
     "name_da": "Puerto Rico",
-    "capital": "San Juan"
+    "capital": "San Juan",
+    "capital_da": "San Juan"
   },
   {
     "code": "qa",
     "name": "Qatar",
     "name_da": "Qatar",
-    "capital": "Doha"
+    "capital": "Doha",
+    "capital_da": "Doha"
   },
   {
     "code": "ro",
     "name": "Romania",
     "name_da": "Rumænien",
-    "capital": "Bucharest"
+    "capital": "Bucharest",
+    "capital_da": "Bukarest"
   },
   {
     "code": "ru",
     "name": "Russia",
     "name_da": "Rusland",
-    "capital": "Moscow"
+    "capital": "Moscow",
+    "capital_da": "Moskva"
   },
   {
     "code": "rw",
     "name": "Rwanda",
     "name_da": "Rwanda",
-    "capital": "Kigali"
+    "capital": "Kigali",
+    "capital_da": "Kigali"
   },
   {
     "code": "sa",
     "name": "Saudi Arabia",
     "name_da": "Saudi-Arabien",
-    "capital": "Riyadh"
+    "capital": "Riyadh",
+    "capital_da": "Riyadh"
   },
   {
     "code": "sn",
     "name": "Senegal",
     "name_da": "Senegal",
-    "capital": "Dakar"
+    "capital": "Dakar",
+    "capital_da": "Dakar"
   },
   {
     "code": "rs",
     "name": "Serbia",
     "name_da": "Serbien",
-    "capital": "Belgrade"
+    "capital": "Belgrade",
+    "capital_da": "Belgrade"
   },
   {
     "code": "sg",
     "name": "Singapore",
     "name_da": "Singapore",
-    "capital": "Singapore"
+    "capital": "Singapore",
+    "capital_da": "Singapore"
   },
   {
     "code": "sk",
     "name": "Slovakia",
     "name_da": "Slovakiet",
-    "capital": "Bratislava"
+    "capital": "Bratislava",
+    "capital_da": "Bratislava"
   },
   {
     "code": "si",
     "name": "Slovenia",
     "name_da": "Slovenien",
-    "capital": "Ljubljana"
+    "capital": "Ljubljana",
+    "capital_da": "Ljubljana"
   },
   {
     "code": "so",
     "name": "Somalia",
     "name_da": "Somalia",
-    "capital": "Mogadishu"
+    "capital": "Mogadishu",
+    "capital_da": "Mogadishu"
   },
   {
     "code": "za",
     "name": "South Africa",
     "name_da": "Sydafrika",
-    "capital": "Pretoria"
+    "capital": "Pretoria",
+    "capital_da": "Pretoria"
   },
   {
     "code": "kr",
     "name": "South Korea",
     "name_da": "Sydkorea",
-    "capital": "Seoul"
+    "capital": "Seoul",
+    "capital_da": "Seoul"
   },
   {
     "code": "ss",
     "name": "South Sudan",
     "name_da": "Sydsudan",
-    "capital": "Juba"
+    "capital": "Juba",
+    "capital_da": "Juba"
   },
   {
     "code": "es",
     "name": "Spain",
     "name_da": "Spanien",
-    "capital": "Madrid"
+    "capital": "Madrid",
+    "capital_da": "Madrid"
   },
   {
     "code": "lk",
     "name": "Sri Lanka",
     "name_da": "Sri Lanka",
-    "capital": "Sri Jayawardenepura Kotte"
+    "capital": "Sri Jayawardenepura Kotte",
+    "capital_da": "Sri Jayewardenepura Kotte"
   },
   {
     "code": "sd",
     "name": "Sudan",
     "name_da": "Sudan",
-    "capital": "Khartoum"
+    "capital": "Khartoum",
+    "capital_da": "Khartoum"
   },
   {
     "code": "sr",
     "name": "Suriname",
     "name_da": "Surinam",
-    "capital": "Paramaribo"
+    "capital": "Paramaribo",
+    "capital_da": "Paramaribo"
   },
   {
     "code": "se",
     "name": "Sweden",
     "name_da": "Sverige",
-    "capital": "Stockholm"
+    "capital": "Stockholm",
+    "capital_da": "Stockholm"
   },
   {
     "code": "ch",
     "name": "Switzerland",
     "name_da": "Schweiz",
-    "capital": "Bern"
+    "capital": "Bern",
+    "capital_da": "Bern"
   },
   {
     "code": "sy",
     "name": "Syria",
     "name_da": "Syrien",
-    "capital": "Damascus"
+    "capital": "Damascus",
+    "capital_da": "Damascus"
   },
   {
     "code": "tw",
     "name": "Taiwan",
     "name_da": "Taiwan",
-    "capital": "Taipei"
+    "capital": "Taipei",
+    "capital_da": "Taipei"
   },
   {
     "code": "tj",
     "name": "Tajikistan",
     "name_da": "Tadsjikistan",
-    "capital": "Dushanbe"
+    "capital": "Dushanbe",
+    "capital_da": "Dushanbe"
   },
   {
     "code": "tz",
     "name": "Tanzania",
     "name_da": "Tanzania",
-    "capital": "Dodoma"
+    "capital": "Dodoma",
+    "capital_da": "Dodoma"
   },
   {
     "code": "th",
     "name": "Thailand",
     "name_da": "Thailand",
-    "capital": "Bangkok"
+    "capital": "Bangkok",
+    "capital_da": "Bangkok"
   },
   {
     "code": "tl",
     "name": "Timor-Leste",
     "name_da": "Østtimor",
-    "capital": "Dili"
+    "capital": "Dili",
+    "capital_da": "Dili"
   },
   {
     "code": "tg",
     "name": "Togo",
     "name_da": "Togo",
-    "capital": "Lomé"
+    "capital": "Lomé",
+    "capital_da": "Lomé"
   },
   {
     "code": "tt",
     "name": "Trinidad and Tobago",
     "name_da": "Trinidad og Tobago",
-    "capital": "Port of Spain"
+    "capital": "Port of Spain",
+    "capital_da": "Port of Spain"
   },
   {
     "code": "tn",
     "name": "Tunisia",
     "name_da": "Tunesien",
-    "capital": "Tunis"
+    "capital": "Tunis",
+    "capital_da": "Tunis"
   },
   {
     "code": "tr",
     "name": "Turkey",
     "name_da": "Tyrkiet",
-    "capital": "Ankara"
+    "capital": "Ankara",
+    "capital_da": "Ankara"
   },
   {
     "code": "tm",
     "name": "Turkmenistan",
     "name_da": "Turkmenistan",
-    "capital": "Ashgabat"
+    "capital": "Ashgabat",
+    "capital_da": "Ashgabat"
   },
   {
     "code": "ug",
     "name": "Uganda",
     "name_da": "Uganda",
-    "capital": "Kampala"
+    "capital": "Kampala",
+    "capital_da": "Kampala"
   },
   {
     "code": "ua",
     "name": "Ukraine",
     "name_da": "Ukraine",
-    "capital": "Kyiv"
+    "capital": "Kyiv",
+    "capital_da": "Kijev"
   },
   {
     "code": "ae",
     "name": "United Arab Emirates",
     "name_da": "Forenede Arabiske Emirater",
-    "capital": "Abu Dhabi"
+    "capital": "Abu Dhabi",
+    "capital_da": "Abu Dhabi"
   },
   {
     "code": "gb",
     "name": "United Kingdom",
     "name_da": "Storbritannien",
-    "capital": "London"
+    "capital": "London",
+    "capital_da": "London"
   },
   {
     "code": "us",
     "name": "United States",
     "name_da": "USA",
-    "capital": "Washington, D.C."
+    "capital": "Washington, D.C.",
+    "capital_da": "Washington"
   },
   {
     "code": "uy",
     "name": "Uruguay",
     "name_da": "Uruguay",
-    "capital": "Montevideo"
+    "capital": "Montevideo",
+    "capital_da": "Montevideo"
   },
   {
     "code": "uz",
     "name": "Uzbekistan",
     "name_da": "Usbekistan",
-    "capital": "Tashkent"
+    "capital": "Tashkent",
+    "capital_da": "Tashkent"
   },
   {
     "code": "ve",
     "name": "Venezuela",
     "name_da": "Venezuela",
-    "capital": "Caracas"
+    "capital": "Caracas",
+    "capital_da": "Caracas"
   },
   {
     "code": "vn",
     "name": "Vietnam",
     "name_da": "Vietnam",
-    "capital": "Hanoi"
+    "capital": "Hanoi",
+    "capital_da": "Hanoi"
   },
   {
     "code": "ye",
     "name": "Yemen",
     "name_da": "Yemen",
-    "capital": "Sana'a"
+    "capital": "Sana'a",
+    "capital_da": "Sana'a"
   },
   {
     "code": "zm",
     "name": "Zambia",
     "name_da": "Zambia",
-    "capital": "Lusaka"
+    "capital": "Lusaka",
+    "capital_da": "Lusaka"
   },
   {
     "code": "zw",
     "name": "Zimbabwe",
     "name_da": "Zimbabwe",
-    "capital": "Harare"
+    "capital": "Harare",
+    "capital_da": "Harare"
   }
 ]

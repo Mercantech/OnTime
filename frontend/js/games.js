@@ -438,7 +438,11 @@ async function initFlagGame() {
       const label = c.name_da && c.name_da !== c.name ? `${c.name_da} (${c.name})` : c.name;
       return { label, value };
     });
-    capitalOptions = capitalsList.map((c) => ({ label: c.capital, value: c.capital }));
+    capitalOptions = capitalsList.map((c) => {
+      const capitalDa = c.capital_da || c.capital;
+      const label = c.capital_da && c.capital_da !== c.capital ? capitalDa + ' (' + c.capital + ')' : capitalDa;
+      return { label, value: capitalDa };
+    });
 
     if (!flagData.flagUrl) {
       statusEl.textContent = 'Kunne ikke hente dagens flag.';

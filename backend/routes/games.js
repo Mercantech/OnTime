@@ -67,12 +67,14 @@ router.get('/flag/countries', auth, (req, res) => {
   }
 });
 
-/** Liste over hovedstæder til søgebar dropdown (kun lande med capital). Sorteret efter hovedstad. */
+/** Liste over hovedstæder til søgebar dropdown (capital + capital_da, som lande). Sorteret efter visningsnavn. */
 router.get('/flag/capitals', auth, (req, res) => {
   try {
     const countries = loadCountries();
-    const withCapital = countries.filter((c) => c.capital).map((c) => ({ capital: c.capital, name: c.name }));
-    withCapital.sort((a, b) => (a.capital || '').localeCompare(b.capital || '', 'da'));
+    const withCapital = countries
+      .filter((c) => c.capital)
+      .map((c) => ({ capital: c.capital, capital_da: c.capital_da || c.capital, name: c.name }));
+    withCapital.sort((a, b) => (a.capital_da || a.capital || '').localeCompare(b.capital_da || b.capital || '', 'da'));
     res.json(withCapital);
   } catch (e) {
     console.error(e);
@@ -146,7 +148,7 @@ router.get('/flag/status', auth, async (req, res) => {
       capitalAttemptsLeft,
       hasCapitalStep,
       countryNameForCapital: won && hasCapitalStep ? daily.name : undefined,
-      capitalNameRevealed: (won && hasCapitalStep && (wonCapital || capitalLost)) ? daily.capital : undefined,
+      capitalNameRevealed: (won && hasCapitalStep && (wonCapital || capitalLost)) ? (daily.capital_da || daily.capital) : undefined,
     });
   } catch (e) {
     console.error(e);
@@ -233,9 +235,14 @@ router.post('/flag/guess', auth, async (req, res) => {
   }
 });
 
-/** Tjek om gættet matcher en hovedstad i listen (normaliseret). */
+/** Tjek om gættet matcher en hovedstad i listen (capital eller capital_da, normaliseret). */
 function guessMatchesCapital(guessNorm, countries) {
-  return countries.some((c) => c.capital && normalizeCapital(c.capital) === guessNorm);
+  return countries.some((c) => {
+    if (!c.capital) return false;
+    if (normalizeCapital(c.capital) === guessNorm) return true;
+    if (c.capital_da && normalizeCapital(c.capital_da) === guessNorm) return true;
+    return false;
+  });
 }
 
 /** Gæt dagens hovedstad (kun når land er gættet, max 3 forsøg). +1 point for rigtig hovedstad. */
@@ -266,14 +273,19 @@ router.post('/flag/capital/guess', auth, async (req, res) => {
       [userId, 'flag_capital', today]
     );
     if (capitalWinRow.rows.length > 0) {
-      return res.json({ correct: true, capitalName: daily.capital, pointsAwarded: 1, alreadyWon: true });
+      return res.json({
+        correct: true,
+        capitalName: daily.capital_da || daily.capital,
+        pointsAwarded: 1,
+        alreadyWon: true,
+      });
     }
 
     if (!guessMatchesCapital(guessNorm, countries)) {
       return res.json({
         correct: false,
         invalidGuess: true,
-        message: 'Det er ikke en hovedstad fra listen. Vælg eller skriv en hovedstad fra listen.',
+        message: 'Det er ikke en hovedstad fra listen. Vælg eller skriv en hovedstad fra listen (dansk eller engelsk).',
       });
     }
 
@@ -287,11 +299,14 @@ router.post('/flag/capital/guess', auth, async (req, res) => {
         correct: false,
         attemptsLeft: 0,
         noMoreAttempts: true,
-        capitalName: daily.capital,
+        capitalName: daily.capital_da || daily.capital,
       });
     }
 
-    if (normalizeCapital(daily.capital) === guessNorm) {
+    const capitalMatch =
+      normalizeCapital(daily.capital) === guessNorm ||
+      (daily.capital_da && normalizeCapital(daily.capital_da) === guessNorm);
+    if (capitalMatch) {
       const now = new Date();
       await pool.query(
         `INSERT INTO game_completions (user_id, game_key, play_date, points, completed_at)
@@ -301,7 +316,11 @@ router.post('/flag/capital/guess', auth, async (req, res) => {
            completed_at = EXCLUDED.completed_at`,
         [userId, 'flag_capital', today, 1, now]
       );
-      return res.json({ correct: true, capitalName: daily.capital, pointsAwarded: 1 });
+      return res.json({
+        correct: true,
+        capitalName: daily.capital_da || daily.capital,
+        pointsAwarded: 1,
+      });
     }
 
     attempts += 1;
@@ -316,7 +335,7 @@ router.post('/flag/capital/guess', auth, async (req, res) => {
       correct: false,
       attemptsLeft,
       noMoreAttempts,
-      capitalName: noMoreAttempts ? daily.capital : undefined,
+      capitalName: noMoreAttempts ? (daily.capital_da || daily.capital) : undefined,
     });
   } catch (e) {
     console.error(e);
