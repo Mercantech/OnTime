@@ -912,6 +912,11 @@ async function initSudoku() {
     const puzzleData = await puzzleRes.json().catch(() => ({}));
     const statusData = await statusRes.json().catch(() => ({}));
 
+    if (!puzzleRes.ok) {
+      statusEl.textContent = puzzleData.error || 'Kunne ikke hente dagens Sudoku.';
+      return;
+    }
+
     if (statusData.completed) {
       statusEl.hidden = true;
       doneWrap.hidden = false;

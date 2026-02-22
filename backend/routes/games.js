@@ -481,11 +481,11 @@ router.post('/wordle/win', async (req, res) => {
 const SUDOKU_SIZE = 36;
 const SUDOKU_MAX_NUM = 6;
 
-/** 2×3-boks indeks for 6×6 (række 0-1, kol 0-2 = 0; række 0-1, kol 3-5 = 1; osv.). */
+/** 2×3-boks indeks 0–5 for 6×6 (3 rækker af bokse × 2 kolonner: række 0-1 kol 0-2 = 0, 0-1 kol 3-5 = 1, osv.). */
 function sudokuBoxIndex(i) {
   const row = Math.floor(i / 6);
   const col = i % 6;
-  return Math.floor(row / 2) * 3 + Math.floor(col / 3);
+  return Math.floor(row / 2) * 2 + Math.floor(col / 3);
 }
 
 /** Tjek at solution er en gyldig 6×6 Sudoku (1-6 i hver række, kolonne og 2×3-boks). */
@@ -520,13 +520,31 @@ function isValidSudokuGiven(given, solution) {
 
 function loadSudokuPuzzles() {
   const fs = require('fs');
-  const file = path.join(__dirname, '..', 'data', 'sudoku-puzzles.json');
-  const raw = fs.readFileSync(file, 'utf8');
+  const candidates = [
+    path.join(__dirname, '..', 'data', 'sudoku-puzzles.json'),
+    path.join(process.cwd(), 'data', 'sudoku-puzzles.json'),
+    path.join(process.cwd(), 'backend', 'data', 'sudoku-puzzles.json'),
+  ];
+  let raw = null;
+  for (const file of candidates) {
+    if (fs.existsSync(file)) {
+      raw = fs.readFileSync(file, 'utf8');
+      break;
+    }
+  }
+  if (!raw) throw new Error('Sudoku-fil ikke fundet (søgte: ' + candidates[0] + ')');
   const puzzles = JSON.parse(raw);
+  if (!Array.isArray(puzzles) || !puzzles.length) throw new Error('Sudoku-fil indeholder ingen opgaver');
   for (let idx = 0; idx < puzzles.length; idx++) {
     const p = puzzles[idx];
+    if (!p || !Array.isArray(p.solution) || p.solution.length !== SUDOKU_SIZE) {
+      throw new Error('Sudoku-puzzle ' + idx + ': ugyldig solution (skal have 36 tal)');
+    }
     if (!isValidSudokuSolution(p.solution)) {
       throw new Error('Sudoku-puzzle ' + idx + ': ugyldig solution (skal følge 6×6-reglerne)');
+    }
+    if (!Array.isArray(p.given) || p.given.length !== SUDOKU_SIZE) {
+      throw new Error('Sudoku-puzzle ' + idx + ': given skal have 36 tal');
     }
     if (!isValidSudokuGiven(p.given, p.solution)) {
       throw new Error('Sudoku-puzzle ' + idx + ': given matcher ikke solution (alle opgavetal skal være 0 eller løsningens værdi)');
@@ -546,7 +564,6 @@ function getDailySudokuIndex(dateStr, totalPuzzles) {
 router.get('/sudoku/puzzle', auth, (req, res) => {
   try {
     const puzzles = loadSudokuPuzzles();
-    if (!puzzles.length) return res.status(500).json({ error: 'Ingen Sudoku-opgaver' });
     const today = new Date().toISOString().slice(0, 10);
     const idx = getDailySudokuIndex(today, puzzles.length);
     const puzzle = puzzles[idx];
@@ -555,8 +572,8 @@ router.get('/sudoku/puzzle', auth, (req, res) => {
     }
     res.json({ given: puzzle.given, date: today });
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Serverfejl' });
+    console.error('Sudoku puzzle load error:', e.message);
+    res.status(500).json({ error: e.message || 'Serverfejl' });
   }
 });
 
