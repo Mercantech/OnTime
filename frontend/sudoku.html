@@ -15,14 +15,23 @@
   </header>
   <main class="app-main games-page">
     <h2 class="games-title">Dagens Sudoku</h2>
-    <p class="games-intro">Samme 9×9 Sudoku for alle i dag. Udfyld så alle rækker, kolonner og 3×3-bokse indeholder tallene 1–9. Din tid tælles indtil du tjekker løsningen.</p>
+    <p class="games-intro">Samme 6×6 Sudoku for alle i dag. Udfyld så alle rækker, kolonner og 2×3-bokse indeholder tallene 1–6. Din tid tælles indtil du tjekker løsningen.</p>
     <section id="sudoku" class="card dashboard-card game-card">
       <div id="sudoku-status" class="sudoku-status muted">Indlæser…</div>
       <div id="sudoku-game" class="sudoku-game" hidden>
         <div class="sudoku-timer-wrap">
           <span id="sudoku-timer" class="sudoku-timer" aria-live="polite">0:00</span>
         </div>
-        <div id="sudoku-grid-wrap" class="sudoku-grid-wrap"></div>
+        <div id="sudoku-grid-wrap" class="sudoku-grid-wrap" role="grid" aria-label="Sudoku bræt"></div>
+        <p class="sudoku-numpad-label" id="sudoku-numpad-label">Vælg et felt og tryk på et tal</p>
+        <div id="sudoku-numpad" class="sudoku-numpad" role="group" aria-label="Vælg tal 1–6">
+          <button type="button" class="sudoku-num-btn" data-num="1">1</button>
+          <button type="button" class="sudoku-num-btn" data-num="2">2</button>
+          <button type="button" class="sudoku-num-btn" data-num="3">3</button>
+          <button type="button" class="sudoku-num-btn" data-num="4">4</button>
+          <button type="button" class="sudoku-num-btn" data-num="5">5</button>
+          <button type="button" class="sudoku-num-btn" data-num="6">6</button>
+        </div>
         <button type="button" id="sudoku-check" class="btn-checkin">Tjek løsning</button>
         <p id="sudoku-feedback" class="sudoku-feedback" hidden></p>
       </div>

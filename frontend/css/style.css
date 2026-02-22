@@ -623,35 +623,97 @@ main.app-main.dashboard {
 
 /* ---------- Sudoku ---------- */
 .sudoku-status { margin-bottom: 0.5rem; }
-.sudoku-game { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.sudoku-game { display: flex; flex-direction: column; align-items: center; gap: 1rem; max-width: 100%; }
 .sudoku-timer-wrap { font-size: 1.5rem; font-variant-numeric: tabular-nums; color: var(--text-muted); }
 .sudoku-timer { font-weight: 600; color: var(--text); }
+
+/* Bræt med tydelige 3×3-bokse: tykke kantlinjer mellem bokse */
 .sudoku-grid-wrap {
+  --sudoku-thin: 1px;
+  --sudoku-thick: 3px;
   display: inline-grid;
-  grid-template-columns: repeat(9, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 0;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: var(--sudoku-thick) solid var(--text-muted);
+  border-radius: 4px;
   overflow: hidden;
-  background: var(--border);
+  background: var(--text-muted);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
 .sudoku-cell {
-  width: clamp(28px, 5vw, 42px);
-  height: clamp(28px, 5vw, 42px);
+  width: clamp(40px, 10vmin, 52px);
+  height: clamp(40px, 10vmin, 52px);
   padding: 0;
   margin: 0;
-  border: 1px solid var(--border);
+  border: var(--sudoku-thin) solid var(--border);
   background: var(--surface-2);
   color: var(--text);
-  font-size: clamp(0.75rem, 2.5vw, 1rem);
+  font-size: clamp(1rem, 5vmin, 1.25rem);
   font-weight: 600;
   text-align: center;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
-.sudoku-cell.given { background: var(--surface-1); color: var(--text-muted); }
-.sudoku-cell:nth-child(3n) { border-right-width: 2px; }
-.sudoku-cell:nth-child(9n) { border-right-width: 2px; }
-.sudoku-cell[data-row="2"], .sudoku-cell[data-row="5"], .sudoku-cell[data-row="8"] { border-bottom-width: 2px; }
+/* 6×6 med 2×3-bokse: tyk kant efter kolonne 2 (mellem boks 0-1 og 2-3) og efter række 1 og 3 */
+.sudoku-cell[data-col="2"] { border-right-width: var(--sudoku-thick); border-right-color: var(--text-muted); }
+.sudoku-cell[data-row="1"],
+.sudoku-cell[data-row="3"] { border-bottom-width: var(--sudoku-thick); border-bottom-color: var(--text-muted); }
+.sudoku-cell.given {
+  background: var(--surface-1);
+  color: var(--text-muted);
+  cursor: default;
+}
+.sudoku-cell.editable {
+  cursor: pointer;
+}
+.sudoku-cell.editable:hover { background: var(--surface-1); }
+.sudoku-cell.editable.selected {
+  background: var(--accent-dim);
+  color: var(--bg);
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* Numpad: store trykbare tal i bunden (mobilvenlig) */
+.sudoku-numpad-label {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.sudoku-numpad {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  max-width: min(100%, 280px);
+  width: 100%;
+}
+.sudoku-num-btn {
+  aspect-ratio: 1;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  transition: background var(--transition), transform 0.1s;
+}
+.sudoku-num-btn:hover { background: var(--surface-1); }
+.sudoku-num-btn:active { transform: scale(0.95); }
+
 .sudoku-done { margin-top: 1rem; }
 .sudoku-done-msg { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 1rem; }
 .sudoku-leaderboard-title { font-size: 1rem; margin: 0 0 0.5rem; color: var(--text-muted); }

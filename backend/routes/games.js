@@ -477,7 +477,9 @@ router.post('/wordle/win', async (req, res) => {
   }
 });
 
-// ---------- Sudoku (dagligt 9x9, samme for alle, leaderboard på tid) ----------
+// ---------- Sudoku (dagligt 6×6, samme for alle, leaderboard på tid) ----------
+const SUDOKU_SIZE = 36;
+const SUDOKU_MAX_NUM = 6;
 function loadSudokuPuzzles() {
   const fs = require('fs');
   const file = path.join(__dirname, '..', 'data', 'sudoku-puzzles.json');
@@ -500,7 +502,7 @@ router.get('/sudoku/puzzle', auth, (req, res) => {
     const today = new Date().toISOString().slice(0, 10);
     const idx = getDailySudokuIndex(today, puzzles.length);
     const puzzle = puzzles[idx];
-    if (!puzzle || !Array.isArray(puzzle.given) || puzzle.given.length !== 81) {
+    if (!puzzle || !Array.isArray(puzzle.given) || puzzle.given.length !== SUDOKU_SIZE) {
       return res.status(500).json({ error: 'Ugyldig opgave' });
     }
     res.json({ given: puzzle.given, date: today });
@@ -536,12 +538,12 @@ router.get('/sudoku/status', auth, async (req, res) => {
   }
 });
 
-/** Valider at grid matcher dagens løsning (1-9, 81 tal). */
+/** Valider at grid matcher dagens løsning (1-6, 36 tal for 6×6). */
 function validateSudokuGrid(grid, solution) {
-  if (!Array.isArray(grid) || grid.length !== 81 || !Array.isArray(solution) || solution.length !== 81) return false;
-  for (let i = 0; i < 81; i++) {
+  if (!Array.isArray(grid) || grid.length !== SUDOKU_SIZE || !Array.isArray(solution) || solution.length !== SUDOKU_SIZE) return false;
+  for (let i = 0; i < SUDOKU_SIZE; i++) {
     const g = Number(grid[i]);
-    if (!Number.isInteger(g) || g < 1 || g > 9) return false;
+    if (!Number.isInteger(g) || g < 1 || g > SUDOKU_MAX_NUM) return false;
     if (g !== solution[i]) return false;
   }
   return true;

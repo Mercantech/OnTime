@@ -795,7 +795,11 @@ async function initFlagGame() {
   if (capitalSubmitBtn) capitalSubmitBtn.addEventListener('click', submitCapitalGuess);
 }
 
-// ---------- Sudoku (dagligt 9×9, timer, leaderboard på tid) ----------
+// ---------- Sudoku (dagligt 6×6, timer, leaderboard på tid) ----------
+const SUDOKU_CELLS = 36;
+const SUDOKU_COLS = 6;
+const SUDOKU_MAX_NUM = 6;
+
 async function initSudoku() {
   const statusEl = document.getElementById('sudoku-status');
   const gameWrap = document.getElementById('sudoku-game');
@@ -806,9 +810,13 @@ async function initSudoku() {
   const checkBtn = document.getElementById('sudoku-check');
   const feedbackEl = document.getElementById('sudoku-feedback');
   const leaderboardList = document.getElementById('sudoku-leaderboard');
+  const numpadEl = document.getElementById('sudoku-numpad');
+  const numpadLabelEl = document.getElementById('sudoku-numpad-label');
   if (!statusEl || !gameWrap || !gridWrap || !timerEl || !checkBtn) return;
 
   let given = [];
+  let values = []; // 36 tal, 0 = tomt (kopi af given + brugerens indtastninger)
+  let selectedIndex = null;
   let timerStartedAt = null;
   let timerInterval = null;
 
@@ -840,47 +848,60 @@ async function initSudoku() {
     return timerStartedAt ? Math.floor((Date.now() - timerStartedAt) / 1000) : 0;
   }
 
+  function selectCell(i) {
+    if (given[i]) return;
+    startTimer();
+    selectedIndex = i;
+    gridWrap.querySelectorAll('.sudoku-cell').forEach((el, idx) => {
+      el.classList.toggle('selected', idx === i);
+      el.setAttribute('aria-selected', idx === i ? 'true' : 'false');
+    });
+    if (numpadLabelEl) numpadLabelEl.textContent = 'Vælg et tal 1–6 nedenfor';
+  }
+
+  function setCellValue(n) {
+    if (selectedIndex == null || given[selectedIndex]) return;
+    if (n < 1 || n > SUDOKU_MAX_NUM) return;
+    values[selectedIndex] = n;
+    const cellEl = gridWrap.querySelector('[data-index="' + selectedIndex + '"]');
+    if (cellEl) cellEl.textContent = n;
+  }
+
+  function clearCell() {
+    if (selectedIndex == null || given[selectedIndex]) return;
+    values[selectedIndex] = 0;
+    const cellEl = gridWrap.querySelector('[data-index="' + selectedIndex + '"]');
+    if (cellEl) cellEl.textContent = '';
+  }
+
   function buildGrid() {
     gridWrap.innerHTML = '';
-    for (let i = 0; i < 81; i++) {
-      const row = Math.floor(i / 9);
-      const col = i % 9;
-      const cell = document.createElement(given[i] ? 'span' : 'input');
-      cell.className = 'sudoku-cell' + (given[i] ? ' given' : '');
+    for (let i = 0; i < SUDOKU_CELLS; i++) {
+      const row = Math.floor(i / SUDOKU_COLS);
+      const col = i % SUDOKU_COLS;
+      const box = Math.floor(row / 2) * 3 + Math.floor(col / 3);
+      const cell = document.createElement('div');
+      cell.className = 'sudoku-cell' + (given[i] ? ' given' : ' editable');
       cell.setAttribute('data-index', i);
       cell.setAttribute('data-row', row);
       cell.setAttribute('data-col', col);
+      cell.setAttribute('data-box', box);
+      cell.setAttribute('role', 'gridcell');
+      cell.setAttribute('aria-selected', 'false');
       if (given[i]) {
         cell.textContent = given[i];
         cell.setAttribute('aria-label', 'Fast felt ' + given[i]);
       } else {
-        cell.type = 'number';
-        cell.min = 1;
-        cell.max = 9;
-        cell.inputMode = 'numeric';
-        cell.setAttribute('aria-label', 'Felt række ' + (row + 1) + ' kolonne ' + (col + 1));
-        cell.addEventListener('focus', startTimer);
-        cell.addEventListener('input', () => {
-          const v = cell.value.replace(/\D/g, '');
-          if (v.length > 1) cell.value = v.slice(-1);
-          else if (v && (parseInt(v, 10) < 1 || parseInt(v, 10) > 9)) cell.value = '';
-        });
+        cell.textContent = values[i] || '';
+        cell.setAttribute('aria-label', 'Felt række ' + (row + 1) + ' kolonne ' + (col + 1) + (values[i] ? ', værdi ' + values[i] : ', tom'));
+        cell.addEventListener('click', () => selectCell(i));
       }
       gridWrap.appendChild(cell);
     }
   }
 
-  function getGridFromInputs() {
-    const grid = [];
-    for (let i = 0; i < 81; i++) {
-      if (given[i]) grid.push(given[i]);
-      else {
-        const el = gridWrap.querySelector('[data-index="' + i + '"]');
-        const v = el && el.value ? parseInt(el.value, 10) : 0;
-        grid.push(Number.isInteger(v) && v >= 1 && v <= 9 ? v : 0);
-      }
-    }
-    return grid;
+  function getGrid() {
+    return values.slice();
   }
 
   try {
@@ -909,23 +930,43 @@ async function initSudoku() {
     }
 
     given = Array.isArray(puzzleData.given) ? puzzleData.given : [];
-    if (given.length !== 81) {
+    if (given.length !== SUDOKU_CELLS) {
       statusEl.textContent = 'Kunne ikke hente dagens Sudoku.';
       return;
     }
+    values = given.slice();
 
     statusEl.hidden = true;
     gameWrap.hidden = false;
     buildGrid();
-    startTimer();
+
+    if (numpadEl) {
+      numpadEl.querySelectorAll('.sudoku-num-btn').forEach((btn) => {
+        const n = parseInt(btn.dataset.num, 10);
+        btn.addEventListener('click', () => {
+          setCellValue(n);
+        });
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (selectedIndex == null) return;
+      if (e.key >= '1' && e.key <= '6') {
+        setCellValue(parseInt(e.key, 10));
+        e.preventDefault();
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        clearCell();
+        e.preventDefault();
+      }
+    });
 
     checkBtn.addEventListener('click', async () => {
-      const grid = getGridFromInputs();
+      const grid = getGrid();
       const hasEmpty = grid.some((v) => v === 0);
       if (hasEmpty) {
         feedbackEl.hidden = false;
         feedbackEl.className = 'sudoku-feedback error';
-        feedbackEl.textContent = 'Udfyld alle felter med tallene 1–9.';
+        feedbackEl.textContent = 'Udfyld alle felter med tallene 1–6.';
         return;
       }
       checkBtn.disabled = true;
