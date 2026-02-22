@@ -125,6 +125,31 @@ const MIGRATIONS = [
     `,
   },
   {
+    name: 'game_completions_time_seconds',
+    sql: `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_schema = 'public' AND table_name = 'game_completions' AND column_name = 'time_seconds'
+        ) THEN
+          ALTER TABLE game_completions ADD COLUMN time_seconds INT NULL CHECK (time_seconds >= 0);
+        END IF;
+      END $$;
+    `,
+  },
+  {
+    name: 'flag_capital_daily_attempts',
+    sql: `
+      CREATE TABLE IF NOT EXISTS flag_capital_daily_attempts (
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        play_date DATE NOT NULL,
+        attempts INT NOT NULL DEFAULT 0 CHECK (attempts >= 0 AND attempts <= 3),
+        PRIMARY KEY (user_id, play_date)
+      );
+    `,
+  },
+  {
     name: 'point_transactions_ledger',
     sql: `
       CREATE TABLE IF NOT EXISTS point_transactions (

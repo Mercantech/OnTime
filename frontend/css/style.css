@@ -618,6 +618,49 @@ main.app-main.dashboard {
 .flag-feedback { margin: 0; font-size: 0.95rem; }
 .flag-feedback-correct { color: var(--accent); font-weight: 600; }
 .flag-feedback-wrong { color: var(--text-muted); }
+.flag-capital-wrap { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.flag-capital-status { font-weight: 600; margin-bottom: 0.5rem; }
+
+/* ---------- Sudoku ---------- */
+.sudoku-status { margin-bottom: 0.5rem; }
+.sudoku-game { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.sudoku-timer-wrap { font-size: 1.5rem; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+.sudoku-timer { font-weight: 600; color: var(--text); }
+.sudoku-grid-wrap {
+  display: inline-grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 0;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--border);
+}
+.sudoku-cell {
+  width: clamp(28px, 5vw, 42px);
+  height: clamp(28px, 5vw, 42px);
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: clamp(0.75rem, 2.5vw, 1rem);
+  font-weight: 600;
+  text-align: center;
+  box-sizing: border-box;
+}
+.sudoku-cell.given { background: var(--surface-1); color: var(--text-muted); }
+.sudoku-cell:nth-child(3n) { border-right-width: 2px; }
+.sudoku-cell:nth-child(9n) { border-right-width: 2px; }
+.sudoku-cell[data-row="2"], .sudoku-cell[data-row="5"], .sudoku-cell[data-row="8"] { border-bottom-width: 2px; }
+.sudoku-done { margin-top: 1rem; }
+.sudoku-done-msg { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 1rem; }
+.sudoku-leaderboard-title { font-size: 1rem; margin: 0 0 0.5rem; color: var(--text-muted); }
+.sudoku-leaderboard-list { margin: 0; padding-left: 1.5rem; max-width: 320px; }
+.sudoku-leaderboard-list li { margin-bottom: 0.25rem; }
+.sudoku-leaderboard-list .rank { font-weight: 700; margin-right: 0.5rem; }
+.sudoku-feedback { margin: 0; font-size: 0.95rem; }
+.sudoku-feedback.error { color: var(--danger); }
+.sudoku-feedback.correct { color: var(--accent); }
 
 /* Klasse-highlights (klassedashboard) */
 .class-highlights {

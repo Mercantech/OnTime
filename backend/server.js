@@ -80,6 +80,10 @@ app.get('/spil/flag', (req, res) => {
   noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'flag.html'));
 });
+app.get('/spil/sudoku', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'sudoku.html'));
+});
 app.get('/spil/coinflip', (req, res) => {
   res.redirect(302, '/casino');
 });

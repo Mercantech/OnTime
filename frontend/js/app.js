@@ -221,6 +221,7 @@ async function loadLeaderboard() {
       const parts = [];
       if (g.includes('wordle')) parts.push('<a href="/spil/wordle" class="lb-game-link" title="Wordle">🟩</a>');
       if (g.includes('flag')) parts.push('<a href="/spil/flag" class="lb-game-link" title="Dagens flag">🏳️</a>');
+      if (g.includes('sudoku')) parts.push('<a href="/spil/sudoku" class="lb-game-link" title="Dagens Sudoku">🔢</a>');
       if (g.includes('coinflip')) parts.push('<a href="/casino" class="lb-game-link" title="Coinflip">🪙</a>');
       if (g.includes('one_armed_bandit')) parts.push('<a href="/casino" class="lb-game-link" title="Enarmet bandit">🎰</a>');
       if (g.includes('roulette')) parts.push('<a href="/casino" class="lb-game-link" title="Roulette">🎡</a>');

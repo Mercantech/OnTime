@@ -15,7 +15,7 @@
   </header>
   <main class="app-main games-page">
     <h2 class="games-title">Dagens flag</h2>
-    <p class="games-intro">Gæt hvilket land dagens flag tilhører. Vælg eller skriv landets navn (dansk eller engelsk). Du har 3 forsøg.</p>
+    <p class="games-intro">Gæt hvilket land dagens flag tilhører. Vælg eller skriv landets navn (dansk eller engelsk). Du har 3 forsøg. Når du har gættet landet, kan du gætte hovedstaden for ekstra point.</p>
     <section id="flag" class="card dashboard-card game-card">
       <div id="flag-game" class="flag-game">
         <div id="flag-status" class="flag-status muted">Indlæser…</div>
@@ -30,6 +30,19 @@
             <button type="button" id="flag-submit" class="btn-checkin">Gæt</button>
           </div>
           <p id="flag-feedback" class="flag-feedback" hidden></p>
+
+          <div id="flag-capital-wrap" class="flag-capital-wrap" hidden>
+            <p id="flag-capital-status" class="flag-capital-status"></p>
+            <p id="flag-capital-attempts" class="flag-attempts" hidden aria-live="polite"></p>
+            <div id="flag-capital-guess-row" class="flag-guess-row">
+              <div class="flag-combobox-wrap">
+                <input type="text" id="flag-capital-guess" class="flag-input" placeholder="Søg eller vælg hovedstad…" autocomplete="off" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="flag-capital-dropdown">
+                <ul id="flag-capital-dropdown" class="flag-dropdown" role="listbox" hidden></ul>
+              </div>
+              <button type="button" id="flag-capital-submit" class="btn-checkin">Gæt</button>
+            </div>
+            <p id="flag-capital-feedback" class="flag-feedback" hidden></p>
+          </div>
         </div>
       </div>
     </section>

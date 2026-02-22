@@ -324,7 +324,7 @@ async function loadWordle() {
   if (state.status === 'won') awardIfWin();
 }
 
-// ---------- Dagens flag (3 forsøg, state fra backend) ----------
+// ---------- Dagens flag (3 forsøg, state fra backend) + hovedstad (efter land) ----------
 async function initFlagGame() {
   const statusEl = document.getElementById('flag-status');
   const wrapEl = document.getElementById('flag-wrap');
@@ -335,23 +335,71 @@ async function initFlagGame() {
   const dropdownEl = document.getElementById('flag-dropdown');
   const submitBtn = document.getElementById('flag-submit');
   const feedbackEl = document.getElementById('flag-feedback');
+  const capitalWrapEl = document.getElementById('flag-capital-wrap');
+  const capitalStatusEl = document.getElementById('flag-capital-status');
+  const capitalAttemptsEl = document.getElementById('flag-capital-attempts');
+  const capitalGuessRowEl = document.getElementById('flag-capital-guess-row');
+  const capitalInputEl = document.getElementById('flag-capital-guess');
+  const capitalDropdownEl = document.getElementById('flag-capital-dropdown');
+  const capitalSubmitBtn = document.getElementById('flag-capital-submit');
+  const capitalFeedbackEl = document.getElementById('flag-capital-feedback');
   if (!statusEl || !wrapEl || !imgEl || !attemptsEl || !guessRowEl || !inputEl || !submitBtn || !feedbackEl) return;
 
-  let state = { won: false, lost: false, attemptsUsed: 0, attemptsLeft: 3, countryName: null };
+  let state = {
+    won: false,
+    lost: false,
+    attemptsUsed: 0,
+    attemptsLeft: 3,
+    countryName: null,
+    hasCapitalStep: false,
+    wonCapital: false,
+    capitalLost: false,
+    capitalAttemptsUsed: 0,
+    capitalAttemptsLeft: 3,
+    countryNameForCapital: null,
+    capitalNameRevealed: null,
+  };
   let countryOptions = [];
+  let capitalOptions = [];
   let dropdownHighlight = -1;
+  let capitalDropdownHighlight = -1;
 
   function renderFlagUI() {
     feedbackEl.hidden = true;
+    if (capitalWrapEl) capitalWrapEl.hidden = true;
     if (state.won) {
       statusEl.textContent = 'Du har gættet dagens flag!';
       attemptsEl.hidden = true;
       guessRowEl.hidden = true;
       feedbackEl.hidden = false;
-      feedbackEl.textContent = 'Det var ' + (state.countryName || '') + '. Du fik 2 point.';
+      if (state.wonCapital) {
+        feedbackEl.textContent = 'Det var ' + (state.countryName || '') + '. Du fik 2 point for landet og 1 point for hovedstaden.';
+      } else {
+        feedbackEl.textContent = 'Det var ' + (state.countryName || '') + '. Du fik 2 point.';
+      }
       feedbackEl.className = 'flag-feedback flag-feedback-correct';
       inputEl.disabled = true;
       submitBtn.disabled = true;
+      if (state.hasCapitalStep && (state.wonCapital || state.capitalLost)) {
+        if (capitalWrapEl) capitalWrapEl.hidden = false;
+        if (capitalStatusEl) {
+          capitalStatusEl.textContent = state.wonCapital
+            ? 'Du gættede også hovedstaden!'
+            : (state.capitalNameRevealed ? 'Ingen forsøg tilbage. Hovedstaden var ' + state.capitalNameRevealed + '.' : 'Ingen forsøg tilbage til hovedstad.');
+        }
+        if (capitalGuessRowEl) capitalGuessRowEl.hidden = true;
+      } else if (state.hasCapitalStep && !state.wonCapital && !state.capitalLost) {
+        if (capitalWrapEl) capitalWrapEl.hidden = false;
+        if (capitalStatusEl) capitalStatusEl.textContent = 'Hvad er hovedstaden i ' + (state.countryNameForCapital || state.countryName || '') + '?';
+        if (capitalAttemptsEl) {
+          capitalAttemptsEl.hidden = false;
+          capitalAttemptsEl.textContent = 'Forsøg ' + (state.capitalAttemptsUsed + 1) + '/3 – du har ' + state.capitalAttemptsLeft + ' forsøg tilbage.';
+        }
+        if (capitalGuessRowEl) capitalGuessRowEl.hidden = false;
+        if (capitalInputEl) capitalInputEl.disabled = false;
+        if (capitalSubmitBtn) capitalSubmitBtn.disabled = false;
+        if (capitalFeedbackEl) capitalFeedbackEl.hidden = true;
+      }
       return;
     }
     if (state.lost) {
@@ -374,20 +422,23 @@ async function initFlagGame() {
   }
 
   try {
-    const [flagRes, statusRes, countriesRes] = await Promise.all([
+    const [flagRes, statusRes, countriesRes, capitalsRes] = await Promise.all([
       api('/api/games/daily-flag'),
       api('/api/games/flag/status'),
       api('/api/games/flag/countries'),
+      api('/api/games/flag/capitals'),
     ]);
     const flagData = await flagRes.json().catch(() => ({}));
     const statusData = await statusRes.json().catch(() => ({}));
     const countriesList = await countriesRes.json().catch(() => []);
+    const capitalsList = await capitalsRes.json().catch(() => []);
 
     countryOptions = countriesList.map((c) => {
       const value = c.name_da || c.name;
       const label = c.name_da && c.name_da !== c.name ? `${c.name_da} (${c.name})` : c.name;
       return { label, value };
     });
+    capitalOptions = capitalsList.map((c) => ({ label: c.capital, value: c.capital }));
 
     if (!flagData.flagUrl) {
       statusEl.textContent = 'Kunne ikke hente dagens flag.';
@@ -402,6 +453,13 @@ async function initFlagGame() {
       attemptsUsed: statusData.attemptsUsed ?? 0,
       attemptsLeft: statusData.attemptsLeft ?? Math.max(0, 3 - (statusData.attemptsUsed ?? 0)),
       countryName: statusData.countryName || null,
+      hasCapitalStep: !!statusData.hasCapitalStep,
+      wonCapital: !!statusData.wonCapital,
+      capitalLost: !!statusData.capitalLost,
+      capitalAttemptsUsed: statusData.capitalAttemptsUsed ?? 0,
+      capitalAttemptsLeft: statusData.capitalAttemptsLeft ?? Math.max(0, 3 - (statusData.capitalAttemptsUsed ?? 0)),
+      countryNameForCapital: statusData.countryNameForCapital || null,
+      capitalNameRevealed: statusData.capitalNameRevealed || null,
     };
     renderFlagUI();
   } catch (e) {
@@ -527,6 +585,7 @@ async function initFlagGame() {
       if (data.correct) {
         state.won = true;
         state.countryName = data.countryName || null;
+        state.countryNameForCapital = data.countryName || null;
         renderFlagUI();
         playGameWin();
         return;
@@ -561,6 +620,355 @@ async function initFlagGame() {
   }
 
   submitBtn.addEventListener('click', submitGuess);
+
+  // ---------- Hovedstad (samme dropdown-oplevelse) ----------
+  function hideCapitalDropdown() {
+    if (capitalDropdownEl) {
+      capitalDropdownEl.hidden = true;
+      capitalDropdownEl.innerHTML = '';
+      capitalDropdownHighlight = -1;
+      if (capitalInputEl) capitalInputEl.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function showCapitalDropdown(items) {
+    if (!capitalDropdownEl) return;
+    capitalDropdownEl.innerHTML = '';
+    items.forEach((opt, i) => {
+      const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.textContent = opt.label;
+      li.dataset.value = opt.value;
+      li.className = 'flag-dropdown-item';
+      if (i === capitalDropdownHighlight) li.classList.add('flag-dropdown-item-active');
+      li.addEventListener('click', () => {
+        capitalInputEl.value = opt.value;
+        hideCapitalDropdown();
+        capitalInputEl.focus();
+      });
+      capitalDropdownEl.appendChild(li);
+    });
+    capitalDropdownEl.hidden = items.length === 0;
+    if (capitalInputEl) capitalInputEl.setAttribute('aria-expanded', items.length > 0 ? 'true' : 'false');
+  }
+
+  function filterCapitalDropdown() {
+    if (!capitalInputEl || capitalInputEl.disabled) { hideCapitalDropdown(); return; }
+    const q = (capitalInputEl.value || '').trim().toLowerCase();
+    if (!q) {
+      showCapitalDropdown(capitalOptions.slice(0, 12));
+      capitalDropdownHighlight = 0;
+      return;
+    }
+    const filtered = capitalOptions.filter(
+      (o) => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q)
+    );
+    capitalDropdownHighlight = filtered.length > 0 ? 0 : -1;
+    showCapitalDropdown(filtered.slice(0, 20));
+    if (capitalDropdownEl && !capitalDropdownEl.hidden) {
+      const items = capitalDropdownEl.querySelectorAll('.flag-dropdown-item');
+      items.forEach((el, i) => el.classList.toggle('flag-dropdown-item-active', i === capitalDropdownHighlight));
+    }
+  }
+
+  function selectHighlightedCapital() {
+    const items = capitalDropdownEl.querySelectorAll('.flag-dropdown-item');
+    if (capitalDropdownHighlight >= 0 && items[capitalDropdownHighlight]) {
+      capitalInputEl.value = items[capitalDropdownHighlight].dataset.value || '';
+      hideCapitalDropdown();
+      return true;
+    }
+    return false;
+  }
+
+  async function submitCapitalGuess() {
+    if (!capitalInputEl || !capitalSubmitBtn) return;
+    const guess = (capitalInputEl.value || '').trim();
+    if (!guess) return;
+    capitalSubmitBtn.disabled = true;
+    if (capitalFeedbackEl) {
+      capitalFeedbackEl.hidden = false;
+      capitalFeedbackEl.textContent = 'Tjekker…';
+      capitalFeedbackEl.className = 'flag-feedback';
+    }
+    try {
+      const res = await api('/api/games/flag/capital/guess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guess }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (data.correct) {
+        state.wonCapital = true;
+        state.capitalAttemptsLeft = 0;
+        if (capitalFeedbackEl) {
+          capitalFeedbackEl.textContent = 'Rigtigt! Hovedstaden er ' + (data.capitalName || '') + '. Du fik 1 point ekstra.';
+          capitalFeedbackEl.className = 'flag-feedback flag-feedback-correct';
+        }
+        if (capitalGuessRowEl) capitalGuessRowEl.hidden = true;
+        if (capitalAttemptsEl) capitalAttemptsEl.hidden = true;
+        renderFlagUI();
+        playGameWin();
+        return;
+      }
+
+      if (data.invalidGuess) {
+        if (capitalFeedbackEl) {
+          capitalFeedbackEl.textContent = data.message || 'Vælg eller skriv en hovedstad fra listen.';
+          capitalFeedbackEl.className = 'flag-feedback flag-feedback-wrong';
+        }
+        capitalSubmitBtn.disabled = false;
+        return;
+      }
+
+      state.capitalAttemptsUsed = 3 - (data.attemptsLeft ?? 0);
+      state.capitalAttemptsLeft = data.attemptsLeft ?? 0;
+      state.capitalLost = !!data.noMoreAttempts;
+      if (state.capitalLost && data.capitalName) state.capitalAttemptsUsed = 3;
+
+      if (state.capitalLost) {
+        if (capitalFeedbackEl) {
+          capitalFeedbackEl.textContent = 'Ingen forsøg tilbage. Hovedstaden var ' + (data.capitalName || '') + '.';
+          capitalFeedbackEl.className = 'flag-feedback flag-feedback-wrong';
+        }
+        if (capitalGuessRowEl) capitalGuessRowEl.hidden = true;
+        renderFlagUI();
+        return;
+      }
+      if (capitalFeedbackEl) {
+        capitalFeedbackEl.textContent = 'Forkert. Du har ' + state.capitalAttemptsLeft + ' forsøg tilbage.';
+        capitalFeedbackEl.className = 'flag-feedback flag-feedback-wrong';
+      }
+      if (capitalAttemptsEl) {
+        capitalAttemptsEl.textContent = 'Forsøg ' + (state.capitalAttemptsUsed + 1) + '/3 – du har ' + state.capitalAttemptsLeft + ' forsøg tilbage.';
+      }
+      capitalSubmitBtn.disabled = false;
+    } catch (e) {
+      if (capitalFeedbackEl) {
+        capitalFeedbackEl.textContent = 'Der opstod en fejl.';
+        capitalFeedbackEl.className = 'flag-feedback';
+      }
+      capitalSubmitBtn.disabled = false;
+    }
+  }
+
+  if (capitalInputEl && capitalDropdownEl) {
+    capitalInputEl.addEventListener('focus', filterCapitalDropdown);
+    capitalInputEl.addEventListener('input', filterCapitalDropdown);
+    capitalInputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        hideCapitalDropdown();
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const items = capitalDropdownEl.querySelectorAll('.flag-dropdown-item');
+        if (items.length === 0) return;
+        capitalDropdownHighlight = (capitalDropdownHighlight + 1) % items.length;
+        items.forEach((el, i) => el.classList.toggle('flag-dropdown-item-active', i === capitalDropdownHighlight));
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const items = capitalDropdownEl.querySelectorAll('.flag-dropdown-item');
+        if (items.length === 0) return;
+        capitalDropdownHighlight = capitalDropdownHighlight <= 0 ? items.length - 1 : capitalDropdownHighlight - 1;
+        items.forEach((el, i) => el.classList.toggle('flag-dropdown-item-active', i === capitalDropdownHighlight));
+        return;
+      }
+      if (e.key === 'Enter') {
+        if (!capitalDropdownEl.hidden && selectHighlightedCapital()) {
+          e.preventDefault();
+          return;
+        }
+        e.preventDefault();
+        submitCapitalGuess();
+        return;
+      }
+    });
+    document.addEventListener('click', (e) => {
+      const wrap = capitalInputEl.closest('.flag-combobox-wrap');
+      if (wrap && !wrap.contains(e.target)) hideCapitalDropdown();
+    });
+  }
+  if (capitalSubmitBtn) capitalSubmitBtn.addEventListener('click', submitCapitalGuess);
+}
+
+// ---------- Sudoku (dagligt 9×9, timer, leaderboard på tid) ----------
+async function initSudoku() {
+  const statusEl = document.getElementById('sudoku-status');
+  const gameWrap = document.getElementById('sudoku-game');
+  const doneWrap = document.getElementById('sudoku-done');
+  const doneMsgEl = document.getElementById('sudoku-done-msg');
+  const gridWrap = document.getElementById('sudoku-grid-wrap');
+  const timerEl = document.getElementById('sudoku-timer');
+  const checkBtn = document.getElementById('sudoku-check');
+  const feedbackEl = document.getElementById('sudoku-feedback');
+  const leaderboardList = document.getElementById('sudoku-leaderboard');
+  if (!statusEl || !gameWrap || !gridWrap || !timerEl || !checkBtn) return;
+
+  let given = [];
+  let timerStartedAt = null;
+  let timerInterval = null;
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  function startTimer() {
+    if (timerStartedAt) return;
+    timerStartedAt = Date.now();
+    timerInterval = setInterval(() => {
+      if (!timerEl) return;
+      const elapsed = Math.floor((Date.now() - timerStartedAt) / 1000);
+      timerEl.textContent = formatTime(elapsed);
+    }, 1000);
+    timerEl.textContent = '0:00';
+  }
+
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  function getElapsedSeconds() {
+    return timerStartedAt ? Math.floor((Date.now() - timerStartedAt) / 1000) : 0;
+  }
+
+  function buildGrid() {
+    gridWrap.innerHTML = '';
+    for (let i = 0; i < 81; i++) {
+      const row = Math.floor(i / 9);
+      const col = i % 9;
+      const cell = document.createElement(given[i] ? 'span' : 'input');
+      cell.className = 'sudoku-cell' + (given[i] ? ' given' : '');
+      cell.setAttribute('data-index', i);
+      cell.setAttribute('data-row', row);
+      cell.setAttribute('data-col', col);
+      if (given[i]) {
+        cell.textContent = given[i];
+        cell.setAttribute('aria-label', 'Fast felt ' + given[i]);
+      } else {
+        cell.type = 'number';
+        cell.min = 1;
+        cell.max = 9;
+        cell.inputMode = 'numeric';
+        cell.setAttribute('aria-label', 'Felt række ' + (row + 1) + ' kolonne ' + (col + 1));
+        cell.addEventListener('focus', startTimer);
+        cell.addEventListener('input', () => {
+          const v = cell.value.replace(/\D/g, '');
+          if (v.length > 1) cell.value = v.slice(-1);
+          else if (v && (parseInt(v, 10) < 1 || parseInt(v, 10) > 9)) cell.value = '';
+        });
+      }
+      gridWrap.appendChild(cell);
+    }
+  }
+
+  function getGridFromInputs() {
+    const grid = [];
+    for (let i = 0; i < 81; i++) {
+      if (given[i]) grid.push(given[i]);
+      else {
+        const el = gridWrap.querySelector('[data-index="' + i + '"]');
+        const v = el && el.value ? parseInt(el.value, 10) : 0;
+        grid.push(Number.isInteger(v) && v >= 1 && v <= 9 ? v : 0);
+      }
+    }
+    return grid;
+  }
+
+  try {
+    const [puzzleRes, statusRes] = await Promise.all([
+      api('/api/games/sudoku/puzzle'),
+      api('/api/games/sudoku/status'),
+    ]);
+    const puzzleData = await puzzleRes.json().catch(() => ({}));
+    const statusData = await statusRes.json().catch(() => ({}));
+
+    if (statusData.completed) {
+      statusEl.hidden = true;
+      doneWrap.hidden = false;
+      const sec = statusData.timeSeconds;
+      doneMsgEl.textContent = 'Du har allerede løst dagens Sudoku. Tid: ' + (sec != null ? formatTime(sec) : '–');
+      const lbRes = await api('/api/leaderboard/sudoku');
+      const lbData = await lbRes.json().catch(() => ({}));
+      if (lbData.leaderboard && lbData.leaderboard.length) {
+        leaderboardList.innerHTML = lbData.leaderboard.map((s) =>
+          '<li><span class="rank">' + s.rank + '.</span> ' + escapeHtml(s.name) + ' – ' + formatTime(s.timeSeconds) + '</li>'
+        ).join('');
+      } else {
+        leaderboardList.innerHTML = '<li class="muted">Ingen rangering endnu</li>';
+      }
+      return;
+    }
+
+    given = Array.isArray(puzzleData.given) ? puzzleData.given : [];
+    if (given.length !== 81) {
+      statusEl.textContent = 'Kunne ikke hente dagens Sudoku.';
+      return;
+    }
+
+    statusEl.hidden = true;
+    gameWrap.hidden = false;
+    buildGrid();
+    startTimer();
+
+    checkBtn.addEventListener('click', async () => {
+      const grid = getGridFromInputs();
+      const hasEmpty = grid.some((v) => v === 0);
+      if (hasEmpty) {
+        feedbackEl.hidden = false;
+        feedbackEl.className = 'sudoku-feedback error';
+        feedbackEl.textContent = 'Udfyld alle felter med tallene 1–9.';
+        return;
+      }
+      checkBtn.disabled = true;
+      feedbackEl.hidden = false;
+      feedbackEl.textContent = 'Tjekker…';
+      feedbackEl.className = 'sudoku-feedback';
+      stopTimer();
+      const timeSeconds = getElapsedSeconds();
+      try {
+        const res = await api('/api/games/sudoku/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ grid, timeSeconds }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          playGameWin();
+          gameWrap.hidden = true;
+          doneWrap.hidden = false;
+          doneMsgEl.textContent = 'Korrekt! Du løste det på ' + formatTime(timeSeconds) + '. Du fik 2 point.';
+          const lbRes = await api('/api/leaderboard/sudoku');
+          const lbData = await lbRes.json().catch(() => ({}));
+          if (lbData.leaderboard && lbData.leaderboard.length) {
+            leaderboardList.innerHTML = lbData.leaderboard.map((s) =>
+              '<li><span class="rank">' + s.rank + '.</span> ' + escapeHtml(s.name) + ' – ' + formatTime(s.timeSeconds) + '</li>'
+            ).join('');
+          } else {
+            leaderboardList.innerHTML = '<li class="muted">Ingen rangering endnu</li>';
+          }
+          return;
+        }
+        feedbackEl.className = 'sudoku-feedback error';
+        feedbackEl.textContent = data.error || 'Løsningen var ikke korrekt.';
+        checkBtn.disabled = false;
+      } catch (e) {
+        feedbackEl.className = 'sudoku-feedback error';
+        feedbackEl.textContent = 'Der opstod en fejl.';
+        checkBtn.disabled = false;
+      }
+    });
+  } catch (e) {
+    statusEl.textContent = 'Fejl ved indlæsning.';
+  }
 }
 
 // ---------- Init (kun det spil der matcher URL) ----------
@@ -571,6 +979,8 @@ async function init() {
     loadWordle();
   } else if (pathname.includes('/spil/flag')) {
     await initFlagGame();
+  } else if (pathname.includes('/spil/sudoku')) {
+    await initSudoku();
   }
   // /spil = kun oversigt, ingen spil at starte
 }

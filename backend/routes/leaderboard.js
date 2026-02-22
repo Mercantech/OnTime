@@ -136,6 +136,38 @@ router.get('/class', auth, async (req, res) => {
   }
 });
 
+/** Leaderboard for Sudoku: klassen rangering efter tid for en given dag (default: i dag). */
+router.get('/sudoku', auth, async (req, res) => {
+  try {
+    const dateStr = (req.query.date && /^\d{4}-\d{2}-\d{2}$/.test(req.query.date))
+      ? req.query.date
+      : new Date().toISOString().slice(0, 10);
+    const classId = (await pool.query('SELECT class_id FROM users WHERE id = $1', [req.userId])).rows[0]?.class_id;
+    if (!classId) return res.status(400).json({ error: 'Klasse ikke fundet' });
+
+    const r = await pool.query(
+      `SELECT u.id, u.name, gc.time_seconds
+       FROM users u
+       INNER JOIN game_completions gc ON gc.user_id = u.id AND gc.game_key = 'sudoku' AND gc.play_date = $1
+       WHERE u.class_id = $2 AND gc.time_seconds IS NOT NULL
+       ORDER BY gc.time_seconds ASC, gc.completed_at ASC`,
+      [dateStr, classId]
+    );
+    const names = r.rows.map(row => row.name);
+    const displayNames = uniqueDisplayNames(names);
+    const list = r.rows.map((row, i) => ({
+      rank: i + 1,
+      userId: row.id,
+      name: displayNames[i],
+      timeSeconds: row.time_seconds,
+    }));
+    res.json({ date: dateStr, leaderboard: list });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 router.get('/my-stats', auth, async (req, res) => {
   try {
     const maxPossible = getMaxPossiblePoints();

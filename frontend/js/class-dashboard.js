@@ -123,6 +123,7 @@
         const parts = [];
         if (g.includes('wordle')) parts.push('🟩');
         if (g.includes('flag')) parts.push('🏳️');
+        if (g.includes('sudoku')) parts.push('🔢');
         if (g.includes('coinflip')) parts.push('🪙');
         if (g.includes('one_armed_bandit')) parts.push('🎰');
         if (g.includes('roulette')) parts.push('🎡');

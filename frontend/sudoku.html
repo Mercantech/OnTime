@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Dagens Sudoku</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1><a href="/app" class="header-home">OnTime</a></h1>
+    <a href="/spil" class="admin-link">Spil</a>
+    <span id="user-name" class="user-info"></span>
+    <button id="logout" class="btn-logout">Log ud</button>
+  </header>
+  <main class="app-main games-page">
+    <h2 class="games-title">Dagens Sudoku</h2>
+    <p class="games-intro">Samme 9×9 Sudoku for alle i dag. Udfyld så alle rækker, kolonner og 3×3-bokse indeholder tallene 1–9. Din tid tælles indtil du tjekker løsningen.</p>
+    <section id="sudoku" class="card dashboard-card game-card">
+      <div id="sudoku-status" class="sudoku-status muted">Indlæser…</div>
+      <div id="sudoku-game" class="sudoku-game" hidden>
+        <div class="sudoku-timer-wrap">
+          <span id="sudoku-timer" class="sudoku-timer" aria-live="polite">0:00</span>
+        </div>
+        <div id="sudoku-grid-wrap" class="sudoku-grid-wrap"></div>
+        <button type="button" id="sudoku-check" class="btn-checkin">Tjek løsning</button>
+        <p id="sudoku-feedback" class="sudoku-feedback" hidden></p>
+      </div>
+      <div id="sudoku-done" class="sudoku-done" hidden>
+        <p id="sudoku-done-msg" class="sudoku-done-msg"></p>
+        <h3 class="sudoku-leaderboard-title">Leaderboard i dag</h3>
+        <ol id="sudoku-leaderboard" class="sudoku-leaderboard-list"></ol>
+      </div>
+    </section>
+    <p><a href="/spil" class="admin-link">← Tilbage til spil</a></p>
+  </main>
+  <script src="/js/games.js"></script>
+</body>
+</html>

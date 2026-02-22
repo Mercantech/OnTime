@@ -50,11 +50,30 @@ function guessToCountryName(guessNorm, countries) {
   return c ? c.name : null;
 }
 
+/** Normaliser hovedstad til sammenligning (lowercase, trim, fjern diakritik). */
+function normalizeCapital(s) {
+  const t = String(s || '').trim().toLowerCase();
+  return t.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
 /** Liste over lande til søgebar dropdown (engelsk + dansk navn). */
 router.get('/flag/countries', auth, (req, res) => {
   try {
     const countries = loadCountries();
     res.json(countries.map((c) => ({ name: c.name, name_da: c.name_da || c.name })));
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+/** Liste over hovedstæder til søgebar dropdown (kun lande med capital). Sorteret efter hovedstad. */
+router.get('/flag/capitals', auth, (req, res) => {
+  try {
+    const countries = loadCountries();
+    const withCapital = countries.filter((c) => c.capital).map((c) => ({ capital: c.capital, name: c.name }));
+    withCapital.sort((a, b) => (a.capital || '').localeCompare(b.capital || '', 'da'));
+    res.json(withCapital);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Serverfejl' });
@@ -77,7 +96,7 @@ router.get('/daily-flag', auth, async (req, res) => {
   }
 });
 
-/** Hent state for dagens flag (vundet, tabt, forsøg brugt). */
+/** Hent state for dagens flag (vundet land, vundet hovedstad, forsøg). */
 router.get('/flag/status', auth, async (req, res) => {
   try {
     const userId = req.userId;
@@ -91,6 +110,12 @@ router.get('/flag/status', auth, async (req, res) => {
     );
     const won = winRow.rows.length > 0;
 
+    const capitalWinRow = await pool.query(
+      'SELECT 1 FROM game_completions WHERE user_id = $1 AND game_key = $2 AND play_date = $3',
+      [userId, 'flag_capital', today]
+    );
+    const wonCapital = capitalWinRow.rows.length > 0;
+
     const attemptRow = await pool.query(
       'SELECT attempts FROM flag_daily_attempts WHERE user_id = $1 AND play_date = $2',
       [userId, today]
@@ -99,12 +124,29 @@ router.get('/flag/status', auth, async (req, res) => {
     const attemptsLeft = Math.max(0, 3 - attemptsUsed);
     const lost = !won && attemptsUsed >= 3;
 
+    const capitalAttemptRow = await pool.query(
+      'SELECT attempts FROM flag_capital_daily_attempts WHERE user_id = $1 AND play_date = $2',
+      [userId, today]
+    );
+    const capitalAttemptsUsed = capitalAttemptRow.rows[0] ? Math.min(capitalAttemptRow.rows[0].attempts, 3) : 0;
+    const capitalAttemptsLeft = Math.max(0, 3 - capitalAttemptsUsed);
+    const capitalLost = !wonCapital && won && capitalAttemptsUsed >= 3;
+
+    const hasCapitalStep = !!daily.capital;
+
     res.json({
       won,
       lost,
       attemptsUsed,
       attemptsLeft,
       countryName: (won || lost) ? daily.name : undefined,
+      wonCapital,
+      capitalLost,
+      capitalAttemptsUsed,
+      capitalAttemptsLeft,
+      hasCapitalStep,
+      countryNameForCapital: won && hasCapitalStep ? daily.name : undefined,
+      capitalNameRevealed: (won && hasCapitalStep && (wonCapital || capitalLost)) ? daily.capital : undefined,
     });
   } catch (e) {
     console.error(e);
@@ -184,6 +226,97 @@ router.post('/flag/guess', auth, async (req, res) => {
       attemptsLeft,
       noMoreAttempts: noMoreAttempts,
       countryName: noMoreAttempts ? daily.name : undefined,
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+/** Tjek om gættet matcher en hovedstad i listen (normaliseret). */
+function guessMatchesCapital(guessNorm, countries) {
+  return countries.some((c) => c.capital && normalizeCapital(c.capital) === guessNorm);
+}
+
+/** Gæt dagens hovedstad (kun når land er gættet, max 3 forsøg). +1 point for rigtig hovedstad. */
+router.post('/flag/capital/guess', auth, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const guess = String(req.body.guess || '').trim();
+    const guessNorm = normalizeCapital(guess);
+    if (!guessNorm) return res.status(400).json({ error: 'Angiv et gæt' });
+
+    const countries = loadCountries();
+    const today = new Date().toISOString().slice(0, 10);
+    const daily = getDailyCountry(countries, today);
+
+    const winCountryRow = await pool.query(
+      'SELECT 1 FROM game_completions WHERE user_id = $1 AND game_key = $2 AND play_date = $3',
+      [userId, 'flag', today]
+    );
+    if (winCountryRow.rows.length === 0) {
+      return res.status(400).json({ error: 'Gæt først landet rigtigt' });
+    }
+    if (!daily.capital) {
+      return res.status(400).json({ error: 'Dagens land har ikke registreret hovedstad' });
+    }
+
+    const capitalWinRow = await pool.query(
+      'SELECT 1 FROM game_completions WHERE user_id = $1 AND game_key = $2 AND play_date = $3',
+      [userId, 'flag_capital', today]
+    );
+    if (capitalWinRow.rows.length > 0) {
+      return res.json({ correct: true, capitalName: daily.capital, pointsAwarded: 1, alreadyWon: true });
+    }
+
+    if (!guessMatchesCapital(guessNorm, countries)) {
+      return res.json({
+        correct: false,
+        invalidGuess: true,
+        message: 'Det er ikke en hovedstad fra listen. Vælg eller skriv en hovedstad fra listen.',
+      });
+    }
+
+    const attemptRow = await pool.query(
+      'SELECT attempts FROM flag_capital_daily_attempts WHERE user_id = $1 AND play_date = $2',
+      [userId, today]
+    );
+    let attempts = attemptRow.rows[0] ? attemptRow.rows[0].attempts : 0;
+    if (attempts >= 3) {
+      return res.json({
+        correct: false,
+        attemptsLeft: 0,
+        noMoreAttempts: true,
+        capitalName: daily.capital,
+      });
+    }
+
+    if (normalizeCapital(daily.capital) === guessNorm) {
+      const now = new Date();
+      await pool.query(
+        `INSERT INTO game_completions (user_id, game_key, play_date, points, completed_at)
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (user_id, game_key, play_date) DO UPDATE SET
+           points = EXCLUDED.points,
+           completed_at = EXCLUDED.completed_at`,
+        [userId, 'flag_capital', today, 1, now]
+      );
+      return res.json({ correct: true, capitalName: daily.capital, pointsAwarded: 1 });
+    }
+
+    attempts += 1;
+    await pool.query(
+      `INSERT INTO flag_capital_daily_attempts (user_id, play_date, attempts) VALUES ($1, $2, $3)
+       ON CONFLICT (user_id, play_date) DO UPDATE SET attempts = EXCLUDED.attempts`,
+      [userId, today, attempts]
+    );
+    const attemptsLeft = 3 - attempts;
+    const noMoreAttempts = attempts >= 3;
+    res.json({
+      correct: false,
+      attemptsLeft,
+      noMoreAttempts,
+      capitalName: noMoreAttempts ? daily.capital : undefined,
     });
   } catch (e) {
     console.error(e);
@@ -338,6 +471,115 @@ router.post('/wordle/win', async (req, res) => {
       [userId, 'wordle_win']
     );
     res.json({ ok: true, pointsAwarded: 2 });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+// ---------- Sudoku (dagligt 9x9, samme for alle, leaderboard på tid) ----------
+function loadSudokuPuzzles() {
+  const fs = require('fs');
+  const file = path.join(__dirname, '..', 'data', 'sudoku-puzzles.json');
+  const raw = fs.readFileSync(file, 'utf8');
+  return JSON.parse(raw);
+}
+
+/** Deterministik indeks for dagens Sudoku ud fra dato. */
+function getDailySudokuIndex(dateStr, totalPuzzles) {
+  const hash = crypto.createHash('sha256').update(dateStr).digest();
+  const n = hash.readUInt32BE(0);
+  return n % totalPuzzles;
+}
+
+/** Hent dagens Sudoku-opgave (kun given, aldrig solution). */
+router.get('/sudoku/puzzle', auth, (req, res) => {
+  try {
+    const puzzles = loadSudokuPuzzles();
+    if (!puzzles.length) return res.status(500).json({ error: 'Ingen Sudoku-opgaver' });
+    const today = new Date().toISOString().slice(0, 10);
+    const idx = getDailySudokuIndex(today, puzzles.length);
+    const puzzle = puzzles[idx];
+    if (!puzzle || !Array.isArray(puzzle.given) || puzzle.given.length !== 81) {
+      return res.status(500).json({ error: 'Ugyldig opgave' });
+    }
+    res.json({ given: puzzle.given, date: today });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+/** Status for dagens Sudoku (allerede løst, tid, evt. rang). */
+router.get('/sudoku/status', auth, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const today = new Date().toISOString().slice(0, 10);
+    const r = await pool.query(
+      `SELECT points, time_seconds, completed_at FROM game_completions
+       WHERE user_id = $1 AND game_key = $2 AND play_date = $3`,
+      [userId, 'sudoku', today]
+    );
+    const row = r.rows[0];
+    if (!row) {
+      return res.json({ completed: false });
+    }
+    res.json({
+      completed: true,
+      timeSeconds: row.time_seconds ?? null,
+      completedAt: row.completed_at,
+      pointsAwarded: row.points ?? 2,
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+/** Valider at grid matcher dagens løsning (1-9, 81 tal). */
+function validateSudokuGrid(grid, solution) {
+  if (!Array.isArray(grid) || grid.length !== 81 || !Array.isArray(solution) || solution.length !== 81) return false;
+  for (let i = 0; i < 81; i++) {
+    const g = Number(grid[i]);
+    if (!Number.isInteger(g) || g < 1 || g > 9) return false;
+    if (g !== solution[i]) return false;
+  }
+  return true;
+}
+
+/** Indsend løsning og registrér tid. */
+router.post('/sudoku/complete', auth, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const grid = req.body.grid;
+    const timeSeconds = typeof req.body.timeSeconds === 'number' ? Math.max(0, Math.floor(req.body.timeSeconds)) : null;
+    if (timeSeconds == null) return res.status(400).json({ error: 'Angiv timeSeconds' });
+
+    const puzzles = loadSudokuPuzzles();
+    const today = new Date().toISOString().slice(0, 10);
+    const idx = getDailySudokuIndex(today, puzzles.length);
+    const puzzle = puzzles[idx];
+    if (!puzzle || !Array.isArray(puzzle.solution)) return res.status(400).json({ error: 'Kunne ikke finde dagens opgave' });
+
+    if (!validateSudokuGrid(grid, puzzle.solution)) {
+      return res.status(400).json({ error: 'Løsningen er ikke korrekt. Tjek alle felter.' });
+    }
+
+    const now = new Date();
+    await pool.query(
+      `INSERT INTO game_completions (user_id, game_key, play_date, points, completed_at, time_seconds)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (user_id, game_key, play_date) DO UPDATE SET
+         points = EXCLUDED.points,
+         completed_at = EXCLUDED.completed_at,
+         time_seconds = EXCLUDED.time_seconds`,
+      [userId, 'sudoku', today, 2, now, timeSeconds]
+    );
+    await pool.query(
+      'INSERT INTO user_badges (user_id, badge_key) VALUES ($1, $2) ON CONFLICT (user_id, badge_key) DO NOTHING',
+      [userId, 'sudoku_win']
+    );
+    res.json({ ok: true, pointsAwarded: 2, timeSeconds });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Serverfejl' });
