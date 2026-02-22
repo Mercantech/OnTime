@@ -627,20 +627,26 @@ function scoreWordleGuess(guess, answer) {
   const g = guess.split('');
   const a = answer.split('');
   const res = Array(5).fill('absent');
-
+  // Tæl hvor mange af hvert bogstav der er tilbage i svaret (bruges til grøn, derefter gul)
+  const answerCount = {};
+  for (let i = 0; i < 5; i++) {
+    const c = a[i];
+    answerCount[c] = (answerCount[c] || 0) + 1;
+  }
+  // Først: markér korrekte (grøn) og brug dem i tælleren
   for (let i = 0; i < 5; i++) {
     if (g[i] === a[i]) {
       res[i] = 'correct';
-      g[i] = null;
-      a[i] = null;
+      answerCount[g[i]]--;
     }
   }
+  // Derefter: markér kun så mange gule pr. bogstav som svaret har (resten grå)
   for (let i = 0; i < 5; i++) {
-    if (!g[i]) continue;
-    const idx = a.indexOf(g[i]);
-    if (idx !== -1) {
+    if (res[i] === 'correct') continue;
+    const letter = g[i];
+    if ((answerCount[letter] || 0) > 0) {
       res[i] = 'present';
-      a[idx] = null;
+      answerCount[letter]--;
     }
   }
   return res;
