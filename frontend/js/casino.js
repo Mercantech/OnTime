@@ -322,7 +322,8 @@ function spinRouletteWheelToResult(result, onComplete) {
   const segmentIndex = getRandomSegmentForResult(result);
   const segmentAngle = 360 / n;
   const extraSpins = 5;
-  rouletteRotation += extraSpins * 360 - segmentIndex * segmentAngle;
+  // Stop med segmentets midte ved pegeren (minus halv segment, så vi rammer farvens centrum)
+  rouletteRotation += extraSpins * 360 - segmentIndex * segmentAngle - segmentAngle / 2;
   wheelEl.classList.add('spinning');
   wheelEl.style.transform = `rotate(${rouletteRotation}deg)`;
   setTimeout(() => {
