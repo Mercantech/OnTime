@@ -480,11 +480,59 @@ router.post('/wordle/win', async (req, res) => {
 // ---------- Sudoku (dagligt 6×6, samme for alle, leaderboard på tid) ----------
 const SUDOKU_SIZE = 36;
 const SUDOKU_MAX_NUM = 6;
+
+/** 2×3-boks indeks for 6×6 (række 0-1, kol 0-2 = 0; række 0-1, kol 3-5 = 1; osv.). */
+function sudokuBoxIndex(i) {
+  const row = Math.floor(i / 6);
+  const col = i % 6;
+  return Math.floor(row / 2) * 3 + Math.floor(col / 3);
+}
+
+/** Tjek at solution er en gyldig 6×6 Sudoku (1-6 i hver række, kolonne og 2×3-boks). */
+function isValidSudokuSolution(grid) {
+  if (!Array.isArray(grid) || grid.length !== SUDOKU_SIZE) return false;
+  const rows = [new Set(), new Set(), new Set(), new Set(), new Set(), new Set()];
+  const cols = [new Set(), new Set(), new Set(), new Set(), new Set(), new Set()];
+  const boxes = [new Set(), new Set(), new Set(), new Set(), new Set(), new Set()];
+  for (let i = 0; i < SUDOKU_SIZE; i++) {
+    const v = Number(grid[i]);
+    if (!Number.isInteger(v) || v < 1 || v > SUDOKU_MAX_NUM) return false;
+    const r = Math.floor(i / 6);
+    const c = i % 6;
+    const b = sudokuBoxIndex(i);
+    if (rows[r].has(v) || cols[c].has(v) || boxes[b].has(v)) return false;
+    rows[r].add(v);
+    cols[c].add(v);
+    boxes[b].add(v);
+  }
+  return true;
+}
+
+/** Tjek at given kun har 0 eller solution-værdi (ingen konflikter fra start). */
+function isValidSudokuGiven(given, solution) {
+  if (!Array.isArray(given) || given.length !== SUDOKU_SIZE || !Array.isArray(solution)) return false;
+  for (let i = 0; i < SUDOKU_SIZE; i++) {
+    const g = Number(given[i]);
+    if (g !== 0 && g !== solution[i]) return false;
+  }
+  return true;
+}
+
 function loadSudokuPuzzles() {
   const fs = require('fs');
   const file = path.join(__dirname, '..', 'data', 'sudoku-puzzles.json');
   const raw = fs.readFileSync(file, 'utf8');
-  return JSON.parse(raw);
+  const puzzles = JSON.parse(raw);
+  for (let idx = 0; idx < puzzles.length; idx++) {
+    const p = puzzles[idx];
+    if (!isValidSudokuSolution(p.solution)) {
+      throw new Error('Sudoku-puzzle ' + idx + ': ugyldig solution (skal følge 6×6-reglerne)');
+    }
+    if (!isValidSudokuGiven(p.given, p.solution)) {
+      throw new Error('Sudoku-puzzle ' + idx + ': given matcher ikke solution (alle opgavetal skal være 0 eller løsningens værdi)');
+    }
+  }
+  return puzzles;
 }
 
 /** Deterministik indeks for dagens Sudoku ud fra dato. */
