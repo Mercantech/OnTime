@@ -93,7 +93,25 @@ router.get('/class', auth, async (req, res) => {
         )
       : { rows: [] };
     const gamesTodayByUser = {};
-    gamesTodayRes.rows.forEach((row) => { gamesTodayByUser[row.user_id] = row.games || []; });
+    gamesTodayRes.rows.forEach((row) => { gamesTodayByUser[row.user_id] = [...(row.games || [])]; });
+
+    const reasonToGame = { 'Casino spin': 'one_armed_bandit', 'Roulette': 'roulette', 'Blackjack': 'blackjack' };
+    if (userIds.length) {
+      const casinoRes = await pool.query(
+        `SELECT DISTINCT user_id, reason
+         FROM point_transactions
+         WHERE created_at >= CURRENT_DATE AND created_at < CURRENT_DATE + interval '1 day'
+           AND user_id = ANY($1::int[]) AND reason IN ('Casino spin', 'Roulette', 'Blackjack')`,
+        [userIds]
+      );
+      casinoRes.rows.forEach((row) => {
+        const key = reasonToGame[row.reason];
+        if (key) {
+          if (!gamesTodayByUser[row.user_id]) gamesTodayByUser[row.user_id] = [];
+          if (!gamesTodayByUser[row.user_id].includes(key)) gamesTodayByUser[row.user_id].push(key);
+        }
+      });
+    }
 
     const classTotal = r.rows.reduce((sum, row) => sum + row.total_points, 0);
     const names = r.rows.map(row => row.name);

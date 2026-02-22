@@ -123,6 +123,10 @@
         const parts = [];
         if (g.includes('wordle')) parts.push('🟩');
         if (g.includes('flag')) parts.push('🏳️');
+        if (g.includes('coinflip')) parts.push('🪙');
+        if (g.includes('one_armed_bandit')) parts.push('🎰');
+        if (g.includes('roulette')) parts.push('🎡');
+        if (g.includes('blackjack')) parts.push('🃏');
         return parts.length ? '<span class="lb-games" title="Løst spil i dag">' + parts.join('') + '</span>' : '';
       }
       if (totalEl) totalEl.innerHTML = '<strong>Klasse total:</strong> ' + data.classTotal + ' / ' + data.maxPossibleClass + ' point (' + data.classPercentage + '%)';
