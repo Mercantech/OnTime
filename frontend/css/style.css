@@ -1194,6 +1194,17 @@ main.app-main.admin-main {
 .ip-range-list .muted { font-size: 0.85rem; }
 .btn-delete-ip { padding: 0.25rem 0.5rem; font-size: 0.8rem; background: transparent; color: var(--danger); border: 1px solid var(--danger); border-radius: var(--radius-sm); cursor: pointer; }
 .btn-delete-ip:hover { background: var(--danger); color: #fff; }
+.btn-danger {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  background: var(--danger);
+  color: #fff;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-danger:hover { background: var(--danger-dim); border-color: var(--danger-dim); }
 .admin-main #form-csv select { margin-bottom: 0.75rem; }
 .admin-main #form-csv select:disabled { opacity: 0.8; }
 .class-status { font-weight: normal; color: var(--text-muted); font-size: 0.85rem; margin-left: 0.25rem; }

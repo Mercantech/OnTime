@@ -395,4 +395,56 @@ router.post('/import-csv', upload.single('csv'), async (req, res) => {
   res.json({ created: created.length, updated: updated.length, errors, createdList: created, updatedList: updated });
 });
 
+/** Nulstil alle point for en klasse (nuværende måned) – alle i klassen får vist 0 point. */
+function monthWindowSql(field) {
+  return `${field} >= date_trunc('month', CURRENT_DATE) AND ${field} < date_trunc('month', CURRENT_DATE) + interval '1 month'`;
+}
+
+router.post('/classes/:classId/reset-points', async (req, res) => {
+  const classId = parseInt(req.params.classId, 10);
+  if (Number.isNaN(classId)) return res.status(400).json({ error: 'Ugyldigt klasse-id' });
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const users = await client.query(
+      'SELECT id FROM users WHERE class_id = $1',
+      [classId]
+    );
+    if (!users.rows.length) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Ingen brugere i denne klasse' });
+    }
+    let resetCount = 0;
+    for (const row of users.rows) {
+      const userId = row.id;
+      const r = await client.query(
+        `SELECT (
+          COALESCE((SELECT SUM(points)::int FROM check_ins WHERE user_id = $1 AND ${monthWindowSql('checked_at')}), 0)
+          + COALESCE((SELECT SUM(points)::int FROM game_completions WHERE user_id = $1
+              AND play_date >= date_trunc('month', CURRENT_DATE)::date
+              AND play_date < (date_trunc('month', CURRENT_DATE)::date + interval '1 month')::date), 0)
+          + COALESCE((SELECT SUM(delta)::int FROM point_transactions WHERE user_id = $1 AND ${monthWindowSql('created_at')}), 0)
+        )::int AS total`,
+        [userId]
+      );
+      const total = r.rows[0]?.total ?? 0;
+      if (total !== 0) {
+        await client.query(
+          `INSERT INTO point_transactions (user_id, delta, reason) VALUES ($1, $2, $3)`,
+          [userId, -total, 'Admin nulstilling (klasse)']
+        );
+        resetCount++;
+      }
+    }
+    await client.query('COMMIT');
+    res.json({ ok: true, usersAffected: users.rows.length, resetCount });
+  } catch (e) {
+    await client.query('ROLLBACK');
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router;

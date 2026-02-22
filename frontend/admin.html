@@ -51,6 +51,18 @@
             <div id="import-result" class="import-result" hidden></div>
           </section>
           <section class="card">
+            <h2>Nulstil klassens point</h2>
+            <p class="card-hint">Sæt alle elevers point i klassen til 0 for nuværende måned. Kan ikke fortrydes.</p>
+            <form id="form-reset-class-points">
+              <label for="reset-points-class">Klasse</label>
+              <select id="reset-points-class" required disabled>
+                <option value="">Indlæser klasser…</option>
+              </select>
+              <button type="submit" class="btn-danger">Nulstil point til 0</button>
+            </form>
+            <p id="reset-points-message" class="message" hidden></p>
+          </section>
+          <section class="card">
             <h2>Giv eller træk point</h2>
             <p class="card-hint">Sæt point (0–45) eller skriv negativt tal for at trække fra (f.eks. -10).</p>
             <form id="form-give-points">

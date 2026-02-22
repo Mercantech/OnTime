@@ -103,6 +103,7 @@ async function fillClassSelects() {
   const elImportClass = document.getElementById('import-class');
   const elBetClass = document.getElementById('bet-class');
   const elBetFilterClass = document.getElementById('bet-filter-class');
+  const elResetPointsClass = document.getElementById('reset-points-class');
   if (elUserClass) elUserClass.innerHTML = def + opts;
   if (elFilterClass) elFilterClass.innerHTML = defAll + opts;
   if (elImportClass) {
@@ -118,6 +119,10 @@ async function fillClassSelects() {
   if (elBetFilterClass) {
     elBetFilterClass.innerHTML = def + opts;
     elBetFilterClass.disabled = false;
+  }
+  if (elResetPointsClass) {
+    elResetPointsClass.innerHTML = def + opts;
+    elResetPointsClass.disabled = false;
   }
 }
 
@@ -422,6 +427,27 @@ document.getElementById('form-class').addEventListener('submit', async (e) => {
   document.getElementById('class-name').value = '';
   cachedClasses = [];
   await fillClassSelects();
+});
+
+document.getElementById('form-reset-class-points').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const classId = document.getElementById('reset-points-class').value;
+  const msgEl = document.getElementById('reset-points-message');
+  if (!classId) {
+    showMessage('reset-points-message', 'Vælg en klasse', true);
+    return;
+  }
+  const className = document.getElementById('reset-points-class').selectedOptions[0]?.textContent || 'klassen';
+  if (!confirm('Er du sikker? Alle elevers point i ' + className + ' sættes til 0 for nuværende måned. Handlingen kan ikke fortrydes.')) {
+    return;
+  }
+  const res = await api('/api/admin/classes/' + classId + '/reset-points', { method: 'POST' });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    showMessage('reset-points-message', data.error || 'Kunne ikke nulstille', true);
+    return;
+  }
+  showMessage('reset-points-message', 'Nulstilling gennemført. ' + data.resetCount + ' bruger(e) sat til 0 point.');
 });
 
 document.getElementById('form-user').addEventListener('submit', async (e) => {
