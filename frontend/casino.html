@@ -155,20 +155,84 @@
           <p id="poker-message" class="poker-message" hidden></p>
           <div id="poker-showdown-detail" class="poker-showdown-detail" hidden></div>
         </div>
-        <details class="poker-hand-rankings">
-          <summary>Rangering af hænder (stærkest først)</summary>
-          <ol class="poker-hand-list">
-            <li><strong>Straight flush</strong> – 5 kort i rækkefølge i samme kulør (fx 9♥8♥7♥6♥5♥)</li>
-            <li><strong>Fire ens</strong> – 4 kort af samme rang (fx K♦K♥K♣K♠)</li>
-            <li><strong>Fuldt hus</strong> – Triss + par (fx Q♠Q♥Q♦4♣4♥)</li>
-            <li><strong>Flush</strong> – 5 kort i samme kulør (fx A♠J♠9♠6♠2♠)</li>
-            <li><strong>Straight</strong> – 5 kort i rækkefølge (fx 10♦9♣8♥7♠6♦)</li>
-            <li><strong>Triss</strong> – 3 kort af samme rang (fx 7♠7♥7♦)</li>
-            <li><strong>To par</strong> – To par (fx K♥K♦ og 3♣3♠)</li>
-            <li><strong>Par</strong> – 2 kort af samme rang (fx A♣A♥)</li>
-            <li><strong>Højeste kort</strong> – Ingen kombination, højeste kort afgør</li>
-          </ol>
-        </details>
+        <section class="poker-hand-rankings-visual" id="poker-hand-rankings-visual" aria-label="Rangering af pokerhænder">
+          <h3 class="hand-rankings-title">Rangering af hænder</h3>
+          <p class="hand-rankings-subtitle">Stærkest først – med eksempelhænder</p>
+          <div class="hand-rankings-list">
+            <div class="hand-rank-item" data-cards="9H 8H 7H 6H 5H">
+              <span class="hand-rank-num">1</span>
+              <div class="hand-rank-text">
+                <strong class="hand-rank-name">Straight flush</strong>
+                <span class="hand-rank-desc">5 kort i rækkefølge i samme kulør</span>
+              </div>
+              <div class="hand-rank-cards" aria-label="Eksempel: 9 hjerter, 8 hjerter, 7 hjerter, 6 hjerter, 5 hjerter"></div>
+            </div>
+            <div class="hand-rank-item" data-cards="KD KH KC KS 2D">
+              <span class="hand-rank-num">2</span>
+              <div class="hand-rank-text">
+                <strong class="hand-rank-name">Fire ens</strong>
+                <span class="hand-rank-desc">4 kort af samme rang</span>
+              </div>
+              <div class="hand-rank-cards" aria-label="Eksempel: fire konger"></div>
+            </div>
+            <div class="hand-rank-item" data-cards="QS QH QD 4C 4H">
+              <span class="hand-rank-num">3</span>
+              <div class="hand-rank-text">
+                <strong class="hand-rank-name">Fuldt hus</strong>
+                <span class="hand-rank-desc">Triss + par</span>
+              </div>
+              <div class="hand-rank-cards" aria-label="Eksempel: tre damer og to firere"></div>
+            </div>
+            <div class="hand-rank-item" data-cards="AS JS 9S 6S 2S">
+              <span class="hand-rank-num">4</span>
+              <div class="hand-rank-text">
+                <strong class="hand-rank-name">Flush</strong>
+                <span class="hand-rank-desc">5 kort i samme kulør</span>
+              </div>
+              <div class="hand-rank-cards" aria-label="Eksempel: fem spar"></div>
+            </div>
+            <div class="hand-rank-item" data-cards="10D 9C 8H 7S 6D">
+              <span class="hand-rank-num">5</span>
+              <div class="hand-rank-text">
+                <strong class="hand-rank-name">Straight</strong>
+                <span class="hand-rank-desc">5 kort i rækkefølge</span>
+              </div>
+              <div class="hand-rank-cards" aria-label="Eksempel: 10 til 6"></div>
+            </div>
+            <div class="hand-rank-item" data-cards="7S 7H 7D 2C 3D">
+              <span class="hand-rank-num">6</span>
+              <div class="hand-rank-text">
+                <strong class="hand-rank-name">Triss</strong>
+                <span class="hand-rank-desc">3 kort af samme rang</span>
+              </div>
+              <div class="hand-rank-cards" aria-label="Eksempel: tre syvere"></div>
+            </div>
+            <div class="hand-rank-item" data-cards="KH KD 3C 3S AC">
+              <span class="hand-rank-num">7</span>
+              <div class="hand-rank-text">
+                <strong class="hand-rank-name">To par</strong>
+                <span class="hand-rank-desc">To par</span>
+              </div>
+              <div class="hand-rank-cards" aria-label="Eksempel: to konger og to treere"></div>
+            </div>
+            <div class="hand-rank-item" data-cards="AC AH 10S 9D 2C">
+              <span class="hand-rank-num">8</span>
+              <div class="hand-rank-text">
+                <strong class="hand-rank-name">Par</strong>
+                <span class="hand-rank-desc">2 kort af samme rang</span>
+              </div>
+              <div class="hand-rank-cards" aria-label="Eksempel: par esser"></div>
+            </div>
+            <div class="hand-rank-item" data-cards="AS KH 10D 8C 3S">
+              <span class="hand-rank-num">9</span>
+              <div class="hand-rank-text">
+                <strong class="hand-rank-name">Højeste kort</strong>
+                <span class="hand-rank-desc">Ingen kombination – højeste kort afgør</span>
+              </div>
+              <div class="hand-rank-cards" aria-label="Eksempel: højeste kort"></div>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
 

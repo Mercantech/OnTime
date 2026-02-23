@@ -767,3 +767,18 @@ document.getElementById('blackjack-stand')?.addEventListener('click', async () =
 
 setReels('?', '?', '?');
 loadStatus();
+
+function initHandRankingsVisual() {
+  const section = document.getElementById('poker-hand-rankings-visual');
+  if (!section) return;
+  section.querySelectorAll('.hand-rank-item').forEach((row) => {
+    const cardsStr = row.getAttribute('data-cards');
+    const cardsContainer = row.querySelector('.hand-rank-cards');
+    if (!cardsStr || !cardsContainer) return;
+    cardsContainer.innerHTML = '';
+    cardsStr.trim().split(/\s+/).forEach((code) => {
+      cardsContainer.appendChild(renderBlackjackCard(code, false));
+    });
+  });
+}
+initHandRankingsVisual();
