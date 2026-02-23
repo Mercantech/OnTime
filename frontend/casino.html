@@ -145,8 +145,7 @@
             <button type="button" id="poker-start-hand" class="poker-btn" hidden>Start hånd</button>
             <div id="poker-bet-actions" class="poker-bet-actions" hidden>
               <button type="button" id="poker-fold" class="poker-btn poker-btn-fold">Fold</button>
-              <button type="button" id="poker-check" class="poker-btn">Check</button>
-              <button type="button" id="poker-call" class="poker-btn">Call</button>
+              <button type="button" id="poker-check-call" class="poker-btn">Check</button>
               <div class="poker-raise-row">
                 <button type="button" id="poker-raise" class="poker-btn">Raise</button>
                 <input type="number" id="poker-raise-amount" class="poker-raise-input" min="0" value="2" aria-label="Raise beløb">
@@ -154,7 +153,22 @@
             </div>
           </div>
           <p id="poker-message" class="poker-message" hidden></p>
+          <div id="poker-showdown-detail" class="poker-showdown-detail" hidden></div>
         </div>
+        <details class="poker-hand-rankings">
+          <summary>Rangering af hænder (stærkest først)</summary>
+          <ol class="poker-hand-list">
+            <li><strong>Straight flush</strong> – 5 kort i rækkefølge i samme kulør (fx 9♥8♥7♥6♥5♥)</li>
+            <li><strong>Fire ens</strong> – 4 kort af samme rang (fx K♦K♥K♣K♠)</li>
+            <li><strong>Fuldt hus</strong> – Triss + par (fx Q♠Q♥Q♦4♣4♥)</li>
+            <li><strong>Flush</strong> – 5 kort i samme kulør (fx A♠J♠9♠6♠2♠)</li>
+            <li><strong>Straight</strong> – 5 kort i rækkefølge (fx 10♦9♣8♥7♠6♦)</li>
+            <li><strong>Triss</strong> – 3 kort af samme rang (fx 7♠7♥7♦)</li>
+            <li><strong>To par</strong> – To par (fx K♥K♦ og 3♣3♠)</li>
+            <li><strong>Par</strong> – 2 kort af samme rang (fx A♣A♥)</li>
+            <li><strong>Højeste kort</strong> – Ingen kombination, højeste kort afgør</li>
+          </ol>
+        </details>
       </div>
     </div>
 

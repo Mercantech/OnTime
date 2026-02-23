@@ -1,5 +1,5 @@
 const { createDeck, shuffle } = require('./cards');
-const { bestFiveFromSeven, findWinners } = require('./handRank');
+const { bestFiveFromSeven, findWinners, getShowdownHandInfos } = require('./handRank');
 
 const PHASES = ['waiting', 'preflop', 'flop', 'turn', 'river', 'showdown'];
 
@@ -27,6 +27,7 @@ function createTableState(players, smallBlind = 1, bigBlind = 2) {
     bigBlind,
     winners: null,
     firstToActThisRound: 0,
+    showdownHands: null,
   };
 }
 
@@ -39,6 +40,7 @@ function startHand(state) {
     state.phase = 'waiting';
     state.communityCards = [];
     state.winners = null;
+    state.showdownHands = null;
     state.players.forEach((p) => {
       p.holeCards = [];
       p.folded = false;
@@ -90,12 +92,23 @@ function advanceToNextPhase(state) {
   const inHand = state.players.filter((p) => !p.folded);
   if (inHand.length === 1) {
     state.phase = 'showdown';
-    state.winners = [state.players.indexOf(inHand[0])];
+    const winnerIdx = state.players.indexOf(inHand[0]);
+    state.winners = [winnerIdx];
+    state.players[winnerIdx].chipsInHand += state.pot;
+    state.pot = 0;
+    state.showdownHands = [{ playerIndex: winnerIdx, handName: 'Vandt (alle foldede)', description: '' }];
+    state.players = state.players.filter((p) => p.chipsInHand > 0);
     return;
   }
   if (active.length < 2) {
     state.phase = 'showdown';
     state.winners = state.players.map((p, i) => (p.folded ? null : i)).filter((x) => x !== null);
+    const winnerIdx = state.winners[0];
+    if (winnerIdx != null) {
+      state.players[winnerIdx].chipsInHand += state.pot;
+      state.pot = 0;
+    }
+    state.players = state.players.filter((p) => p.chipsInHand > 0);
     return;
   }
 
@@ -130,6 +143,8 @@ function advanceToNextPhase(state) {
     state.phase = 'showdown';
     const stillIn = state.players.map((p, i) => (p.folded ? null : { i, cards: [...p.holeCards, ...state.communityCards] })).filter((x) => x !== null);
     const cardsPerPlayer = stillIn.map((x) => x.cards);
+    const handInfos = getShowdownHandInfos(cardsPerPlayer);
+    state.showdownHands = stillIn.map((x, idx) => ({ playerIndex: x.i, handName: handInfos[idx].handName, description: handInfos[idx].description }));
     const winnerIndices = findWinners(cardsPerPlayer);
     state.winners = winnerIndices.map((wi) => stillIn[wi].i);
     const share = Math.floor(state.pot / state.winners.length);
@@ -138,6 +153,7 @@ function advanceToNextPhase(state) {
       state.players[idx].chipsInHand += share + (i < remainder ? 1 : 0);
     });
     state.pot = 0;
+    state.players = state.players.filter((p) => p.chipsInHand > 0);
     return;
   }
 }
@@ -175,6 +191,8 @@ function applyAction(state, playerIndex, action, amount = 0) {
       state.winners = [winnerIdx];
       state.players[winnerIdx].chipsInHand += state.pot;
       state.pot = 0;
+      state.showdownHands = [{ playerIndex: winnerIdx, handName: 'Vandt (alle foldede)', description: '' }];
+      state.players = state.players.filter((p) => p.chipsInHand > 0);
       return { ok: true, phase: 'showdown' };
     }
     const next = nextPlayer(state);
@@ -270,6 +288,7 @@ function getPublicState(state, forUserId) {
     smallBlind: state.smallBlind,
     bigBlind: state.bigBlind,
     winners: state.winners,
+    showdownHands: state.showdownHands,
   };
 }
 

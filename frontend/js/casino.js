@@ -442,6 +442,9 @@ function updatePokerUI(state) {
   const startBtn = document.getElementById('poker-start-hand');
   const betActions = document.getElementById('poker-bet-actions');
   const msgEl = document.getElementById('poker-message');
+  const detailEl = document.getElementById('poker-showdown-detail');
+  if (state.phase !== 'showdown' && detailEl) detailEl.hidden = true;
+
   if (state.phase === 'waiting') {
     if (startBtn) {
       startBtn.hidden = false;
@@ -456,17 +459,36 @@ function updatePokerUI(state) {
       msgEl.textContent = txt;
     }
   } else if (state.phase === 'showdown') {
-    const n = (state.players || []).filter((p) => p.chipsInHand > 0).length;
+    const n = (state.players || []).length;
     if (startBtn) {
       startBtn.hidden = false;
       startBtn.disabled = n < 2;
     }
     if (betActions) betActions.hidden = true;
+    if (detailEl) {
+      const hands = state.showdownHands || [];
+      if (hands.length) {
+        detailEl.hidden = false;
+        const winnerSet = new Set(state.winners || []);
+        let html = '<p class="poker-showdown-title">Hænder denne runde:</p><ul class="poker-showdown-list">';
+        hands.forEach((h) => {
+          const p = (state.players || [])[h.playerIndex];
+          const name = p?.name || 'Spiller ' + (h.playerIndex + 1);
+          const isWinner = winnerSet.has(h.playerIndex);
+          const line = h.description ? (h.handName + ' – ' + h.description) : h.handName;
+          html += '<li class="' + (isWinner ? 'poker-showdown-winner' : '') + '">' + name + ': ' + line + (isWinner ? ' ✓' : '') + '</li>';
+        });
+        html += '</ul>';
+        detailEl.innerHTML = html;
+      } else {
+        detailEl.hidden = true;
+      }
+    }
     if (msgEl) {
       msgEl.hidden = false;
       const winners = state.winners || [];
       const names = winners.map((wi) => (state.players || [])[wi]?.name).filter(Boolean);
-      msgEl.textContent = (names.length ? 'Vinder(e): ' + names.join(', ') + '. ' : '') + (n >= 2 ? 'Klik "Start hånd" for næste runde.' : '');
+      msgEl.textContent = (names.length ? 'Vinder(e): ' + names.join(', ') + '. ' : '') + (n >= 2 ? 'Klik "Start hånd" for næste runde.' : (n === 1 ? 'Du er den sidste – du vandt!' : ''));
     }
   } else {
     if (startBtn) startBtn.hidden = true;
@@ -477,11 +499,12 @@ function updatePokerUI(state) {
       betActions.hidden = !isMyTurn;
       const toCall = (state.currentBetToCall || 0) - (me ? me.totalBetThisRound || 0 : 0);
       const foldBtn = document.getElementById('poker-fold');
-      const checkBtn = document.getElementById('poker-check');
-      const callBtn = document.getElementById('poker-call');
+      const checkCallBtn = document.getElementById('poker-check-call');
       if (foldBtn) foldBtn.disabled = false;
-      if (checkBtn) checkBtn.disabled = toCall > 0;
-      if (callBtn) callBtn.textContent = toCall > 0 ? 'Call ' + toCall : 'Check';
+      if (checkCallBtn) {
+        checkCallBtn.disabled = false;
+        checkCallBtn.textContent = toCall > 0 ? 'Call ' + toCall : 'Check';
+      }
       const raiseInput = document.getElementById('poker-raise-amount');
       if (raiseInput) raiseInput.value = Math.max(state.bigBlind || 2, toCall + (state.bigBlind || 2));
     }
@@ -538,11 +561,11 @@ document.getElementById('poker-start-hand')?.addEventListener('click', () => {
 document.getElementById('poker-fold')?.addEventListener('click', () => {
   if (pokerSocket?.connected) pokerSocket.emit('poker:action', { action: 'fold' });
 });
-document.getElementById('poker-check')?.addEventListener('click', () => {
-  if (pokerSocket?.connected) pokerSocket.emit('poker:action', { action: 'check' });
-});
-document.getElementById('poker-call')?.addEventListener('click', () => {
-  if (pokerSocket?.connected) pokerSocket.emit('poker:action', { action: 'call' });
+document.getElementById('poker-check-call')?.addEventListener('click', () => {
+  if (!pokerSocket?.connected) return;
+  const btn = document.getElementById('poker-check-call');
+  const isCall = btn && btn.textContent.startsWith('Call');
+  pokerSocket.emit('poker:action', { action: isCall ? 'call' : 'check' });
 });
 document.getElementById('poker-raise')?.addEventListener('click', () => {
   const amount = parseInt(document.getElementById('poker-raise-amount')?.value, 10) || 2;

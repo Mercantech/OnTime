@@ -117,6 +117,44 @@ function compareRank(a, b) {
   return 0;
 }
 
+const RANK_NAMES = { 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '10', 11: 'J', 12: 'Q', 13: 'K', 14: 'A' };
+
+const HAND_TYPE_NAMES = {
+  1: 'Højeste kort',
+  2: 'Par',
+  3: 'To par',
+  4: 'Triss',
+  5: 'Straight',
+  6: 'Flush',
+  7: 'Fuldt hus',
+  8: 'Fire ens',
+  9: 'Straight flush',
+};
+
+function describeHand(rankResult) {
+  if (!rankResult) return { handName: '–', description: '' };
+  const name = HAND_TYPE_NAMES[rankResult.type] || 'Hånd';
+  let desc = '';
+  if (rankResult.type === 9) desc = rankResult.values[0] === 14 ? 'Kongelig' : `højeste ${RANK_NAMES[rankResult.values[0]] || rankResult.values[0]}`;
+  else if (rankResult.type === 8) desc = `4 × ${RANK_NAMES[rankResult.values[0]] || rankResult.values[0]}`;
+  else if (rankResult.type === 7) desc = `${RANK_NAMES[rankResult.values[0]] || ''} over ${RANK_NAMES[rankResult.values[1]] || ''}`;
+  else if (rankResult.type === 6) desc = `højeste ${RANK_NAMES[rankResult.values[0]] || rankResult.values[0]}`;
+  else if (rankResult.type === 5) desc = `til ${RANK_NAMES[rankResult.values[0]] || rankResult.values[0]}`;
+  else if (rankResult.type === 4) desc = `3 × ${RANK_NAMES[rankResult.values[0]] || rankResult.values[0]}`;
+  else if (rankResult.type === 3) desc = `${RANK_NAMES[rankResult.values[0]] || ''} og ${RANK_NAMES[rankResult.values[1]] || ''}`;
+  else if (rankResult.type === 2) desc = `${RANK_NAMES[rankResult.values[0]] || rankResult.values[0]}`;
+  else if (rankResult.type === 1 && rankResult.values[0]) desc = RANK_NAMES[rankResult.values[0]] || '';
+  return { handName: name, description: desc.trim() };
+}
+
+function getShowdownHandInfos(cardsPerPlayer) {
+  return cardsPerPlayer.map((cards) => {
+    const rank = bestFiveFromSeven(cards);
+    const { handName, description } = describeHand(rank);
+    return { handName, description };
+  });
+}
+
 function findWinners(cardsPerPlayer) {
   const ranked = cardsPerPlayer.map((cards) => bestFiveFromSeven(cards));
   let best = ranked[0];
@@ -134,4 +172,4 @@ function findWinners(cardsPerPlayer) {
   return winners;
 }
 
-module.exports = { rankHand, bestFiveFromSeven, compareRank, findWinners };
+module.exports = { rankHand, bestFiveFromSeven, compareRank, findWinners, describeHand, getShowdownHandInfos, HAND_TYPE_NAMES };
