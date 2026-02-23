@@ -216,17 +216,30 @@ async function loadLeaderboard() {
     if (totalEl) {
       totalEl.innerHTML = `<strong>Klasse total:</strong> ${data.classTotal ?? '–'} / ${data.maxPossibleClass ?? '–'} point (${data.classPercentage ?? '–'}%)`;
     }
-    const gameIcons = (gamesToday) => {
+    const gameLabels = { wordle: 'Wordle', flag: 'Dagens flag', sudoku: 'Dagens Sudoku', coinflip: 'Coinflip', one_armed_bandit: 'Enarmet bandit', roulette: 'Roulette', blackjack: 'Blackjack', poker: 'Poker' };
+    const gameIcons = (gamesToday, maxVisible = 5) => {
       const g = Array.isArray(gamesToday) ? gamesToday : [];
+      const order = ['wordle', 'flag', 'sudoku', 'coinflip', 'one_armed_bandit', 'roulette', 'blackjack', 'poker'];
       const parts = [];
-      if (g.includes('wordle')) parts.push('<a href="/spil/wordle" class="lb-game-link" title="Wordle">🟩</a>');
-      if (g.includes('flag')) parts.push('<a href="/spil/flag" class="lb-game-link" title="Dagens flag">🏳️</a>');
-      if (g.includes('sudoku')) parts.push('<a href="/spil/sudoku" class="lb-game-link" title="Dagens Sudoku">🔢</a>');
-      if (g.includes('coinflip')) parts.push('<span class="lb-game-icon" title="Coinflip">🪙</span>');
-      if (g.includes('one_armed_bandit')) parts.push('<span class="lb-game-icon" title="Enarmet bandit">🎰</span>');
-      if (g.includes('roulette')) parts.push('<span class="lb-game-icon" title="Roulette">🎡</span>');
-      if (g.includes('blackjack')) parts.push('<span class="lb-game-icon" title="Blackjack">🃏</span>');
-      return parts.length ? '<span class="lb-games" title="Løst spil i dag">' + parts.join('') + '</span>' : '';
+      order.forEach((key) => {
+        if (!g.includes(key)) return;
+        const label = gameLabels[key] || key;
+        if (key === 'wordle') parts.push('<a href="/spil/wordle" class="lb-game-link" title="' + label + '">🟩</a>');
+        else if (key === 'flag') parts.push('<a href="/spil/flag" class="lb-game-link" title="' + label + '">🏳️</a>');
+        else if (key === 'sudoku') parts.push('<a href="/spil/sudoku" class="lb-game-link" title="' + label + '">🔢</a>');
+        else if (key === 'coinflip') parts.push('<span class="lb-game-icon" title="' + label + '">🪙</span>');
+        else if (key === 'one_armed_bandit') parts.push('<span class="lb-game-icon" title="' + label + '">🎰</span>');
+        else if (key === 'roulette') parts.push('<span class="lb-game-icon" title="' + label + '">🎡</span>');
+        else if (key === 'blackjack') parts.push('<span class="lb-game-icon" title="' + label + '">🃏</span>');
+        else if (key === 'poker') parts.push('<span class="lb-game-icon" title="' + label + '">🎴</span>');
+      });
+      if (parts.length === 0) return '';
+      if (parts.length <= maxVisible) return '<span class="lb-games" title="Spil i dag">' + parts.join('') + '</span>';
+      const keysInOrder = order.filter((k) => g.includes(k));
+      const visible = parts.slice(0, maxVisible).join('');
+      const restLabels = keysInOrder.slice(maxVisible).map((k) => gameLabels[k] || k);
+      const moreTitle = restLabels.length ? 'Flere: ' + restLabels.join(', ') : 'Flere spil';
+      return '<span class="lb-games" title="Spil i dag">' + visible + '<span class="lb-games-more" title="' + moreTitle.replace(/"/g, '&quot;') + '">+' + (parts.length - maxVisible) + '</span></span>';
     };
 
     if (podiumEl) {

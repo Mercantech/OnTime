@@ -1073,6 +1073,12 @@ main.app-main.dashboard {
   opacity: 0.9;
   cursor: default;
 }
+.lb-games-more {
+  font-size: 0.8em;
+  color: var(--text-muted);
+  margin-left: 0.1rem;
+  cursor: help;
+}
 .leaderboard-profile-link,
 .podium-profile-link {
   color: inherit;

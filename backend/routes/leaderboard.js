@@ -95,13 +95,13 @@ router.get('/class', auth, async (req, res) => {
     const gamesTodayByUser = {};
     gamesTodayRes.rows.forEach((row) => { gamesTodayByUser[row.user_id] = [...(row.games || [])]; });
 
-    const reasonToGame = { 'Casino spin': 'one_armed_bandit', 'Roulette': 'roulette', 'Blackjack': 'blackjack' };
+    const reasonToGame = { 'Casino spin': 'one_armed_bandit', 'Roulette': 'roulette', 'Blackjack': 'blackjack', 'Poker buy-in': 'poker', 'Poker refund': 'poker', 'Poker afsluttet': 'poker', 'Poker afsluttet (admin)': 'poker' };
     if (userIds.length) {
       const casinoRes = await pool.query(
         `SELECT DISTINCT user_id, reason
          FROM point_transactions
          WHERE created_at >= CURRENT_DATE AND created_at < CURRENT_DATE + interval '1 day'
-           AND user_id = ANY($1::int[]) AND reason IN ('Casino spin', 'Roulette', 'Blackjack')`,
+           AND user_id = ANY($1::int[]) AND reason IN ('Casino spin', 'Roulette', 'Blackjack', 'Poker buy-in', 'Poker refund', 'Poker afsluttet', 'Poker afsluttet (admin)')`,
         [userIds]
       );
       casinoRes.rows.forEach((row) => {

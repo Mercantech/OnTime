@@ -118,17 +118,30 @@
       const podiumEl = document.getElementById('leaderboard-podium');
       const listEl = document.getElementById('leaderboard');
       const students = data.students || [];
-      function gameIcons(gamesToday) {
+      const gameLabels = { wordle: 'Wordle', flag: 'Dagens flag', sudoku: 'Dagens Sudoku', coinflip: 'Coinflip', one_armed_bandit: 'Enarmet bandit', roulette: 'Roulette', blackjack: 'Blackjack', poker: 'Poker' };
+      function gameIcons(gamesToday, maxVisible) {
+        maxVisible = maxVisible || 5;
         const g = Array.isArray(gamesToday) ? gamesToday : [];
+        const order = ['wordle', 'flag', 'sudoku', 'coinflip', 'one_armed_bandit', 'roulette', 'blackjack', 'poker'];
         const parts = [];
-        if (g.includes('wordle')) parts.push('🟩');
-        if (g.includes('flag')) parts.push('🏳️');
-        if (g.includes('sudoku')) parts.push('🔢');
-        if (g.includes('coinflip')) parts.push('🪙');
-        if (g.includes('one_armed_bandit')) parts.push('🎰');
-        if (g.includes('roulette')) parts.push('🎡');
-        if (g.includes('blackjack')) parts.push('🃏');
-        return parts.length ? '<span class="lb-games" title="Løst spil i dag">' + parts.join('') + '</span>' : '';
+        order.forEach(function (key) {
+          if (!g.includes(key)) return;
+          if (key === 'wordle') parts.push('🟩');
+          else if (key === 'flag') parts.push('🏳️');
+          else if (key === 'sudoku') parts.push('🔢');
+          else if (key === 'coinflip') parts.push('🪙');
+          else if (key === 'one_armed_bandit') parts.push('🎰');
+          else if (key === 'roulette') parts.push('🎡');
+          else if (key === 'blackjack') parts.push('🃏');
+          else if (key === 'poker') parts.push('🎴');
+        });
+        if (parts.length === 0) return '';
+        if (parts.length <= maxVisible) return '<span class="lb-games" title="Spil i dag">' + parts.join('') + '</span>';
+        const keysInOrder = order.filter(function (k) { return g.includes(k); });
+        const visible = parts.slice(0, maxVisible).join('');
+        const restLabels = keysInOrder.slice(maxVisible).map(function (k) { return gameLabels[k] || k; });
+        const moreTitle = restLabels.length ? 'Flere: ' + restLabels.join(', ') : 'Flere spil';
+        return '<span class="lb-games" title="Spil i dag">' + visible + '<span class="lb-games-more" title="' + moreTitle.replace(/"/g, '&quot;') + '">+' + (parts.length - maxVisible) + '</span></span>';
       }
       if (totalEl) totalEl.innerHTML = '<strong>Klasse total:</strong> ' + data.classTotal + ' / ' + data.maxPossibleClass + ' point (' + data.classPercentage + '%)';
       if (podiumEl) {
