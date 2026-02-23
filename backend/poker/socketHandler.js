@@ -63,9 +63,13 @@ function registerPoker(io) {
         table.playerSockets.set(userId, socket.id);
         await socket.join(ROOM_PREFIX + tableId);
         socket.pokerTableId = tableId;
-        const publicState = getPublicState(table.state, userId);
-        socket.emit('poker:state', publicState);
-        io.to(ROOM_PREFIX + tableId).emit('poker:player_joined', { userId });
+        // Send opdateret state til alle i rummet (så opretteren også ser den nye spiller og kan starte)
+        table.state.players.forEach((p) => {
+          const sid = table.playerSockets.get(p.userId);
+          if (sid) {
+            io.to(sid).emit('poker:state', getPublicState(table.state, p.userId));
+          }
+        });
       } catch (e) {
         console.error('poker:join_room', e);
         socket.emit('poker:error', { message: 'Kunne ikke joine bord' });
@@ -138,16 +142,40 @@ function registerPoker(io) {
       });
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
       const tableId = socket.pokerTableId;
-      if (tableId) {
-        const table = pokerTables.get(tableId);
-        if (table) {
-          table.playerSockets.delete(socket.userId);
-          if (table.playerSockets.size === 0) {
-            pokerTables.delete(tableId);
-          }
+      const userId = socket.userId;
+      if (!tableId) return;
+      const table = pokerTables.get(tableId);
+      if (!table) return;
+      const player = table.state.players.find((p) => p.userId === userId);
+      const wasWaiting = table.state.phase === 'waiting';
+      if (wasWaiting && player && player.chipsInHand > 0) {
+        try {
+          await pool.query(
+            `INSERT INTO point_transactions (user_id, delta, reason) VALUES ($1, $2, $3)`,
+            [userId, player.chipsInHand, 'Poker refund']
+          );
+          await pool.query(
+            `UPDATE poker_table_players SET left_at = NOW(), chips_in_hand = 0 WHERE table_id = $1 AND user_id = $2`,
+            [tableId, userId]
+          );
+        } catch (e) {
+          console.error('Poker refund ved disconnect:', e);
         }
+        const idx = table.state.players.findIndex((p) => p.userId === userId);
+        if (idx >= 0) table.state.players.splice(idx, 1);
+      }
+      table.playerSockets.delete(userId);
+      if (table.playerSockets.size === 0) {
+        pokerTables.delete(tableId);
+      } else {
+        table.state.players.forEach((p) => {
+          const sid = table.playerSockets.get(p.userId);
+          if (sid) {
+            io.to(sid).emit('poker:state', getPublicState(table.state, p.userId));
+          }
+        });
       }
     });
   });
