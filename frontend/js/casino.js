@@ -470,15 +470,21 @@ function updatePokerUI(state) {
       if (hands.length) {
         detailEl.hidden = false;
         const winnerSet = new Set(state.winners || []);
-        let html = '<p class="poker-showdown-title">Hænder denne runde:</p><ul class="poker-showdown-list">';
-        hands.forEach((h) => {
+        let html = '<h3 class="showdown-box-title">Hænder denne runde</h3><div class="showdown-list">';
+        hands.forEach((h, idx) => {
           const p = (state.players || [])[h.playerIndex];
           const name = p?.name || 'Spiller ' + (h.playerIndex + 1);
           const isWinner = winnerSet.has(h.playerIndex);
-          const line = h.description ? (h.handName + ' – ' + h.description) : h.handName;
-          html += '<li class="' + (isWinner ? 'poker-showdown-winner' : '') + '">' + name + ': ' + line + (isWinner ? ' ✓' : '') + '</li>';
+          const handLine = h.description ? (h.handName + ' – ' + h.description) : h.handName;
+          const badge = isWinner ? '✓' : (idx + 1);
+          const badgeClass = 'showdown-badge' + (isWinner ? ' showdown-badge-winner' : '');
+          html += '<div class="showdown-item' + (isWinner ? ' showdown-item-winner' : '') + '">';
+          html += '<span class="' + badgeClass + '" aria-label="' + (isWinner ? 'Vinder' : 'Spiller ' + (idx + 1)) + '">' + badge + '</span>';
+          html += '<div class="showdown-text"><strong class="showdown-player">' + escapeHtml(name) + '</strong><span class="showdown-hand">' + escapeHtml(handLine) + '</span></div>';
+          if (isWinner) html += '<span class="showdown-winner-label">Vinder</span>';
+          html += '</div>';
         });
-        html += '</ul>';
+        html += '</div>';
         detailEl.innerHTML = html;
       } else {
         detailEl.hidden = true;
@@ -574,6 +580,12 @@ document.getElementById('poker-raise')?.addEventListener('click', () => {
 
 const SUIT_SYMBOLS = { H: '♥', D: '♦', C: '♣', S: '♠' };
 const SUIT_RED = { H: true, D: true, C: false, S: false };
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  const t = String(s);
+  return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 
 function renderBlackjackCard(cardStr, hidden) {
   const span = document.createElement('span');
