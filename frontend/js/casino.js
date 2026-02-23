@@ -773,11 +773,15 @@ function initHandRankingsVisual() {
   if (!section) return;
   section.querySelectorAll('.hand-rank-item').forEach((row) => {
     const cardsStr = row.getAttribute('data-cards');
+    const countingStr = row.getAttribute('data-counting');
     const cardsContainer = row.querySelector('.hand-rank-cards');
     if (!cardsStr || !cardsContainer) return;
+    const countingIndices = countingStr ? new Set(countingStr.trim().split(/\s+/).map((s) => parseInt(s, 10)).filter((n) => !Number.isNaN(n))) : null;
     cardsContainer.innerHTML = '';
-    cardsStr.trim().split(/\s+/).forEach((code) => {
-      cardsContainer.appendChild(renderBlackjackCard(code, false));
+    cardsStr.trim().split(/\s+/).forEach((code, i) => {
+      const cardEl = renderBlackjackCard(code, false);
+      if (countingIndices && countingIndices.has(i)) cardEl.classList.add('hand-rank-card-counts');
+      cardsContainer.appendChild(cardEl);
     });
   });
 }

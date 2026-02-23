@@ -114,11 +114,12 @@
     <!-- View: Poker -->
     <div id="casino-view-poker" class="casino-view" hidden>
       <a href="#" id="casino-back-from-poker" class="casino-back-link">← Casino</a>
-      <div class="poker-container">
-        <h2 class="casino-title">🃏 Poker – Texas Hold'em</h2>
-        <p class="poker-desc">Op til 4 spillere. Buy-in: 5 point. Opret bord eller join med kode.</p>
-        <!-- Lobby -->
-        <div id="poker-lobby" class="poker-lobby">
+      <div class="poker-container poker-two-col">
+        <div class="poker-main-col">
+          <h2 class="casino-title">🃏 Poker – Texas Hold'em</h2>
+          <p class="poker-desc">Op til 4 spillere. Buy-in: 5 point. Opret bord eller join med kode.</p>
+          <!-- Lobby -->
+          <div id="poker-lobby" class="poker-lobby">
           <div class="poker-lobby-actions">
             <button type="button" id="poker-create-table" class="poker-btn">Opret bord (5 pt)</button>
             <div class="poker-join-row">
@@ -155,6 +156,7 @@
           <p id="poker-message" class="poker-message" hidden></p>
           <div id="poker-showdown-detail" class="poker-showdown-detail" hidden></div>
         </div>
+        <aside class="poker-rankings-col">
         <section class="poker-hand-rankings-visual" id="poker-hand-rankings-visual" aria-label="Rangering af pokerhænder">
           <h3 class="hand-rankings-title">Rangering af hænder</h3>
           <p class="hand-rankings-subtitle">Stærkest først – med eksempelhænder</p>
@@ -199,7 +201,7 @@
               </div>
               <div class="hand-rank-cards" aria-label="Eksempel: 10 til 6"></div>
             </div>
-            <div class="hand-rank-item" data-cards="7S 7H 7D 2C 3D">
+            <div class="hand-rank-item" data-cards="7S 7H 7D 2C 3D" data-counting="0 1 2">
               <span class="hand-rank-num">6</span>
               <div class="hand-rank-text">
                 <strong class="hand-rank-name">Triss</strong>
@@ -207,7 +209,7 @@
               </div>
               <div class="hand-rank-cards" aria-label="Eksempel: tre syvere"></div>
             </div>
-            <div class="hand-rank-item" data-cards="KH KD 3C 3S AC">
+            <div class="hand-rank-item" data-cards="KH KD 3C 3S AC" data-counting="0 1 2 3">
               <span class="hand-rank-num">7</span>
               <div class="hand-rank-text">
                 <strong class="hand-rank-name">To par</strong>
@@ -215,7 +217,7 @@
               </div>
               <div class="hand-rank-cards" aria-label="Eksempel: to konger og to treere"></div>
             </div>
-            <div class="hand-rank-item" data-cards="AC AH 10S 9D 2C">
+            <div class="hand-rank-item" data-cards="AC AH 10S 9D 2C" data-counting="0 1">
               <span class="hand-rank-num">8</span>
               <div class="hand-rank-text">
                 <strong class="hand-rank-name">Par</strong>
@@ -223,7 +225,7 @@
               </div>
               <div class="hand-rank-cards" aria-label="Eksempel: par esser"></div>
             </div>
-            <div class="hand-rank-item" data-cards="AS KH 10D 8C 3S">
+            <div class="hand-rank-item" data-cards="AS KH 10D 8C 3S" data-counting="0">
               <span class="hand-rank-num">9</span>
               <div class="hand-rank-text">
                 <strong class="hand-rank-name">Højeste kort</strong>
@@ -233,6 +235,7 @@
             </div>
           </div>
         </section>
+        </aside>
       </div>
     </div>
 
