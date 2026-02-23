@@ -174,12 +174,43 @@ function describeHand(rankResult) {
   return { handName: name, description: desc.trim() };
 }
 
+function getCountingIndices(rankResult, fiveCards) {
+  if (!rankResult || !fiveCards || fiveCards.length !== 5) return [0, 1, 2, 3, 4];
+  const rankIndices = getRankIndices(fiveCards);
+  const type = rankResult.type;
+  if (type === 9 || type === 7 || type === 6 || type === 5) return [0, 1, 2, 3, 4];
+  if (type === 8) {
+    const r = rankResult.values[0];
+    return rankIndices.map((ri, i) => (ri === r ? i : -1)).filter((i) => i >= 0);
+  }
+  if (type === 4) {
+    const r = rankResult.values[0];
+    return rankIndices.map((ri, i) => (ri === r ? i : -1)).filter((i) => i >= 0);
+  }
+  if (type === 3) {
+    const r1 = rankResult.values[0];
+    const r2 = rankResult.values[1];
+    return rankIndices.map((ri, i) => (ri === r1 || ri === r2 ? i : -1)).filter((i) => i >= 0);
+  }
+  if (type === 2) {
+    const r = rankResult.values[0];
+    return rankIndices.map((ri, i) => (ri === r ? i : -1)).filter((i) => i >= 0);
+  }
+  if (type === 1 && rankResult.values[0]) {
+    const r = rankResult.values[0];
+    const idx = rankIndices.findIndex((ri) => ri === r);
+    return idx >= 0 ? [idx] : [0];
+  }
+  return [0, 1, 2, 3, 4];
+}
+
 function getShowdownHandInfos(cardsPerPlayer) {
   return cardsPerPlayer.map((cards) => {
     const rank = bestFiveFromSeven(cards);
     const bestCards = bestFiveCardsFromSeven(cards);
     const { handName, description } = describeHand(rank);
-    return { handName, description, bestCards: bestCards || [] };
+    const countingIndices = getCountingIndices(rank, bestCards || []);
+    return { handName, description, bestCards: bestCards || [], countingIndices };
   });
 }
 

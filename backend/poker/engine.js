@@ -149,6 +149,7 @@ function advanceToNextPhase(state) {
       handName: handInfos[idx].handName,
       description: handInfos[idx].description,
       bestCards: handInfos[idx].bestCards || [],
+      countingIndices: handInfos[idx].countingIndices || [],
     }));
     const winnerIndices = findWinners(cardsPerPlayer);
     state.winners = winnerIndices.map((wi) => stillIn[wi].i);

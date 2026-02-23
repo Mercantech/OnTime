@@ -625,6 +625,12 @@
 }
 .poker-showdown-detail .showdown-cards .blackjack-card-rank { font-size: 0.65rem; }
 .poker-showdown-detail .showdown-cards .blackjack-card-suit { font-size: 0.75rem; }
+.poker-showdown-detail .showdown-cards .blackjack-card.hand-rank-card-counts {
+  box-shadow: 0 0 0 2px #22c55e, 0 2px 8px rgba(34, 197, 94, 0.4);
+}
+.poker-showdown-detail .showdown-cards .blackjack-card:not(.hand-rank-card-counts) {
+  opacity: 0.5;
+}
 .poker-showdown-detail .showdown-item:hover {
   background: rgba(0,0,0,0.35);
   border-color: rgba(255,255,255,0.1);

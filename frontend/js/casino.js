@@ -523,10 +523,15 @@ function updatePokerUI(state) {
         hands.forEach((h, idx) => {
           const cards = h.bestCards || [];
           if (cards.length === 0) return;
+          const countingSet = (h.countingIndices && h.countingIndices.length) ? new Set(h.countingIndices) : null;
           const row = detailEl.querySelector('.showdown-item[data-hand-index="' + idx + '"]');
           const container = row?.querySelector('.showdown-cards');
           if (!container) return;
-          cards.forEach((code) => container.appendChild(renderBlackjackCard(code, false)));
+          cards.forEach((code, i) => {
+            const cardEl = renderBlackjackCard(code, false);
+            if (countingSet && countingSet.has(i)) cardEl.classList.add('hand-rank-card-counts');
+            container.appendChild(cardEl);
+          });
         });
       } else {
         detailEl.hidden = true;
