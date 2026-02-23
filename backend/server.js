@@ -1,7 +1,9 @@
 process.env.TZ = process.env.TZ || 'Europe/Copenhagen';
 const path = require('path');
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
+const { attachSocket } = require('./socket');
 const authRoutes = require('./routes/auth');
 const checkinRoutes = require('./routes/checkin');
 const leaderboardRoutes = require('./routes/leaderboard');
@@ -12,6 +14,7 @@ const badgesRoutes = require('./routes/badges');
 const gamesRoutes = require('./routes/games');
 const betsRoutes = require('./routes/bets');
 const casinoRoutes = require('./routes/casino');
+const pokerRoutes = require('./routes/poker');
 const config = require('./config');
 const { run: runMigrations } = require('./migrate');
 const { run: ensureAdmin } = require('./ensureAdmin');
@@ -32,6 +35,7 @@ app.use('/api/badges', badgesRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/bets', betsRoutes);
 app.use('/api/casino', casinoRoutes);
+app.use('/api/poker', pokerRoutes);
 
 const frontendDir = path.join(__dirname, process.env.NODE_ENV === 'production' ? 'frontend' : path.join('..', 'frontend'));
 app.use(express.static(frontendDir, {
@@ -102,10 +106,15 @@ app.get('/profil/:id', (req, res) => {
 });
 
 const PORT = config.port;
+const server = http.createServer(app);
+const io = attachSocket(server);
+app.set('io', io);
+require('./poker/socketHandler').registerPoker(io);
+
 runMigrations()
   .then(() => ensureAdmin())
   .then(() => {
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`OnTime server kører på http://localhost:${PORT} (${getVersion()})`);
     });
   })

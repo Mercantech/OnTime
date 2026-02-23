@@ -256,6 +256,7 @@ const viewSlotEl = document.getElementById('casino-view-slot');
 const viewCoinflipEl = document.getElementById('casino-view-coinflip');
 const viewRouletteEl = document.getElementById('casino-view-roulette');
 const viewBlackjackEl = document.getElementById('casino-view-blackjack');
+const viewPokerEl = document.getElementById('casino-view-poker');
 
 function showMenu() {
   if (menuEl) menuEl.hidden = false;
@@ -263,6 +264,7 @@ function showMenu() {
   if (viewCoinflipEl) viewCoinflipEl.hidden = true;
   if (viewRouletteEl) viewRouletteEl.hidden = true;
   if (viewBlackjackEl) viewBlackjackEl.hidden = true;
+  if (viewPokerEl) viewPokerEl.hidden = true;
 }
 
 function showSlot() {
@@ -271,6 +273,7 @@ function showSlot() {
   if (viewCoinflipEl) viewCoinflipEl.hidden = true;
   if (viewRouletteEl) viewRouletteEl.hidden = true;
   if (viewBlackjackEl) viewBlackjackEl.hidden = true;
+  if (viewPokerEl) viewPokerEl.hidden = true;
 }
 
 function showCoinflip() {
@@ -279,6 +282,7 @@ function showCoinflip() {
   if (viewCoinflipEl) viewCoinflipEl.hidden = false;
   if (viewRouletteEl) viewRouletteEl.hidden = true;
   if (viewBlackjackEl) viewBlackjackEl.hidden = true;
+  if (viewPokerEl) viewPokerEl.hidden = true;
   loadStatus();
 }
 
@@ -288,6 +292,7 @@ function showRoulette() {
   if (viewCoinflipEl) viewCoinflipEl.hidden = true;
   if (viewRouletteEl) viewRouletteEl.hidden = false;
   if (viewBlackjackEl) viewBlackjackEl.hidden = true;
+  if (viewPokerEl) viewPokerEl.hidden = true;
   loadStatus();
   buildRouletteWheel();
   const resultEl = document.getElementById('roulette-result');
@@ -338,6 +343,7 @@ function showBlackjack() {
   if (viewCoinflipEl) viewCoinflipEl.hidden = true;
   if (viewRouletteEl) viewRouletteEl.hidden = true;
   if (viewBlackjackEl) viewBlackjackEl.hidden = false;
+  if (viewPokerEl) viewPokerEl.hidden = true;
   loadStatus();
   const msgEl = document.getElementById('blackjack-message');
   if (msgEl) msgEl.hidden = true;
@@ -352,6 +358,196 @@ function showBlackjack() {
   if (dealerValEl) { dealerValEl.hidden = true; dealerValEl.textContent = ''; }
   if (playerValEl) { playerValEl.hidden = true; playerValEl.textContent = ''; }
 }
+
+function showPoker() {
+  if (menuEl) menuEl.hidden = true;
+  if (viewSlotEl) viewSlotEl.hidden = true;
+  if (viewCoinflipEl) viewCoinflipEl.hidden = true;
+  if (viewRouletteEl) viewRouletteEl.hidden = true;
+  if (viewBlackjackEl) viewBlackjackEl.hidden = true;
+  if (viewPokerEl) viewPokerEl.hidden = false;
+  loadStatus();
+  const lobbyEl = document.getElementById('poker-lobby');
+  const gameEl = document.getElementById('poker-game');
+  const createdEl = document.getElementById('poker-created');
+  if (lobbyEl) lobbyEl.hidden = false;
+  if (gameEl) gameEl.hidden = true;
+  if (createdEl) createdEl.hidden = true;
+  const errEl = document.getElementById('poker-lobby-error');
+  if (errEl) errEl.hidden = true;
+  pokerEnsureConnected();
+}
+
+let pokerSocket = null;
+let pokerTableId = null;
+let pokerInviteCode = '';
+
+function pokerEnsureConnected() {
+  if (pokerSocket?.connected) return;
+  if (typeof io === 'undefined') return;
+  pokerSocket = io({ path: '/socket.io', auth: { token } });
+  pokerSocket.on('connect', () => {});
+  pokerSocket.on('connect_error', (err) => console.warn('Poker socket:', err.message));
+  pokerSocket.on('poker:state', (state) => {
+    updatePokerUI(state);
+  });
+  pokerSocket.on('poker:error', (data) => {
+    const el = document.getElementById('poker-lobby-error');
+    if (el) { el.hidden = false; el.textContent = data?.message || 'Fejl'; }
+  });
+  pokerSocket.on('poker:player_joined', () => {});
+}
+
+function updatePokerUI(state) {
+  if (!state) return;
+  const gameEl = document.getElementById('poker-game');
+  const lobbyEl = document.getElementById('poker-lobby');
+  const createdEl = document.getElementById('poker-created');
+  if (gameEl) gameEl.hidden = false;
+  if (lobbyEl) lobbyEl.hidden = true;
+  if (createdEl) createdEl.hidden = true;
+
+  const potEl = document.getElementById('poker-pot');
+  if (potEl) potEl.textContent = state.pot ?? 0;
+
+  const communityEl = document.getElementById('poker-community');
+  if (communityEl) {
+    communityEl.innerHTML = '';
+    (state.communityCards || []).forEach((c) => {
+      communityEl.appendChild(renderBlackjackCard(c, false));
+    });
+  }
+
+  const seatsEl = document.getElementById('poker-seats');
+  if (seatsEl) {
+    seatsEl.innerHTML = '';
+    (state.players || []).forEach((p, i) => {
+      const div = document.createElement('div');
+      div.className = 'poker-seat' + (i === state.currentTurnIndex ? ' poker-seat-turn' : '') + (p.folded ? ' poker-seat-folded' : '');
+      div.innerHTML = '<div class="poker-seat-name">' + (p.name || 'Plads ' + (i + 1)) + '</div><div class="poker-seat-chips">' + p.chipsInHand + ' pt</div>';
+      if (p.currentBet > 0) div.innerHTML += '<div class="poker-seat-chips">Bet: ' + p.currentBet + '</div>';
+      seatsEl.appendChild(div);
+    });
+  }
+
+  const myCardsEl = document.getElementById('poker-my-cards');
+  if (myCardsEl) {
+    myCardsEl.innerHTML = '';
+    const me = (state.players || []).find((p) => p.holeCards && p.holeCards.length && p.holeCards[0] !== '??');
+    if (me && me.holeCards) {
+      me.holeCards.forEach((c) => myCardsEl.appendChild(renderBlackjackCard(c, false)));
+    }
+  }
+
+  const startBtn = document.getElementById('poker-start-hand');
+  const betActions = document.getElementById('poker-bet-actions');
+  const msgEl = document.getElementById('poker-message');
+  if (state.phase === 'waiting') {
+    if (startBtn) {
+      startBtn.hidden = false;
+      const n = (state.players || []).filter((p) => p.chipsInHand > 0).length;
+      startBtn.disabled = n < 2;
+    }
+    if (betActions) betActions.hidden = true;
+    if (msgEl) {
+      msgEl.hidden = false;
+      let txt = (state.players || []).length >= 2 ? 'Klik "Start hånd" for at starte.' : 'Vent på mindst 2 spillere.';
+      if (pokerInviteCode) txt += ' Invitationskode: ' + pokerInviteCode;
+      msgEl.textContent = txt;
+    }
+  } else if (state.phase === 'showdown') {
+    const n = (state.players || []).filter((p) => p.chipsInHand > 0).length;
+    if (startBtn) {
+      startBtn.hidden = false;
+      startBtn.disabled = n < 2;
+    }
+    if (betActions) betActions.hidden = true;
+    if (msgEl) {
+      msgEl.hidden = false;
+      const winners = state.winners || [];
+      const names = winners.map((wi) => (state.players || [])[wi]?.name).filter(Boolean);
+      msgEl.textContent = (names.length ? 'Vinder(e): ' + names.join(', ') + '. ' : '') + (n >= 2 ? 'Klik "Start hånd" for næste runde.' : '');
+    }
+  } else {
+    if (startBtn) startBtn.hidden = true;
+    const me = (state.players || []).find((p) => p.holeCards && p.holeCards.length && p.holeCards[0] !== '??');
+    const myIndex = me ? state.players.indexOf(me) : -1;
+    const isMyTurn = myIndex >= 0 && state.currentTurnIndex === myIndex && !me.folded && !me.isAllIn;
+    if (betActions) {
+      betActions.hidden = !isMyTurn;
+      const toCall = (state.currentBetToCall || 0) - (me ? me.totalBetThisRound || 0 : 0);
+      const foldBtn = document.getElementById('poker-fold');
+      const checkBtn = document.getElementById('poker-check');
+      const callBtn = document.getElementById('poker-call');
+      if (foldBtn) foldBtn.disabled = false;
+      if (checkBtn) checkBtn.disabled = toCall > 0;
+      if (callBtn) callBtn.textContent = toCall > 0 ? 'Call ' + toCall : 'Check';
+      const raiseInput = document.getElementById('poker-raise-amount');
+      if (raiseInput) raiseInput.value = Math.max(state.bigBlind || 2, toCall + (state.bigBlind || 2));
+    }
+    if (msgEl) { msgEl.hidden = false; msgEl.textContent = isMyTurn ? 'Din tur!' : state.phase; }
+  }
+}
+
+document.getElementById('poker-create-table')?.addEventListener('click', async () => {
+  const errEl = document.getElementById('poker-lobby-error');
+  const createdEl = document.getElementById('poker-created');
+  const inviteDisplay = document.getElementById('poker-invite-display');
+  if (errEl) errEl.hidden = true;
+  const res = await api('/api/poker/tables', { method: 'POST' });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    if (errEl) { errEl.hidden = false; errEl.textContent = data.error || 'Kunne ikke oprette bord'; }
+    return;
+  }
+  pokerTableId = data.tableId;
+  pokerInviteCode = data.inviteCode || '';
+  pokerEnsureConnected();
+  pokerSocket.emit('poker:join_room', { tableId: data.tableId });
+  if (createdEl) createdEl.hidden = false;
+  if (inviteDisplay) inviteDisplay.textContent = pokerInviteCode;
+});
+
+document.getElementById('poker-copy-code')?.addEventListener('click', () => {
+  const code = document.getElementById('poker-invite-display')?.textContent?.trim();
+  if (code && navigator.clipboard) navigator.clipboard.writeText(code);
+});
+
+document.getElementById('poker-join-table')?.addEventListener('click', async () => {
+  const codeInput = document.getElementById('poker-invite-code');
+  const code = (codeInput?.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const errEl = document.getElementById('poker-lobby-error');
+  if (errEl) errEl.hidden = true;
+  if (!code) { if (errEl) { errEl.hidden = false; errEl.textContent = 'Indtast en kode'; } return; }
+  const res = await api('/api/poker/tables/by-code/' + code);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) { if (errEl) { errEl.hidden = false; errEl.textContent = data.error || 'Bord ikke fundet'; } return; }
+  const joinRes = await api('/api/poker/tables/' + data.tableId + '/join', { method: 'POST' });
+  const joinData = await joinRes.json().catch(() => ({}));
+  if (!joinRes.ok) { if (errEl) { errEl.hidden = false; errEl.textContent = joinData.error || 'Kunne ikke joine'; } return; }
+  pokerTableId = data.tableId;
+  pokerInviteCode = data.inviteCode || '';
+  pokerEnsureConnected();
+  pokerSocket.emit('poker:join_room', { tableId: data.tableId });
+});
+
+document.getElementById('poker-start-hand')?.addEventListener('click', () => {
+  if (pokerSocket?.connected) pokerSocket.emit('poker:start_hand');
+});
+
+document.getElementById('poker-fold')?.addEventListener('click', () => {
+  if (pokerSocket?.connected) pokerSocket.emit('poker:action', { action: 'fold' });
+});
+document.getElementById('poker-check')?.addEventListener('click', () => {
+  if (pokerSocket?.connected) pokerSocket.emit('poker:action', { action: 'check' });
+});
+document.getElementById('poker-call')?.addEventListener('click', () => {
+  if (pokerSocket?.connected) pokerSocket.emit('poker:action', { action: 'call' });
+});
+document.getElementById('poker-raise')?.addEventListener('click', () => {
+  const amount = parseInt(document.getElementById('poker-raise-amount')?.value, 10) || 2;
+  if (pokerSocket?.connected) pokerSocket.emit('poker:action', { action: 'raise', amount });
+});
 
 const SUIT_SYMBOLS = { H: '♥', D: '♦', C: '♣', S: '♠' };
 const SUIT_RED = { H: true, D: true, C: false, S: false };
@@ -488,10 +684,12 @@ document.getElementById('casino-go-coinflip')?.addEventListener('click', showCoi
 document.getElementById('casino-go-slot')?.addEventListener('click', showSlot);
 document.getElementById('casino-go-roulette')?.addEventListener('click', showRoulette);
 document.getElementById('casino-go-blackjack')?.addEventListener('click', showBlackjack);
+document.getElementById('casino-go-poker')?.addEventListener('click', showPoker);
 document.getElementById('casino-back-from-slot')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
 document.getElementById('casino-back-from-coinflip')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
 document.getElementById('casino-back-from-roulette')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
 document.getElementById('casino-back-from-blackjack')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
+document.getElementById('casino-back-from-poker')?.addEventListener('click', (e) => { e.preventDefault(); showMenu(); });
 document.getElementById('roulette-bet-red')?.addEventListener('click', () => spinRoulette('red'));
 document.getElementById('roulette-bet-black')?.addEventListener('click', () => spinRoulette('black'));
 document.getElementById('roulette-bet-green')?.addEventListener('click', () => spinRoulette('green'));

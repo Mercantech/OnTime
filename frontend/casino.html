@@ -35,6 +35,11 @@
           <span class="casino-menu-name">Blackjack</span>
           <span class="casino-menu-desc">1 pt per hånd – mod robotdealer, 3 hænder/dag</span>
         </button>
+        <button type="button" id="casino-go-poker" class="casino-menu-card">
+          <span class="casino-menu-icon">🃏</span>
+          <span class="casino-menu-name">Poker</span>
+          <span class="casino-menu-desc">Texas Hold'em – op til 4 spillere, 5 pt buy-in</span>
+        </button>
       </div>
     </div>
 
@@ -106,6 +111,53 @@
       </div>
     </div>
 
+    <!-- View: Poker -->
+    <div id="casino-view-poker" class="casino-view" hidden>
+      <a href="#" id="casino-back-from-poker" class="casino-back-link">← Casino</a>
+      <div class="poker-container">
+        <h2 class="casino-title">🃏 Poker – Texas Hold'em</h2>
+        <p class="poker-desc">Op til 4 spillere. Buy-in: 5 point. Opret bord eller join med kode.</p>
+        <!-- Lobby -->
+        <div id="poker-lobby" class="poker-lobby">
+          <div class="poker-lobby-actions">
+            <button type="button" id="poker-create-table" class="poker-btn">Opret bord (5 pt)</button>
+            <div class="poker-join-row">
+              <input type="text" id="poker-invite-code" class="poker-invite-input" placeholder="Indtast kode" maxlength="6" aria-label="Invitationskode">
+              <button type="button" id="poker-join-table" class="poker-btn">Join</button>
+            </div>
+          </div>
+          <p id="poker-lobby-error" class="poker-error" hidden></p>
+          <div id="poker-created" class="poker-created" hidden>
+            <p>Dit bord er oprettet. Del koden med andre:</p>
+            <p class="poker-invite-display"><strong id="poker-invite-display"></strong></p>
+            <button type="button" id="poker-copy-code" class="poker-btn">Kopier kode</button>
+          </div>
+        </div>
+        <!-- Game -->
+        <div id="poker-game" class="poker-game" hidden>
+          <div class="poker-table">
+            <div id="poker-community" class="poker-community-cards"></div>
+            <p class="poker-pot">Pot: <strong id="poker-pot">0</strong></p>
+            <div id="poker-seats" class="poker-seats"></div>
+          </div>
+          <div id="poker-my-cards" class="poker-my-cards"></div>
+          <div id="poker-actions" class="poker-actions">
+            <button type="button" id="poker-start-hand" class="poker-btn" hidden>Start hånd</button>
+            <div id="poker-bet-actions" class="poker-bet-actions" hidden>
+              <button type="button" id="poker-fold" class="poker-btn poker-btn-fold">Fold</button>
+              <button type="button" id="poker-check" class="poker-btn">Check</button>
+              <button type="button" id="poker-call" class="poker-btn">Call</button>
+              <div class="poker-raise-row">
+                <button type="button" id="poker-raise" class="poker-btn">Raise</button>
+                <input type="number" id="poker-raise-amount" class="poker-raise-input" min="0" value="2" aria-label="Raise beløb">
+              </div>
+            </div>
+          </div>
+          <p id="poker-message" class="poker-message" hidden></p>
+        </div>
+      </div>
+    </div>
+
     <!-- View: Coinflip -->
     <div id="casino-view-coinflip" class="casino-view" hidden>
       <a href="#" id="casino-back-from-coinflip" class="casino-back-link">← Casino</a>
@@ -126,6 +178,7 @@
 
     <a href="/app" class="casino-back">← Tilbage til app</a>
   </main>
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
   <script src="js/casino.js"></script>
 </body>
 </html>

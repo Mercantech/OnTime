@@ -165,6 +165,35 @@ const MIGRATIONS = [
       CREATE INDEX IF NOT EXISTS idx_point_transactions_bet ON point_transactions (bet_id);
     `,
   },
+  {
+    name: 'poker_tables',
+    sql: `
+      CREATE TABLE IF NOT EXISTS poker_tables (
+        id SERIAL PRIMARY KEY,
+        invite_code TEXT NOT NULL UNIQUE,
+        created_by_user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        status TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'playing', 'finished')),
+        small_blind INT NOT NULL DEFAULT 1 CHECK (small_blind >= 1),
+        big_blind INT NOT NULL DEFAULT 2 CHECK (big_blind >= 1),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_poker_tables_invite_code ON poker_tables (invite_code);
+      CREATE INDEX IF NOT EXISTS idx_poker_tables_status ON poker_tables (status);
+
+      CREATE TABLE IF NOT EXISTS poker_table_players (
+        id SERIAL PRIMARY KEY,
+        table_id INT NOT NULL REFERENCES poker_tables(id) ON DELETE CASCADE,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        seat_index INT NOT NULL CHECK (seat_index >= 0 AND seat_index <= 3),
+        chips_in_hand INT NOT NULL DEFAULT 0 CHECK (chips_in_hand >= 0),
+        joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        left_at TIMESTAMPTZ,
+        UNIQUE (table_id, seat_index),
+        UNIQUE (table_id, user_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_poker_table_players_table ON poker_table_players (table_id);
+    `,
+  },
 ];
 
 async function run() {
