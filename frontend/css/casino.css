@@ -602,7 +602,7 @@
 }
 .poker-showdown-detail .showdown-item {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1rem;
@@ -611,6 +611,20 @@
   border: 1px solid rgba(255,255,255,0.06);
   transition: background 0.2s, border-color 0.2s;
 }
+.poker-showdown-detail .showdown-cards {
+  display: flex;
+  gap: 0.2rem;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+.poker-showdown-detail .showdown-cards .blackjack-card {
+  width: 2rem;
+  height: 2.8rem;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}
+.poker-showdown-detail .showdown-cards .blackjack-card-rank { font-size: 0.65rem; }
+.poker-showdown-detail .showdown-cards .blackjack-card-suit { font-size: 0.75rem; }
 .poker-showdown-detail .showdown-item:hover {
   background: rgba(0,0,0,0.35);
   border-color: rgba(255,255,255,0.1);
@@ -661,6 +675,15 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+.poker-end-game-row {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+.poker-btn-end { background: linear-gradient(145deg, #64748b 0%, #475569 100%); }
+.poker-end-game-status { font-size: 0.85rem; color: #9090a0; margin: 0; }
 .poker-showdown-title { margin: 0 0 0.5rem; font-size: 0.9rem; font-weight: 600; color: #e8e8ed; }
 .poker-showdown-list { margin: 0; padding-left: 1.25rem; }
 .poker-showdown-list li { margin: 0.25rem 0; font-size: 0.9rem; color: #a5a5b0; }

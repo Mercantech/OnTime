@@ -46,11 +46,15 @@ function bestFiveFromSeven(cards) {
   if (cards.length < 5) return null;
   if (cards.length === 5) return rankHand(cards);
   let best = null;
+  let bestHand = null;
   function choose(start, chosen) {
     if (chosen.length === 5) {
       const hand = chosen.map((i) => cards[i]);
       const r = rankHand(hand);
-      if (!best || compareRank(r, best) > 0) best = r;
+      if (!best || compareRank(r, best) > 0) {
+        best = r;
+        bestHand = hand;
+      }
       return;
     }
     for (let i = start; i < cards.length; i++) {
@@ -59,6 +63,29 @@ function bestFiveFromSeven(cards) {
   }
   choose(0, []);
   return best;
+}
+
+function bestFiveCardsFromSeven(cards) {
+  if (cards.length < 5) return null;
+  if (cards.length === 5) return [...cards];
+  let best = null;
+  let bestHand = null;
+  function choose(start, chosen) {
+    if (chosen.length === 5) {
+      const hand = chosen.map((i) => cards[i]);
+      const r = rankHand(hand);
+      if (!best || compareRank(r, best) > 0) {
+        best = r;
+        bestHand = hand;
+      }
+      return;
+    }
+    for (let i = start; i < cards.length; i++) {
+      choose(i + 1, chosen.concat([i]));
+    }
+  }
+  choose(0, []);
+  return bestHand;
 }
 
 function rankHand(fiveCards) {
@@ -150,8 +177,9 @@ function describeHand(rankResult) {
 function getShowdownHandInfos(cardsPerPlayer) {
   return cardsPerPlayer.map((cards) => {
     const rank = bestFiveFromSeven(cards);
+    const bestCards = bestFiveCardsFromSeven(cards);
     const { handName, description } = describeHand(rank);
-    return { handName, description };
+    return { handName, description, bestCards: bestCards || [] };
   });
 }
 
@@ -172,4 +200,4 @@ function findWinners(cardsPerPlayer) {
   return winners;
 }
 
-module.exports = { rankHand, bestFiveFromSeven, compareRank, findWinners, describeHand, getShowdownHandInfos, HAND_TYPE_NAMES };
+module.exports = { rankHand, bestFiveFromSeven, bestFiveCardsFromSeven, compareRank, findWinners, describeHand, getShowdownHandInfos, HAND_TYPE_NAMES };

@@ -396,6 +396,17 @@ function pokerEnsureConnected() {
     if (el) { el.hidden = false; el.textContent = data?.message || 'Fejl'; }
   });
   pokerSocket.on('poker:player_joined', () => {});
+  pokerSocket.on('poker:game_ended', (data) => {
+    const msg = data?.message || 'Spillet er afsluttet.';
+    const chips = data?.chipsReceived;
+    const gameEl = document.getElementById('poker-game');
+    const lobbyEl = document.getElementById('poker-lobby');
+    if (gameEl) gameEl.hidden = true;
+    if (lobbyEl) lobbyEl.hidden = false;
+    const errEl = document.getElementById('poker-lobby-error');
+    if (errEl) { errEl.hidden = false; errEl.textContent = msg; errEl.style.color = '#22c55e'; }
+    if (chips && typeof chips === 'object') loadStatus();
+  });
 }
 
 function updatePokerUI(state) {
@@ -445,6 +456,28 @@ function updatePokerUI(state) {
   const detailEl = document.getElementById('poker-showdown-detail');
   if (state.phase !== 'showdown' && detailEl) detailEl.hidden = true;
 
+  const endGameRow = document.getElementById('poker-end-game-row');
+  const endGameBtn = document.getElementById('poker-vote-end-game');
+  const endGameStatus = document.getElementById('poker-end-game-status');
+  const showEndGameRow = state.phase === 'waiting' || state.phase === 'showdown';
+  if (endGameRow) endGameRow.hidden = !showEndGameRow;
+  if (showEndGameRow && endGameStatus) {
+    const voted = state.endGameVotes;
+    const needed = state.endGameVotesNeeded;
+    if (typeof voted === 'number' && typeof needed === 'number' && voted > 0) {
+      endGameStatus.hidden = false;
+      endGameStatus.textContent = voted + ' af ' + needed + ' har stemt for at afslutte.';
+    } else {
+      endGameStatus.hidden = true;
+    }
+  }
+  if (showEndGameRow && endGameBtn) {
+    if (!state.endGameVotes || state.endGameVotes === 0) {
+      endGameBtn.disabled = false;
+      endGameBtn.textContent = 'Afslut spil og behold point';
+    }
+  }
+
   if (state.phase === 'waiting') {
     if (startBtn) {
       startBtn.hidden = false;
@@ -478,14 +511,23 @@ function updatePokerUI(state) {
           const handLine = h.description ? (h.handName + ' – ' + h.description) : h.handName;
           const badge = isWinner ? '✓' : (idx + 1);
           const badgeClass = 'showdown-badge' + (isWinner ? ' showdown-badge-winner' : '');
-          html += '<div class="showdown-item' + (isWinner ? ' showdown-item-winner' : '') + '">';
+          html += '<div class="showdown-item' + (isWinner ? ' showdown-item-winner' : '') + '" data-hand-index="' + idx + '">';
           html += '<span class="' + badgeClass + '" aria-label="' + (isWinner ? 'Vinder' : 'Spiller ' + (idx + 1)) + '">' + badge + '</span>';
           html += '<div class="showdown-text"><strong class="showdown-player">' + escapeHtml(name) + '</strong><span class="showdown-hand">' + escapeHtml(handLine) + '</span></div>';
+          html += '<div class="showdown-cards"></div>';
           if (isWinner) html += '<span class="showdown-winner-label">Vinder</span>';
           html += '</div>';
         });
         html += '</div>';
         detailEl.innerHTML = html;
+        hands.forEach((h, idx) => {
+          const cards = h.bestCards || [];
+          if (cards.length === 0) return;
+          const row = detailEl.querySelector('.showdown-item[data-hand-index="' + idx + '"]');
+          const container = row?.querySelector('.showdown-cards');
+          if (!container) return;
+          cards.forEach((code) => container.appendChild(renderBlackjackCard(code, false)));
+        });
       } else {
         detailEl.hidden = true;
       }
@@ -562,6 +604,12 @@ document.getElementById('poker-join-table')?.addEventListener('click', async () 
 
 document.getElementById('poker-start-hand')?.addEventListener('click', () => {
   if (pokerSocket?.connected) pokerSocket.emit('poker:start_hand');
+});
+document.getElementById('poker-vote-end-game')?.addEventListener('click', () => {
+  if (!pokerSocket?.connected) return;
+  pokerSocket.emit('poker:vote_end_game');
+  const btn = document.getElementById('poker-vote-end-game');
+  if (btn) { btn.disabled = true; btn.textContent = 'Du har stemt – vent på andre'; }
 });
 
 document.getElementById('poker-fold')?.addEventListener('click', () => {

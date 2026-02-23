@@ -39,9 +39,10 @@ function registerPoker(io) {
         let table = pokerTables.get(tableId);
         if (!table) {
           const state = createTableState(dbPlayers, smallBlind, bigBlind);
-          table = { state, playerSockets: new Map() };
+          table = { state, playerSockets: new Map(), endGameVotes: new Set() };
           pokerTables.set(tableId, table);
         } else {
+          if (!table.endGameVotes) table.endGameVotes = new Set();
           for (const dbP of dbPlayers) {
             const inState = table.state.players.some((p) => p.userId === dbP.userId);
             if (!inState) {
@@ -140,6 +141,59 @@ function registerPoker(io) {
           io.to(sid).emit('poker:state', getPublicState(table.state, p.userId));
         }
       });
+    });
+
+    socket.on('poker:vote_end_game', async () => {
+      const tableId = socket.pokerTableId;
+      if (!tableId) {
+        socket.emit('poker:error', { message: 'Du er ikke på et bord' });
+        return;
+      }
+      const table = pokerTables.get(tableId);
+      if (!table) {
+        socket.emit('poker:error', { message: 'Bord ikke fundet' });
+        return;
+      }
+      const userId = socket.userId;
+      const player = table.state.players.find((p) => p.userId === userId);
+      if (!player) {
+        socket.emit('poker:error', { message: 'Du er ikke i spillet' });
+        return;
+      }
+      table.endGameVotes.add(userId);
+      const totalPlayers = table.state.players.length;
+      const voted = table.endGameVotes.size;
+      if (voted < totalPlayers) {
+        table.state.players.forEach((p) => {
+          const sid = table.playerSockets.get(p.userId);
+          if (sid) {
+            io.to(sid).emit('poker:state', { ...getPublicState(table.state, p.userId), endGameVotes: voted, endGameVotesNeeded: totalPlayers });
+          }
+        });
+        return;
+      }
+      try {
+        for (const p of table.state.players) {
+          if (p.chipsInHand > 0) {
+            await pool.query(
+              'INSERT INTO point_transactions (user_id, delta, reason) VALUES ($1, $2, $3)',
+              [p.userId, p.chipsInHand, 'Poker afsluttet']
+            );
+            await pool.query(
+              'UPDATE poker_table_players SET left_at = NOW(), chips_in_hand = 0 WHERE table_id = $1 AND user_id = $2',
+              [tableId, p.userId]
+            );
+          }
+        }
+        const room = ROOM_PREFIX + tableId;
+        const chipsByUser = Object.fromEntries(table.state.players.map((p) => [p.userId, p.chipsInHand]));
+        io.to(room).emit('poker:game_ended', { message: 'Spillet er afsluttet. I beholder jeres point.', chipsReceived: chipsByUser });
+      } catch (e) {
+        console.error('poker:vote_end_game', e);
+        socket.emit('poker:error', { message: 'Kunne ikke afslutte spil' });
+        return;
+      }
+      pokerTables.delete(tableId);
     });
 
     socket.on('disconnect', async () => {

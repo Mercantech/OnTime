@@ -144,7 +144,12 @@ function advanceToNextPhase(state) {
     const stillIn = state.players.map((p, i) => (p.folded ? null : { i, cards: [...p.holeCards, ...state.communityCards] })).filter((x) => x !== null);
     const cardsPerPlayer = stillIn.map((x) => x.cards);
     const handInfos = getShowdownHandInfos(cardsPerPlayer);
-    state.showdownHands = stillIn.map((x, idx) => ({ playerIndex: x.i, handName: handInfos[idx].handName, description: handInfos[idx].description }));
+    state.showdownHands = stillIn.map((x, idx) => ({
+      playerIndex: x.i,
+      handName: handInfos[idx].handName,
+      description: handInfos[idx].description,
+      bestCards: handInfos[idx].bestCards || [],
+    }));
     const winnerIndices = findWinners(cardsPerPlayer);
     state.winners = winnerIndices.map((wi) => stillIn[wi].i);
     const share = Math.floor(state.pot / state.winners.length);
