@@ -36,6 +36,28 @@ function generateInviteCode() {
 
 router.use(auth);
 
+/** Hent brugerens aktive pokerbord (til genoprettelse ved refresh). */
+router.get('/my-table', async (req, res) => {
+  const userId = req.userId;
+  try {
+    const r = await pool.query(
+      `SELECT t.id AS "tableId", t.invite_code AS "inviteCode"
+       FROM poker_tables t
+       JOIN poker_table_players p ON p.table_id = t.id AND p.left_at IS NULL
+       WHERE p.user_id = $1
+       LIMIT 1`,
+      [userId]
+    );
+    if (r.rows.length === 0) {
+      return res.json({ tableId: null, inviteCode: null });
+    }
+    res.json({ tableId: r.rows[0].tableId, inviteCode: r.rows[0].inviteCode });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 /** Opret nyt pokerbord. Returnerer tableId og inviteCode. */
 router.post('/tables', async (req, res) => {
   const userId = req.userId;

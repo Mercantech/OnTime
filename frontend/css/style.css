@@ -1620,6 +1620,38 @@ body.bet-modal-open { overflow: hidden; }
   gap: 0.9rem;
   margin-top: 0.75rem;
 }
+.admin-poker-tables-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.75rem 0 0;
+}
+.admin-poker-tables-list li {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.admin-poker-table-info {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+.admin-poker-tables-list .btn-end-poker-table {
+  flex-shrink: 0;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  background: transparent;
+  cursor: pointer;
+}
+.admin-poker-tables-list .btn-end-poker-table:hover {
+  background: var(--danger);
+  color: #fff;
+}
 .bet-create-form textarea {
   width: 100%;
   min-height: 72px;

@@ -593,6 +593,7 @@ async function init() {
   await fillClassSelects();
   renderUserList(await loadUsers());
   renderIpRangeList(await loadIpRanges());
+  loadPokerTables();
   setGivePointsDateToToday();
   const betFilter = document.getElementById('bet-filter-class');
   if (betFilter && betFilter.value) {
@@ -600,3 +601,56 @@ async function init() {
   }
 }
 init();
+
+async function loadPokerTables() {
+  const wrap = document.getElementById('admin-poker-tables-wrap');
+  const loadingEl = document.getElementById('admin-poker-tables-loading');
+  const listEl = document.getElementById('admin-poker-tables-list');
+  const emptyEl = document.getElementById('admin-poker-tables-empty');
+  if (!wrap) return;
+  if (loadingEl) loadingEl.hidden = false;
+  if (listEl) listEl.hidden = true;
+  if (emptyEl) emptyEl.hidden = true;
+  try {
+    const res = await api('/api/admin/poker/tables');
+    const data = await res.json().catch(() => ({}));
+    if (loadingEl) loadingEl.hidden = true;
+    const tables = data.tables || [];
+    if (tables.length === 0) {
+      if (emptyEl) emptyEl.hidden = false;
+      return;
+    }
+    if (listEl) {
+      listEl.hidden = false;
+      listEl.innerHTML = tables.map((t) => {
+        const names = (t.playerNames || []).join(', ') || '–';
+        const phase = t.phase ? ' · ' + t.phase : '';
+        return (
+          '<li class="admin-poker-table-item">' +
+          '<span class="admin-poker-table-info">' +
+          'Bord #' + t.id + ' · Kode: <strong>' + (t.inviteCode || '–') + '</strong> · ' +
+          t.playerCount + ' spiller(e): ' + names + phase +
+          '</span> ' +
+          '<button type="button" class="btn-danger btn-end-poker-table" data-table-id="' + t.id + '">Afslut bord</button>' +
+          '</li>'
+        );
+      }).join('');
+      listEl.querySelectorAll('.btn-end-poker-table').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-table-id');
+          if (!confirm('Afslut dette bord? Spillerne refunderes deres point.')) return;
+          const res = await api('/api/admin/poker/tables/' + id + '/end', { method: 'POST' });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            alert(data.error || 'Kunne ikke afslutte bord');
+            return;
+          }
+          loadPokerTables();
+        });
+      });
+    }
+  } catch (e) {
+    if (loadingEl) { loadingEl.hidden = true; loadingEl.textContent = 'Fejl ved indlæsning'; }
+    if (emptyEl) { emptyEl.hidden = false; emptyEl.textContent = 'Kunne ikke hente pokerborde.'; }
+  }
+}

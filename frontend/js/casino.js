@@ -370,11 +370,31 @@ function showPoker() {
   const lobbyEl = document.getElementById('poker-lobby');
   const gameEl = document.getElementById('poker-game');
   const createdEl = document.getElementById('poker-created');
-  if (lobbyEl) lobbyEl.hidden = false;
-  if (gameEl) gameEl.hidden = true;
-  if (createdEl) createdEl.hidden = true;
   const errEl = document.getElementById('poker-lobby-error');
   if (errEl) errEl.hidden = true;
+  (async () => {
+    try {
+      const res = await api('/api/poker/my-table');
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.tableId) {
+        pokerTableId = data.tableId;
+        pokerInviteCode = data.inviteCode || '';
+        pokerEnsureConnected();
+        const doJoin = () => {
+          pokerSocket.emit('poker:join_room', { tableId: data.tableId });
+          if (lobbyEl) lobbyEl.hidden = true;
+          if (gameEl) gameEl.hidden = false;
+          if (createdEl) createdEl.hidden = true;
+        };
+        if (pokerSocket?.connected) doJoin();
+        else pokerSocket?.once('connect', doJoin);
+        return;
+      }
+    } catch (e) {}
+    if (lobbyEl) lobbyEl.hidden = false;
+    if (gameEl) gameEl.hidden = true;
+    if (createdEl) createdEl.hidden = true;
+  })();
   pokerEnsureConnected();
 }
 

@@ -447,4 +447,73 @@ router.post('/classes/:classId/reset-points', async (req, res) => {
   }
 });
 
+/** Liste aktive pokerborde (brugere der ikke har forladt). */
+router.get('/poker/tables', async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT t.id, t.invite_code AS "inviteCode", t.created_at AS "createdAt",
+              (SELECT COUNT(*)::int FROM poker_table_players WHERE table_id = t.id AND left_at IS NULL) AS "playerCount",
+              (SELECT array_agg(u.name ORDER BY p.seat_index) FROM poker_table_players p JOIN users u ON u.id = p.user_id WHERE p.table_id = t.id AND p.left_at IS NULL) AS "playerNames"
+       FROM poker_tables t
+       WHERE EXISTS (SELECT 1 FROM poker_table_players WHERE table_id = t.id AND left_at IS NULL)
+       ORDER BY t.created_at DESC`
+    );
+    const pokerTables = require('../poker/socketHandler').pokerTables;
+    const tables = (r.rows || []).map((row) => {
+      const inMemory = pokerTables.get(row.id);
+      return {
+        id: row.id,
+        inviteCode: row.inviteCode,
+        createdAt: row.createdAt,
+        playerCount: row.playerCount,
+        playerNames: row.playerNames || [],
+        phase: inMemory?.state?.phase ?? null,
+      };
+    });
+    res.json({ tables });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+/** Afslut et pokerbord (admin) – refundér chips, notificér klienter. */
+router.post('/poker/tables/:id/end', async (req, res) => {
+  const tableId = parseInt(req.params.id, 10);
+  if (Number.isNaN(tableId) || tableId < 1) {
+    return res.status(400).json({ error: 'Ugyldigt bord-id' });
+  }
+  const io = req.app.get('io');
+  const pokerTables = require('../poker/socketHandler').pokerTables;
+  const table = pokerTables.get(tableId);
+  try {
+    const players = await pool.query(
+      `SELECT p.user_id AS "userId", p.chips_in_hand AS "chipsInHand"
+       FROM poker_table_players p
+       WHERE p.table_id = $1 AND p.left_at IS NULL`,
+      [tableId]
+    );
+    for (const p of players.rows) {
+      if (p.chipsInHand > 0) {
+        await pool.query(
+          'INSERT INTO point_transactions (user_id, delta, reason) VALUES ($1, $2, $3)',
+          [p.userId, p.chipsInHand, 'Poker afsluttet (admin)']
+        );
+      }
+      await pool.query(
+        'UPDATE poker_table_players SET left_at = NOW(), chips_in_hand = 0 WHERE table_id = $1 AND user_id = $2',
+        [tableId, p.userId]
+      );
+    }
+    const chipsByUser = Object.fromEntries(players.rows.map((p) => [String(p.userId), p.chipsInHand]));
+    const room = 'poker:' + tableId;
+    if (io) io.to(room).emit('poker:game_ended', { message: 'Spillet er afsluttet af admin.', chipsReceived: chipsByUser });
+    pokerTables.delete(tableId);
+    res.json({ ok: true, message: 'Bord afsluttet. Spillerne er refunderet.' });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 module.exports = router;
