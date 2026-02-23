@@ -26,6 +26,7 @@ function createTableState(players, smallBlind = 1, bigBlind = 2) {
     smallBlind,
     bigBlind,
     winners: null,
+    firstToActThisRound: 0,
   };
 }
 
@@ -80,6 +81,7 @@ function startHand(state) {
   state.pot = sb + bb;
   state.currentBetToCall = bb;
   state.currentTurnIndex = (bbIndex + 1) % n;
+  state.firstToActThisRound = (bbIndex + 1) % n;
   return { ok: true };
 }
 
@@ -104,22 +106,24 @@ function advanceToNextPhase(state) {
   });
   state.currentBetToCall = 0;
 
+  const firstToAct = (state.dealerIndex + 1) % state.players.length;
+  state.firstToActThisRound = firstToAct;
   if (state.phase === 'preflop') {
     state.phase = 'flop';
     state.communityCards = [state.deck.pop(), state.deck.pop(), state.deck.pop()];
-    state.currentTurnIndex = (state.dealerIndex + 1) % state.players.length;
+    state.currentTurnIndex = firstToAct;
     return;
   }
   if (state.phase === 'flop') {
     state.phase = 'turn';
     state.communityCards.push(state.deck.pop());
-    state.currentTurnIndex = (state.dealerIndex + 1) % state.players.length;
+    state.currentTurnIndex = firstToAct;
     return;
   }
   if (state.phase === 'turn') {
     state.phase = 'river';
     state.communityCards.push(state.deck.pop());
-    state.currentTurnIndex = (state.dealerIndex + 1) % state.players.length;
+    state.currentTurnIndex = firstToAct;
     return;
   }
   if (state.phase === 'river') {
@@ -188,7 +192,8 @@ function applyAction(state, playerIndex, action, amount = 0) {
       advanceToNextPhase(state);
       return { ok: true, phase: state.phase };
     }
-    if (next === state.dealerIndex || allBetsMatched(state)) {
+    const firstToAct = state.firstToActThisRound ?? (state.dealerIndex + 1) % state.players.length;
+    if (allBetsMatched(state) && next === firstToAct) {
       advanceToNextPhase(state);
       return { ok: true, phase: state.phase };
     }
@@ -207,7 +212,8 @@ function applyAction(state, playerIndex, action, amount = 0) {
       advanceToNextPhase(state);
       return { ok: true, phase: state.phase };
     }
-    if (allBetsMatched(state)) {
+    const firstToAct = state.firstToActThisRound ?? (state.dealerIndex + 1) % state.players.length;
+    if (allBetsMatched(state) && next === firstToAct) {
       advanceToNextPhase(state);
       return { ok: true, phase: state.phase };
     }
@@ -227,6 +233,11 @@ function applyAction(state, playerIndex, action, amount = 0) {
     state.currentBetToCall = p.totalBetThisRound;
     const next = nextPlayer(state);
     if (next < 0) {
+      advanceToNextPhase(state);
+      return { ok: true, phase: state.phase };
+    }
+    const firstToAct = state.firstToActThisRound ?? (state.dealerIndex + 1) % state.players.length;
+    if (allBetsMatched(state) && next === firstToAct) {
       advanceToNextPhase(state);
       return { ok: true, phase: state.phase };
     }
