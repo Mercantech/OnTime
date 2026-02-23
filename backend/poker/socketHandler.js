@@ -30,23 +30,35 @@ function registerPoker(io) {
       }
       const userId = socket.userId;
       try {
+        const { players: dbPlayers, smallBlind, bigBlind } = await loadTableFromDb(tableId);
+        const userInDb = dbPlayers.find((p) => p.userId === userId);
+        if (!userInDb) {
+          socket.emit('poker:error', { message: 'Du er ikke på dette bord' });
+          return;
+        }
         let table = pokerTables.get(tableId);
         if (!table) {
-          const { players, smallBlind, bigBlind } = await loadTableFromDb(tableId);
-          const inTable = players.some((p) => p.userId === userId);
-          if (!inTable) {
-            socket.emit('poker:error', { message: 'Du er ikke på dette bord' });
-            return;
-          }
-          const state = createTableState(players, smallBlind, bigBlind);
+          const state = createTableState(dbPlayers, smallBlind, bigBlind);
           table = { state, playerSockets: new Map() };
           pokerTables.set(tableId, table);
         } else {
-          const inTable = table.state.players.some((p) => p.userId === userId);
-          if (!inTable) {
-            socket.emit('poker:error', { message: 'Du er ikke på dette bord' });
-            return;
+          for (const dbP of dbPlayers) {
+            const inState = table.state.players.some((p) => p.userId === dbP.userId);
+            if (!inState) {
+              table.state.players.push({
+                userId: dbP.userId,
+                name: dbP.name,
+                seatIndex: dbP.seatIndex,
+                chipsInHand: dbP.chipsInHand,
+                holeCards: [],
+                folded: false,
+                currentBet: 0,
+                totalBetThisRound: 0,
+                isAllIn: false,
+              });
+            }
           }
+          table.state.players.sort((a, b) => a.seatIndex - b.seatIndex);
         }
         table.playerSockets.set(userId, socket.id);
         await socket.join(ROOM_PREFIX + tableId);
