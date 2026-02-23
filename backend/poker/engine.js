@@ -80,7 +80,7 @@ function startHand(state) {
   bbPlayer.chipsInHand -= bb;
   bbPlayer.currentBet = bb;
   bbPlayer.totalBetThisRound = bb;
-  state.pot = sb + bb;
+  state.pot = 0;
   state.currentBetToCall = bb;
   state.currentTurnIndex = (bbIndex + 1) % n;
   state.firstToActThisRound = (bbIndex + 1) % n;
@@ -277,11 +277,12 @@ function getPublicState(state, forUserId) {
     totalBetThisRound: p.totalBetThisRound,
     isAllIn: p.isAllIn,
   }));
+  const potTotal = state.pot + state.players.reduce((s, p) => s + (p.totalBetThisRound || 0), 0);
   return {
     phase: state.phase,
     players,
     communityCards: state.communityCards,
-    pot: state.pot,
+    pot: potTotal,
     currentBetToCall: state.currentBetToCall,
     dealerIndex: state.dealerIndex,
     currentTurnIndex: state.currentTurnIndex,
