@@ -111,7 +111,7 @@ app.get('/profil/:id', (req, res) => {
   res.sendFile(path.join(frontendDir, 'profil.html'));
 });
 
-app.get('/sangønsker', (req, res) => {
+app.get('/spotify', (req, res) => {
   noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'sangønsker.html'));
 });
