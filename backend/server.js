@@ -127,6 +127,10 @@ runMigrations()
   .then(() => {
     server.listen(PORT, () => {
       console.log(`OnTime server kører på http://localhost:${PORT} (${getVersion()})`);
+      const envKeys = Object.keys(process.env).sort().filter((k) => !/^(PATH|PWD|HOME|NODE_|npm_)/i.test(k));
+      console.log('Env-variabler (kun navne, ingen værdier):', envKeys.join(', ') || '(ingen)');
+      const spotifyOk = !!(process.env.SPOTIFY_CLIENT_ID && process.env.SPOTIFY_CLIENT_SECRET);
+      console.log(spotifyOk ? 'Spotify: konfigureret (sangønsker-søgning aktiv)' : 'Spotify: ikke konfigureret – sæt SPOTIFY_CLIENT_ID og SPOTIFY_CLIENT_SECRET for sangønsker-søgning');
     });
   })
   .catch((e) => {
