@@ -61,13 +61,36 @@
               <input type="number" id="dart-score-input" class="dart-score-input" min="0" max="180" step="1" placeholder="0–180" aria-label="Point denne runde" autocomplete="off">
               <button type="button" id="dart-register-btn" class="dart-btn dart-btn-register">Registrér</button>
             </div>
+            <details class="dart-helper" id="dart-helper">
+              <summary class="dart-helper-summary">Hjælp: Beregn point (klik på skiven eller vælg S/D/T)</summary>
+              <div class="dart-helper-inner">
+                <p class="dart-helper-desc">Klik på skiven der, hvor du ramte. Pil 1, 2 og 3 fyldes i rækkefølge.</p>
+                <div class="dart-click-board-wrap">
+                  <div class="dart-click-board" id="dart-click-board" role="img" aria-label="Interaktiv dartskive – klik for at vælge ramte felter">
+                    <!-- SVG fyldes af JS -->
+                  </div>
+                  <p class="dart-click-status" id="dart-click-status">Pil 1: – &nbsp; Pil 2: – &nbsp; Pil 3: – &nbsp; = <strong id="dart-click-total">0</strong></p>
+                  <div class="dart-click-actions">
+                    <button type="button" id="dart-click-use-btn" class="dart-btn dart-btn-helper">Brug dette tal</button>
+                    <button type="button" id="dart-click-reset-btn" class="dart-btn dart-btn-helper">Nulstil runde</button>
+                  </div>
+                </div>
+                <p class="dart-helper-or">eller vælg med felterne herunder:</p>
+                <div class="dart-helper-darts" id="dart-helper-darts">
+                  <!-- 3 rækker: segment + type -->
+                </div>
+                <p class="dart-helper-total">Runde i alt: <strong id="dart-helper-total">0</strong></p>
+                <button type="button" id="dart-helper-use-btn" class="dart-btn dart-btn-helper">Brug dette tal</button>
+              </div>
+            </details>
             <p id="dart-bust-msg" class="dart-bust-msg" hidden>Bust! Score under 0 – turen går tabt.</p>
           </div>
         </div>
       </div>
 
       <div id="dart-winner" class="dart-winner" hidden>
-        <p class="dart-winner-text"><strong id="dart-winner-name"></strong> vinder! 🎉</p>
+        <h2 class="dart-ranking-title">Rangliste</h2>
+        <ol id="dart-ranking-list" class="dart-ranking-list"></ol>
         <button type="button" id="dart-new-game-btn" class="dart-btn dart-btn-primary">Nyt spil</button>
       </div>
       <button type="button" id="dart-reset-btn" class="dart-back-link">← Tilbage til start</button>

@@ -272,6 +272,19 @@
   color: var(--accent);
 }
 
+.dart-score-place {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-top: 0.2rem;
+}
+
+.dart-score-card.is-finished {
+  opacity: 0.85;
+  border-color: var(--text-muted);
+}
+
 /* ---------- Turn + input ---------- */
 .dart-turn-area {
   background: var(--surface);
@@ -334,6 +347,100 @@
   background: var(--accent-dim);
 }
 
+/* ---------- Hjælp: Beregn point (S/D/T) ---------- */
+.dart-helper {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.dart-helper-summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.dart-helper-summary:hover {
+  color: var(--text);
+}
+
+.dart-helper-inner {
+  margin-top: 0.75rem;
+}
+
+.dart-helper-desc {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.dart-helper-darts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.dart-helper-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.dart-helper-label {
+  width: 2.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.dart-helper-segment,
+.dart-helper-type {
+  padding: 0.35rem 0.5rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.dart-helper-segment {
+  min-width: 4rem;
+}
+
+.dart-helper-type {
+  min-width: 6.5rem;
+}
+
+.dart-helper-points {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 2rem;
+}
+
+.dart-helper-total {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.dart-helper-total strong {
+  color: var(--accent);
+  font-size: 1.1rem;
+}
+
+.dart-btn-helper {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.dart-btn-helper:hover {
+  background: var(--border);
+}
+
 .dart-bust-msg {
   margin: 1rem 0 0;
   color: var(--danger);
@@ -351,10 +458,36 @@
   border-radius: var(--radius);
 }
 
-.dart-winner-text {
+.dart-ranking-title {
   margin: 0 0 1rem;
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   color: var(--text);
+}
+
+.dart-ranking-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+  text-align: left;
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dart-ranking-item {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.35rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dart-ranking-place {
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 6rem;
 }
 
 .dart-reset-btn {
