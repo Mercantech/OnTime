@@ -1,4 +1,7 @@
-require('dotenv').config();
+const path = require('path');
+// Indlæs .env fra backend-mappen eller repo-rod (så det virker uanset cwd)
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 // H. C. Andersens Vej 9, 8800 Viborg (ca. koordinater)
 const SCHOOL_LAT = 56.4517;
