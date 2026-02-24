@@ -92,10 +92,16 @@ function toggleVote(requestId, currentlyVoted) {
     .catch(() => {});
 }
 
-// ---------- Søg og tilføj ønske ----------
+// ---------- Søg og tilføj ønske (live-søgning) ----------
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
 const searchResults = document.getElementById('search-results');
+
+const SEARCH_DEBOUNCE_MS = 350;
+const MIN_SEARCH_LENGTH = 2;
+
+let searchDebounceTimer = null;
+let searchAbortController = null;
 
 function showSearchResults(tracks) {
   if (!searchResults) return;
@@ -130,26 +136,50 @@ function showSearchResults(tracks) {
 
 function doSearch() {
   const q = searchInput?.value?.trim();
-  if (!q) return;
-  searchResults.hidden = true;
+  if (!searchResults) return;
+
+  if (!q || q.length < MIN_SEARCH_LENGTH) {
+    searchResults.hidden = true;
+    searchResults.innerHTML = '';
+    return;
+  }
+
+  if (searchAbortController) searchAbortController.abort();
+  searchAbortController = new AbortController();
+  const signal = searchAbortController.signal;
+
   searchResults.innerHTML = '<p class="sangønsker-search-loading">Søger…</p>';
   searchResults.hidden = false;
 
-  api(`/api/song-requests/search?${new URLSearchParams({ q })}`)
+  api(`/api/song-requests/search?${new URLSearchParams({ q })}`, { signal })
     .then((res) => {
       if (!res.ok) return res.json().then((d) => Promise.reject(new Error(d.error || 'Søgning fejlede')));
       return res.json();
     })
     .then((data) => showSearchResults(data.tracks))
     .catch((err) => {
+      if (err.name === 'AbortError') return;
       searchResults.innerHTML = `<p class="sangønsker-search-error">${escapeHtml(err.message || 'Kunne ikke søge')}</p>`;
       searchResults.hidden = false;
     });
 }
 
+function scheduleLiveSearch() {
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+  const q = searchInput?.value?.trim();
+  if (!q || q.length < MIN_SEARCH_LENGTH) {
+    searchResults.hidden = true;
+    searchResults.innerHTML = '';
+    return;
+  }
+  searchDebounceTimer = setTimeout(() => doSearch(), SEARCH_DEBOUNCE_MS);
+}
+
 function addRequest(body) {
   searchResults.hidden = true;
+  searchResults.innerHTML = '';
   searchInput.value = '';
+  if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
   api('/api/song-requests', {
     method: 'POST',
     body: JSON.stringify(body),
@@ -165,8 +195,12 @@ function addRequest(body) {
 }
 
 searchBtn?.addEventListener('click', doSearch);
+searchInput?.addEventListener('input', scheduleLiveSearch);
 searchInput?.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') doSearch();
+  if (e.key === 'Enter') {
+    if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+    doSearch();
+  }
 });
 
 // ---------- Init ----------
