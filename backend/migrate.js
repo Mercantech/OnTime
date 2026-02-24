@@ -194,6 +194,32 @@ const MIGRATIONS = [
       CREATE INDEX IF NOT EXISTS idx_poker_table_players_table ON poker_table_players (table_id);
     `,
   },
+  {
+    name: 'song_requests_tables',
+    sql: `
+      CREATE TABLE IF NOT EXISTS song_requests (
+        id SERIAL PRIMARY KEY,
+        class_id INT NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+        requested_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        spotify_track_id TEXT NOT NULL,
+        track_name TEXT NOT NULL,
+        artist_name TEXT NOT NULL,
+        album_art_url TEXT,
+        preview_url TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_song_requests_class ON song_requests (class_id);
+      CREATE INDEX IF NOT EXISTS idx_song_requests_created ON song_requests (created_at);
+
+      CREATE TABLE IF NOT EXISTS song_request_votes (
+        request_id INT NOT NULL REFERENCES song_requests(id) ON DELETE CASCADE,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (request_id, user_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_song_request_votes_request ON song_request_votes (request_id);
+    `,
+  },
 ];
 
 async function run() {

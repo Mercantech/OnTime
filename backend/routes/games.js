@@ -633,6 +633,26 @@ function validateSudokuGrid(grid, solution) {
   return true;
 }
 
+function sudokuCellStates(grid, solution) {
+  if (!Array.isArray(grid) || grid.length !== SUDOKU_SIZE || !Array.isArray(solution) || solution.length !== SUDOKU_SIZE) return null;
+  const states = new Array(SUDOKU_SIZE);
+  let correctCount = 0;
+  let wrongCount = 0;
+  for (let i = 0; i < SUDOKU_SIZE; i++) {
+    const g = Number(grid[i]);
+    const valid = Number.isInteger(g) && g >= 1 && g <= SUDOKU_MAX_NUM;
+    const isCorrect = valid && g === solution[i];
+    if (isCorrect) {
+      states[i] = 'correct';
+      correctCount++;
+    } else {
+      states[i] = valid ? 'wrong' : 'invalid';
+      wrongCount++;
+    }
+  }
+  return { states, correctCount, wrongCount };
+}
+
 /** Indsend løsning og registrér tid. */
 router.post('/sudoku/complete', auth, async (req, res) => {
   try {
@@ -648,7 +668,11 @@ router.post('/sudoku/complete', auth, async (req, res) => {
     if (!puzzle || !Array.isArray(puzzle.solution)) return res.status(400).json({ error: 'Kunne ikke finde dagens opgave' });
 
     if (!validateSudokuGrid(grid, puzzle.solution)) {
-      return res.status(400).json({ error: 'Løsningen er ikke korrekt. Tjek alle felter.' });
+      const cell = sudokuCellStates(grid, puzzle.solution);
+      return res.status(400).json({
+        error: 'Løsningen er ikke korrekt. Tjek de markerede felter.',
+        ...(cell ? { cellStates: cell.states, correctCount: cell.correctCount, wrongCount: cell.wrongCount } : {}),
+      });
     }
 
     const now = new Date();

@@ -38,6 +38,7 @@ Kør derefter seed igen for at oprette admin-brugeren.
 
 - `DATABASE_URL` – sættes automatisk i Docker
 - `JWT_SECRET` – sæt i produktion
+- `SPOTIFY_CLIENT_ID` og `SPOTIFY_CLIENT_SECRET` – til Sangønsker-siden (søg efter sange). Opret en app på [Spotify for Developers](https://developer.spotify.com/dashboard) og brug Client Credentials. Uden disse virker resten af appen; kun søgning på Sangønsker vil vise en fejl.
 - `ALLOWED_RADIUS_METERS` – radius i meter for indstempling (standard 2000). Øg fx til 2500 hvis skolens netværk giver forkert GPS.
 
 ## Lokal udvikling uden Docker

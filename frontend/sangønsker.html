@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Sangønsker</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1><a href="/app" class="header-home">OnTime</a></h1>
+    <a href="/spil" class="admin-link">Spil</a>
+    <a href="/sangønsker" class="admin-link">Sangønsker</a>
+    <a href="https://edumercantec-my.sharepoint.com/:x:/g/personal/jekn_edu_mercantec_dk/IQBX8mxWSzlWSasK_yzr_SkLASt16MWWzyDc5oT8KDOzLeY?rtime=6iLN3xhx3kg" class="admin-link" target="_blank" rel="noopener noreferrer">Skema</a>
+    <span id="user-name" class="user-info"></span>
+    <button id="logout" class="btn-logout">Log ud</button>
+  </header>
+  <main class="app-main sangønsker-page">
+    <h2 class="sangønsker-title">Sangønsker</h2>
+    <p class="sangønsker-intro">Foreslå en sang – de andre kan stemme den op. Sorteret efter flest stemmer.</p>
+
+    <section class="card sangønsker-add">
+      <h3>Tilføj ønske</h3>
+      <div class="sangønsker-search-row">
+        <input type="search" id="search-input" class="sangønsker-search-input" placeholder="Søg efter sang eller kunstner…" autocomplete="off">
+        <button type="button" id="search-btn" class="btn-primary">Søg</button>
+      </div>
+      <div id="search-results" class="sangønsker-search-results" hidden aria-live="polite"></div>
+    </section>
+
+    <section class="card sangønsker-list-wrap">
+      <h3>Ønskeliste</h3>
+      <div id="requests-list" class="sangønsker-list">Indlæser…</div>
+    </section>
+  </main>
+  <script src="/js/sangønsker.js"></script>
+</body>
+</html>

@@ -823,6 +823,8 @@ async function initSudoku() {
   let selectedIndex = null;
   let timerStartedAt = null;
   let timerInterval = null;
+  let lastCheckStates = null; // 'correct' | 'wrong' | 'invalid' pr. celle
+  let timerLockedSeconds = null; // låses ved første "Tjek løsning"
 
   function formatTime(seconds) {
     const m = Math.floor(seconds / 60);
@@ -831,6 +833,7 @@ async function initSudoku() {
   }
 
   function startTimer() {
+    if (timerLockedSeconds != null) return;
     if (timerStartedAt) return;
     timerStartedAt = Date.now();
     timerInterval = setInterval(() => {
@@ -849,6 +852,7 @@ async function initSudoku() {
   }
 
   function getElapsedSeconds() {
+    if (timerLockedSeconds != null) return timerLockedSeconds;
     return timerStartedAt ? Math.floor((Date.now() - timerStartedAt) / 1000) : 0;
   }
 
@@ -863,19 +867,69 @@ async function initSudoku() {
     if (numpadLabelEl) numpadLabelEl.textContent = 'Vælg et tal 1–6 nedenfor';
   }
 
+  function clearCheckMarks() {
+    lastCheckStates = null;
+    gridWrap.querySelectorAll('.sudoku-cell').forEach((el) => {
+      el.classList.remove('correct', 'wrong', 'invalid');
+      el.removeAttribute('aria-invalid');
+      el.removeAttribute('data-check');
+    });
+  }
+
+  function applyCheckMarks(cellStates) {
+    if (!Array.isArray(cellStates) || cellStates.length !== SUDOKU_CELLS) return;
+    lastCheckStates = cellStates.slice();
+    gridWrap.querySelectorAll('.sudoku-cell').forEach((el, idx) => {
+      const st = cellStates[idx];
+      el.classList.remove('correct', 'wrong', 'invalid');
+      el.removeAttribute('aria-invalid');
+      el.removeAttribute('data-check');
+      if (st === 'correct') {
+        el.classList.add('correct');
+        el.setAttribute('data-check', 'correct');
+      } else if (st === 'wrong') {
+        el.classList.add('wrong');
+        el.setAttribute('aria-invalid', 'true');
+        el.setAttribute('data-check', 'wrong');
+      } else if (st === 'invalid') {
+        el.classList.add('invalid');
+        el.setAttribute('aria-invalid', 'true');
+        el.setAttribute('data-check', 'invalid');
+      }
+    });
+  }
+
   function setCellValue(n) {
     if (selectedIndex == null || given[selectedIndex]) return;
     if (n < 1 || n > SUDOKU_MAX_NUM) return;
     values[selectedIndex] = n;
     const cellEl = gridWrap.querySelector('[data-index="' + selectedIndex + '"]');
-    if (cellEl) cellEl.textContent = n;
+    if (cellEl) {
+      cellEl.textContent = n;
+      cellEl.setAttribute('aria-label', 'Felt række ' + (Math.floor(selectedIndex / SUDOKU_COLS) + 1) + ' kolonne ' + ((selectedIndex % SUDOKU_COLS) + 1) + ', værdi ' + n);
+      if (lastCheckStates) {
+        cellEl.classList.remove('correct', 'wrong', 'invalid');
+        cellEl.removeAttribute('aria-invalid');
+        cellEl.removeAttribute('data-check');
+      }
+    }
   }
 
   function clearCell() {
     if (selectedIndex == null || given[selectedIndex]) return;
     values[selectedIndex] = 0;
     const cellEl = gridWrap.querySelector('[data-index="' + selectedIndex + '"]');
-    if (cellEl) cellEl.textContent = '';
+    if (cellEl) {
+      cellEl.textContent = '';
+      const row = Math.floor(selectedIndex / SUDOKU_COLS);
+      const col = selectedIndex % SUDOKU_COLS;
+      cellEl.setAttribute('aria-label', 'Felt række ' + (row + 1) + ' kolonne ' + (col + 1) + ', tom');
+      if (lastCheckStates) {
+        cellEl.classList.remove('correct', 'wrong', 'invalid');
+        cellEl.removeAttribute('aria-invalid');
+        cellEl.removeAttribute('data-check');
+      }
+    }
   }
 
   function buildGrid() {
@@ -944,9 +998,11 @@ async function initSudoku() {
       return;
     }
     values = given.slice();
+    timerLockedSeconds = null;
 
     statusEl.hidden = true;
     gameWrap.hidden = false;
+    clearCheckMarks();
     buildGrid();
 
     if (numpadEl) {
@@ -970,6 +1026,7 @@ async function initSudoku() {
     });
 
     checkBtn.addEventListener('click', async () => {
+      clearCheckMarks();
       const grid = getGrid();
       const hasEmpty = grid.some((v) => v === 0);
       if (hasEmpty) {
@@ -982,8 +1039,10 @@ async function initSudoku() {
       feedbackEl.hidden = false;
       feedbackEl.textContent = 'Tjekker…';
       feedbackEl.className = 'sudoku-feedback';
-      stopTimer();
       const timeSeconds = getElapsedSeconds();
+      if (timerLockedSeconds == null) timerLockedSeconds = timeSeconds;
+      stopTimer();
+      if (timerEl) timerEl.textContent = formatTime(timerLockedSeconds);
       try {
         const res = await api('/api/games/sudoku/complete', {
           method: 'POST',
@@ -1007,8 +1066,18 @@ async function initSudoku() {
           }
           return;
         }
-        feedbackEl.className = 'sudoku-feedback error';
-        feedbackEl.textContent = data.error || 'Løsningen var ikke korrekt.';
+        if (data && Array.isArray(data.cellStates)) {
+          applyCheckMarks(data.cellStates);
+          const correctCount = typeof data.correctCount === 'number' ? data.correctCount : null;
+          const total = SUDOKU_CELLS;
+          feedbackEl.className = 'sudoku-feedback error';
+          feedbackEl.textContent =
+            (data.error || 'Løsningen var ikke korrekt.') +
+            (correctCount != null ? ' (' + correctCount + '/' + total + ' korrekte)' : '');
+        } else {
+          feedbackEl.className = 'sudoku-feedback error';
+          feedbackEl.textContent = data.error || 'Løsningen var ikke korrekt.';
+        }
         checkBtn.disabled = false;
       } catch (e) {
         feedbackEl.className = 'sudoku-feedback error';

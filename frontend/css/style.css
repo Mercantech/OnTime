@@ -537,6 +537,54 @@ main.app-main.dashboard {
 .games-intro { color: var(--text-muted); margin: 0 0 1.5rem; font-size: 0.95rem; }
 .game-card { margin-bottom: 1.5rem; }
 
+/* Sangønsker-side */
+.sangønsker-page { max-width: 42rem; margin: 0 auto; padding: 1rem; }
+.sangønsker-title { margin: 0 0 0.25rem; font-size: 1.5rem; }
+.sangønsker-intro { color: var(--text-muted); margin: 0 0 1.5rem; font-size: 0.95rem; }
+.sangønsker-add { margin-bottom: 1.5rem; }
+.sangønsker-add h3 { margin: 0 0 0.75rem; font-size: 1.1rem; }
+.sangønsker-search-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+.sangønsker-search-input { flex: 1; padding: 0.6rem 0.75rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text); font-size: 1rem; }
+.sangønsker-search-input:focus { outline: none; border-color: var(--accent); }
+.sangønsker-search-results { margin-top: 0.5rem; }
+.sangønsker-search-item {
+  display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.5rem 0.75rem; margin-bottom: 0.25rem;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text);
+  text-align: left; cursor: pointer; font-size: 0.95rem; transition: border-color var(--transition), background var(--transition);
+}
+.sangønsker-search-item:hover { border-color: var(--accent); background: var(--surface-1); }
+.sangønsker-search-item img, .sangønsker-search-no-art { flex-shrink: 0; width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
+.sangønsker-search-no-art { display: flex; align-items: center; justify-content: center; background: var(--surface-1); color: var(--text-muted); font-size: 1.25rem; }
+.sangønsker-search-item-title { font-weight: 600; }
+.sangønsker-search-item-artist { color: var(--text-muted); margin-left: 0.25rem; }
+.sangønsker-search-loading, .sangønsker-search-none, .sangønsker-search-error { margin: 0; padding: 0.5rem 0; color: var(--text-muted); font-size: 0.9rem; }
+.sangønsker-search-error { color: var(--danger); }
+.sangønsker-list-wrap h3 { margin: 0 0 0.75rem; font-size: 1.1rem; }
+.sangønsker-list { min-height: 2rem; }
+.sangønsker-empty, .sangønsker-error { color: var(--text-muted); padding: 1rem 0; }
+.sangønsker-error { color: var(--danger); }
+.sangønsker-row {
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; margin-bottom: 0.5rem;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+}
+.sangønsker-row-cover img, .sangønsker-row-no-art { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+.sangønsker-row-no-art { display: flex; align-items: center; justify-content: center; background: var(--surface-1); color: var(--text-muted); font-size: 1.5rem; }
+.sangønsker-row-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+.sangønsker-row-title { font-weight: 600; }
+.sangønsker-row-artist { color: var(--text-muted); font-size: 0.9rem; }
+.sangønsker-row-by { font-size: 0.8rem; color: var(--text-muted); }
+.sangønsker-row-votes { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.sangønsker-vote-count { font-weight: 700; color: var(--accent); min-width: 1.5rem; text-align: center; }
+.sangønsker-vote-btn {
+  padding: 0.4rem 0.75rem; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm);
+  font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background var(--transition);
+}
+.sangønsker-vote-btn:hover { background: var(--accent-dim); }
+.sangønsker-vote-btn.voted { background: var(--surface-1); color: var(--text-muted); border: 1px solid var(--border); }
+.sangønsker-vote-btn.voted:hover { background: var(--surface-2); }
+.sangønsker-preview-link, .sangønsker-spotify-link { font-size: 0.85rem; color: var(--accent); text-decoration: none; white-space: nowrap; }
+.sangønsker-preview-link:hover, .sangønsker-spotify-link:hover { text-decoration: underline; }
+
 /* Profil-side (andres profiler) */
 .profile-page { max-width: 520px; margin: 0 auto; }
 .profile-loading { padding: 2rem; text-align: center; color: var(--text-muted); }
@@ -678,6 +726,20 @@ main.app-main.dashboard {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
   z-index: 1;
+}
+
+/* Resultatmarkering efter "Tjek løsning" */
+.sudoku-cell.correct:not(.selected) {
+  background: rgba(34, 197, 94, 0.18);
+  box-shadow: inset 0 0 0 2px rgba(34, 197, 94, 0.35);
+}
+.sudoku-cell.wrong:not(.selected),
+.sudoku-cell.invalid:not(.selected) {
+  background: rgba(239, 68, 68, 0.14);
+  box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.28);
+}
+.sudoku-cell.wrong:not(.selected) {
+  box-shadow: inset 0 0 0 2px rgba(239, 68, 68, 0.42);
 }
 
 /* Numpad: store trykbare tal i bunden (mobilvenlig) */
