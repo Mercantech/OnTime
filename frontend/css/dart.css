@@ -542,6 +542,103 @@
   font-weight: 500;
 }
 
+/* ---------- Live stats (under spil) ---------- */
+.dart-live-stats {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.dart-live-stats-empty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.dart-live-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.dart-live-stat {
+  font-size: 0.9rem;
+}
+
+.dart-live-stat-label {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-bottom: 0.2rem;
+}
+
+.dart-live-stat-value {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.dart-live-stat-who {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.dart-live-stat-full {
+  grid-column: 1 / -1;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ---------- Final stats (efter spil) ---------- */
+.dart-final-stats {
+  text-align: left;
+  max-width: 360px;
+  margin: 0 auto 1.5rem;
+  padding: 1.25rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.dart-stats-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.dart-stats-list {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dart-stats-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.dart-stats-row dt {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.dart-stats-row dd {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.dart-stats-row dd strong {
+  color: var(--accent);
+}
+
 /* ---------- Winner ---------- */
 .dart-winner {
   text-align: center;

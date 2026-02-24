@@ -24,6 +24,8 @@
   const resetBtn = document.getElementById('dart-reset-btn');
 
   const rankingListEl = document.getElementById('dart-ranking-list');
+  const liveStatsEl = document.getElementById('dart-live-stats');
+  const finalStatsListEl = document.getElementById('dart-stats-list');
   const helperDartsEl = document.getElementById('dart-helper-darts');
   const helperTotalEl = document.getElementById('dart-helper-total');
   const helperUseBtn = document.getElementById('dart-helper-use-btn');
@@ -249,7 +251,7 @@
     }
     setupError.hidden = true;
     state = {
-      players: names.map(function (name) { return { name: name, score: START_SCORE }; }),
+      players: names.map(function (name) { return { name: name, score: START_SCORE, roundScores: [] }; }),
       currentIndex: 0,
       gameOver: false,
       finishedOrder: []
@@ -260,6 +262,7 @@
     turnArea.hidden = false;
     bustMsg.hidden = true;
     scoreInput.value = '';
+    updateRegisterButton();
     scoreInput.focus();
     render();
   }
@@ -268,6 +271,47 @@
     return state.players.map(function (_, i) { return i; }).filter(function (i) {
       return state.finishedOrder.indexOf(i) === -1;
     });
+  }
+
+  function getAllRoundScores() {
+    var list = [];
+    state.players.forEach(function (p) {
+      var rs = p.roundScores || [];
+      rs.forEach(function (pts) { list.push({ name: p.name, points: pts }); });
+    });
+    return list;
+  }
+
+  function renderLiveStats() {
+    if (!liveStatsEl) return;
+    var rounds = getAllRoundScores();
+    if (rounds.length === 0) {
+      liveStatsEl.innerHTML = '<p class="dart-live-stats-empty">Ingen runder spillet endnu.</p>';
+      liveStatsEl.hidden = false;
+      return;
+    }
+    var best = rounds.reduce(function (acc, r) { return r.points > acc.points ? r : acc; }, rounds[0]);
+    var worst = rounds.reduce(function (acc, r) { return r.points < acc.points ? r : acc; }, rounds[0]);
+    var totalRounds = rounds.length;
+    var avg = Math.round(rounds.reduce(function (s, r) { return s + r.points; }, 0) / totalRounds);
+    var count180 = rounds.filter(function (r) { return r.points === 180; }).length;
+    var count140 = rounds.filter(function (r) { return r.points >= 140; }).length;
+    var count100 = rounds.filter(function (r) { return r.points >= 100; }).length;
+    var html = '<div class="dart-live-stats-grid">' +
+      '<div class="dart-live-stat"><span class="dart-live-stat-label">Bedste runde</span><strong class="dart-live-stat-value">' + best.points + '</strong> <span class="dart-live-stat-who">' + escapeHtml(best.name) + '</span></div>' +
+      '<div class="dart-live-stat"><span class="dart-live-stat-label">Laveste runde</span><strong class="dart-live-stat-value">' + worst.points + '</strong> <span class="dart-live-stat-who">' + escapeHtml(worst.name) + '</span></div>' +
+      '<div class="dart-live-stat"><span class="dart-live-stat-label">Runder</span><strong class="dart-live-stat-value">' + totalRounds + '</strong></div>' +
+      '<div class="dart-live-stat"><span class="dart-live-stat-label">Gns. pr. runde</span><strong class="dart-live-stat-value">' + avg + '</strong></div>';
+    if (count180 > 0 || count140 > 0 || count100 > 0) {
+      html += '<div class="dart-live-stat dart-live-stat-full">';
+      if (count180 > 0) html += ' 180: ' + count180 + '×';
+      if (count140 > 0) html += ' 140+: ' + count140 + '×';
+      if (count100 > 0) html += ' 100+: ' + count100 + '×';
+      html += '</div>';
+    }
+    html += '</div>';
+    liveStatsEl.innerHTML = html;
+    liveStatsEl.hidden = false;
   }
 
   function render() {
@@ -285,10 +329,13 @@
         '</div>';
     }).join('');
 
+    renderLiveStats();
+
     if (state.gameOver) {
       currentNameEl.textContent = '';
       turnArea.hidden = true;
       renderRanking();
+      renderFinalStats();
       return;
     }
 
@@ -297,6 +344,36 @@
     whoseTurnEl.hidden = false;
     turnArea.hidden = false;
     scoreInput.focus();
+  }
+
+  function renderFinalStats() {
+    if (!finalStatsListEl) return;
+    var rounds = getAllRoundScores();
+    if (rounds.length === 0) {
+      finalStatsListEl.innerHTML = '<dt>Ingen runder</dt><dd>Der blev ikke spillet nogen runder.</dd>';
+      return;
+    }
+    var best = rounds.reduce(function (acc, r) { return r.points > acc.points ? r : acc; }, rounds[0]);
+    var worst = rounds.reduce(function (acc, r) { return r.points < acc.points ? r : acc; }, rounds[0]);
+    var totalRounds = rounds.length;
+    var totalPts = rounds.reduce(function (s, r) { return s + r.points; }, 0);
+    var avg = Math.round(totalPts / totalRounds);
+    var count180 = rounds.filter(function (r) { return r.points === 180; }).length;
+    var count140 = rounds.filter(function (r) { return r.points >= 140; }).length;
+    var count100 = rounds.filter(function (r) { return r.points >= 100; }).length;
+    var html = '' +
+      '<div class="dart-stats-row"><dt>Bedste runde (highscore)</dt><dd><strong>' + best.points + '</strong> – ' + escapeHtml(best.name) + '</dd></div>' +
+      '<div class="dart-stats-row"><dt>Laveste runde</dt><dd><strong>' + worst.points + '</strong> – ' + escapeHtml(worst.name) + '</dd></div>' +
+      '<div class="dart-stats-row"><dt>Antal runder</dt><dd>' + totalRounds + '</dd></div>' +
+      '<div class="dart-stats-row"><dt>Gennemsnit pr. runde</dt><dd>' + avg + '</dd></div>';
+    if (count180 > 0 || count140 > 0 || count100 > 0) {
+      html += '<div class="dart-stats-row"><dt>Ton-plussere</dt><dd>';
+      if (count180 > 0) html += '180: ' + count180 + '× ';
+      if (count140 > 0) html += '140+: ' + count140 + '× ';
+      if (count100 > 0) html += '100+: ' + count100 + '×';
+      html += '</dd></div>';
+    }
+    finalStatsListEl.innerHTML = html;
   }
 
   function renderRanking() {
@@ -320,11 +397,34 @@
     return div.innerHTML;
   }
 
+  /** Parser input som enten et tal eller plus-udtryk (fx 17+17+17+3+4). Kun cifre og + tilladt. */
+  function parseScoreInput(raw) {
+    var s = (raw || '').trim();
+    if (s === '') return NaN;
+    if (/^[0-9+\s]+$/.test(s) === false) return NaN;
+    var parts = s.split('+').map(function (p) { return parseInt(p.trim(), 10); });
+    var valid = parts.every(function (n) { return !isNaN(n) && n >= 0 && n <= 180; });
+    if (!valid) return NaN;
+    var sum = parts.reduce(function (a, b) { return a + b; }, 0);
+    return sum <= 180 ? sum : NaN;
+  }
+
+  function updateRegisterButton() {
+    if (!registerBtn || !scoreInput) return;
+    var raw = scoreInput.value.trim();
+    var sum = parseScoreInput(raw);
+    if (raw === '' || isNaN(sum)) {
+      registerBtn.textContent = 'Registrér';
+      return;
+    }
+    registerBtn.textContent = 'Registrér (' + sum + ')';
+  }
+
   function registerScore() {
     if (state.gameOver) return;
 
     const raw = scoreInput.value.trim();
-    const points = parseInt(raw, 10);
+    const points = parseScoreInput(raw);
     if (raw === '' || isNaN(points) || points < 0 || points > 180) {
       scoreInput.focus();
       return;
@@ -338,13 +438,17 @@
       bustMsg.hidden = false;
       nextPlayer();
       scoreInput.value = '';
+      updateRegisterButton();
       scoreInput.focus();
       render();
       return;
     }
 
     p.score = newScore;
+    if (!p.roundScores) p.roundScores = [];
+    p.roundScores.push(points);
     scoreInput.value = '';
+    updateRegisterButton();
     scoreInput.focus();
 
     if (newScore === 0) {
@@ -376,6 +480,7 @@
     scoreInput.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') registerScore();
     });
+    scoreInput.addEventListener('input', updateRegisterButton);
   }
 
   if (newGameBtn) newGameBtn.addEventListener('click', backToSetup);

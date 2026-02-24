@@ -250,6 +250,73 @@ router.get('/burndown', auth, async (req, res) => {
   }
 });
 
+/** Point over tid: kumulativ saldo per hverdag (check-in + spil + casino), så man ser op og nedture */
+router.get('/points-history', auth, async (req, res) => {
+  try {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const monthStart = new Date(year, month, 1);
+    const days = [];
+    const d = new Date(monthStart);
+    while (d <= now && d.getMonth() === month) {
+      const day = d.getDay();
+      if (day !== 0 && day !== 6) days.push(new Date(d));
+      d.setDate(d.getDate() + 1);
+    }
+    const dayLabels = days.map((x) => x.getDate() + '. ' + x.toLocaleDateString('da-DK', { month: 'short' }));
+    const dateStrings = days.map((x) => toDateString(x));
+
+    const [checkRes, gameRes, txRes] = await Promise.all([
+      pool.query(
+        `SELECT check_date, COALESCE(SUM(points), 0)::int AS pts FROM check_ins
+         WHERE user_id = $1 AND check_date >= $2::date AND check_date <= $3::date
+         GROUP BY check_date`,
+        [req.userId, toDateString(monthStart), toDateString(now)]
+      ),
+      pool.query(
+        `SELECT play_date, COALESCE(SUM(points), 0)::int AS pts FROM game_completions
+         WHERE user_id = $1 AND play_date >= $2::date AND play_date <= $3::date
+         GROUP BY play_date`,
+        [req.userId, toDateString(monthStart), toDateString(now)]
+      ),
+      pool.query(
+        `SELECT (created_at AT TIME ZONE 'Europe/Copenhagen')::date AS d, COALESCE(SUM(delta), 0)::int AS pts
+         FROM point_transactions
+         WHERE user_id = $1 AND created_at >= $2::timestamp AND created_at < $3::timestamp
+         GROUP BY (created_at AT TIME ZONE 'Europe/Copenhagen')::date`,
+        [req.userId, monthStart.toISOString(), new Date(year, month + 1, 0, 23, 59, 59).toISOString()]
+      ),
+    ]);
+
+    const daily = {};
+    dateStrings.forEach((ds) => { daily[ds] = 0; });
+    checkRes.rows.forEach((row) => {
+      const ds = toDateString(row.check_date);
+      if (daily[ds] !== undefined) daily[ds] += row.pts || 0;
+    });
+    gameRes.rows.forEach((row) => {
+      const ds = toDateString(row.play_date);
+      if (daily[ds] !== undefined) daily[ds] += row.pts || 0;
+    });
+    txRes.rows.forEach((row) => {
+      const ds = row.d != null ? (typeof row.d === 'string' ? row.d.slice(0, 10) : toDateString(row.d)) : '';
+      if (ds && daily[ds] !== undefined) daily[ds] += row.pts || 0;
+    });
+
+    let cum = 0;
+    const balance = dateStrings.map((ds) => {
+      cum += daily[ds] || 0;
+      return cum;
+    });
+
+    res.json({ labels: dayLabels, balance });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 /** Seneste indstemplinger (denne måned) */
 router.get('/recent', auth, async (req, res) => {
   try {

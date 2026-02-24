@@ -395,7 +395,75 @@ async function loadBadges() {
   }
 }
 
+function drawPointsHistoryChart(canvas, data) {
+  if (!canvas || !data || !data.labels || !data.labels.length) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const w = rect.width;
+  const h = rect.height;
+  const pad = { top: 12, right: 12, bottom: 28, left: 40 };
+  const chartW = w - pad.left - pad.right;
+  const chartH = h - pad.top - pad.bottom;
+  const balance = data.balance || [];
+  const minVal = Math.min(...balance, 0);
+  const maxVal = Math.max(...balance, 1);
+  const range = maxVal - minVal || 1;
+
+  ctx.fillStyle = '#1a1a20';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.strokeStyle = '#2e2e38';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top);
+  ctx.lineTo(pad.left, pad.top + chartH);
+  ctx.lineTo(pad.left + chartW, pad.top + chartH);
+  ctx.stroke();
+
+  const n = data.labels.length;
+  function y(val) {
+    return pad.top + chartH - ((val - minVal) / range) * chartH;
+  }
+  function x(i) {
+    return pad.left + (n > 1 ? (i / (n - 1)) * chartW : 0);
+  }
+
+  ctx.strokeStyle = '#22c55e';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(x(0), y(balance[0]));
+  for (let i = 1; i < n; i++) ctx.lineTo(x(i), y(balance[i]));
+  ctx.stroke();
+
+  ctx.fillStyle = '#9090a0';
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  for (let i = 0; i < n; i++) {
+    if (i % Math.max(1, Math.floor(n / 8)) === 0 || i === n - 1) {
+      ctx.fillText(data.labels[i], x(i), pad.top + chartH + 16);
+    }
+  }
+}
+
 let lastBurndownData = null;
+let lastPointsHistoryData = null;
+async function loadPointsHistory() {
+  try {
+    const res = await api('/api/leaderboard/points-history');
+    const data = await res.json().catch(() => ({}));
+    lastPointsHistoryData = data;
+    const canvas = document.getElementById('points-history-chart');
+    if (canvas && data.labels && data.labels.length) drawPointsHistoryChart(canvas, data);
+  } catch (e) {
+    lastPointsHistoryData = null;
+  }
+}
+
 async function loadBurndown() {
   try {
     const res = await api('/api/leaderboard/burndown');
@@ -569,6 +637,7 @@ document.getElementById('checkin-btn').addEventListener('click', async () => {
   loadStreak();
   loadLeaderboard();
   loadBadges();
+  loadPointsHistory();
   loadBurndown();
   loadRecent();
   loadCalendar();
@@ -1071,6 +1140,7 @@ async function init() {
     await loadStreak();
     await loadLeaderboard();
     await loadBadges();
+    await loadPointsHistory();
     await loadBurndown();
     await loadRecent();
     await loadCalendar();

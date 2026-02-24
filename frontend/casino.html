@@ -9,6 +9,8 @@
 </head>
 <body class="casino-page">
   <main class="casino-main">
+    <div class="casino-layout">
+      <div class="casino-content">
     <h1 class="casino-page-title">🎰 Casino</h1>
     <p class="casino-balance casino-balance-top">Dine point: <strong id="casino-balance">–</strong></p>
 
@@ -263,6 +265,19 @@
     </div>
 
     <a href="/app" class="casino-back">← Tilbage til app</a>
+      </div>
+
+      <aside class="casino-sidebar" aria-label="Casino historik og statistik">
+        <section class="casino-sidebar-section">
+          <h3 class="casino-sidebar-title">Statistik (denne måned)</h3>
+          <div id="casino-stats" class="casino-stats">Indlæser…</div>
+        </section>
+        <section class="casino-sidebar-section">
+          <h3 class="casino-sidebar-title">Seneste transaktioner</h3>
+          <ul id="casino-history" class="casino-history-list">Indlæser…</ul>
+        </section>
+      </aside>
+    </div>
   </main>
   <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
   <script src="js/casino.js"></script>

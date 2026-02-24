@@ -11,12 +11,128 @@
 .casino-main {
   text-align: center;
   max-width: 360px;
+  width: 100%;
 }
 @media (min-width: 720px) {
   .casino-main { max-width: 680px; }
 }
 @media (min-width: 900px) {
   .casino-main { max-width: 1280px; }
+}
+
+.casino-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+  text-align: left;
+}
+@media (min-width: 960px) {
+  .casino-layout {
+    grid-template-columns: 1fr 280px;
+    text-align: center;
+  }
+  .casino-content { text-align: center; }
+}
+
+.casino-sidebar {
+  background: linear-gradient(180deg, #2a2530 0%, #1e1a24 100%);
+  border: 2px solid #3d3545;
+  border-radius: 16px;
+  padding: 1.25rem;
+  height: fit-content;
+  position: sticky;
+  top: 1rem;
+}
+
+.casino-sidebar-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #e8e8ed;
+}
+
+.casino-sidebar-section {
+  margin-bottom: 1.25rem;
+}
+.casino-sidebar-section:last-child {
+  margin-bottom: 0;
+}
+
+.casino-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.casino-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.6rem;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.casino-stat-game {
+  font-weight: 600;
+  color: #e8e8ed;
+}
+
+.casino-stat-net {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.casino-stat-net.positive { color: #22c55e; }
+.casino-stat-net.negative { color: #ef4444; }
+.casino-stat-net.zero { color: #9090a0; }
+
+.casino-stat-detail {
+  font-size: 0.75rem;
+  color: #9090a0;
+  margin-top: 0.15rem;
+}
+
+.casino-history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.casino-history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #2e2e38;
+  font-size: 0.8rem;
+}
+.casino-history-item:last-child { border-bottom: none; }
+
+.casino-history-reason {
+  color: #9090a0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.casino-history-delta {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+.casino-history-delta.plus { color: #22c55e; }
+.casino-history-delta.minus { color: #ef4444; }
+
+.casino-history-time {
+  display: block;
+  font-size: 0.7rem;
+  color: #6b6b7a;
+  margin-top: 0.1rem;
 }
 .casino-page-title {
   margin: 0 0 0.25rem;

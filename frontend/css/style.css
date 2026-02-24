@@ -771,10 +771,12 @@ main.app-main.dashboard {
 .highlight-week { border-left: 4px solid #3b82f6; }
 .highlight-early { border-left: 4px solid #eab308; }
 
+.points-history-wrap,
 .burndown-wrap {
   margin-top: 0.5rem;
   width: 100%;
 }
+#points-history-chart,
 #burndown-chart {
   display: block;
   width: 100%;

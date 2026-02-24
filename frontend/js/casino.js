@@ -115,11 +115,92 @@ async function loadStatus() {
     }
     const bjStartBtn = document.getElementById('blackjack-start');
     if (bjStartBtn && blackjackRes.ok) bjStartBtn.disabled = !blackjackData.canStart;
+
+    loadCasinoHistory();
+    loadCasinoStats();
   } catch (e) {
     console.error('loadStatus:', e);
     if (balanceEl) balanceEl.textContent = '–';
     if (leverBtn) leverBtn.disabled = true;
     if (flipBtn) flipBtn.disabled = true;
+  }
+}
+
+function formatReason(reason) {
+  const map = {
+    'Casino spin': 'Enarmet bandit',
+    'Casino gevinst': 'Enarmet bandit gevinst',
+    'Roulette': 'Roulette',
+    'Roulette gevinst': 'Roulette gevinst',
+    'Blackjack': 'Blackjack',
+    'Blackjack push': 'Blackjack push',
+    'Blackjack gevinst': 'Blackjack gevinst',
+    'Coinflip': 'Coinflip',
+    'Coinflip gevinst': 'Coinflip gevinst',
+    'Poker buy-in': 'Poker buy-in',
+    'Poker refund': 'Poker refund',
+    'Poker afsluttet': 'Poker afsluttet',
+    'Poker afsluttet (admin)': 'Poker afsluttet',
+  };
+  return map[reason] || reason;
+}
+
+function formatTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  const today = now.toDateString();
+  if (d.toDateString() === today) {
+    return d.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
+  }
+  return d.toLocaleDateString('da-DK', { day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('da-DK', { hour: '2-digit', minute: '2-digit' });
+}
+
+async function loadCasinoHistory() {
+  const el = document.getElementById('casino-history');
+  if (!el) return;
+  try {
+    const res = await api('/api/casino/history');
+    const list = await res.json().catch(() => []);
+    if (!Array.isArray(list) || list.length === 0) {
+      el.innerHTML = '<li class="casino-history-item"><span class="casino-history-reason">Ingen transaktioner endnu</span></li>';
+      return;
+    }
+    el.innerHTML = list.map((item) => {
+      const delta = item.delta ?? 0;
+      const sign = delta >= 0 ? 'plus' : 'minus';
+      const text = delta >= 0 ? '+' + delta : String(delta);
+      return '<li class="casino-history-item">' +
+        '<span><span class="casino-history-reason">' + formatReason(item.reason) + '</span><span class="casino-history-time">' + formatTime(item.at) + '</span></span>' +
+        '<span class="casino-history-delta ' + sign + '">' + text + ' pt</span></li>';
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<li class="casino-history-item"><span class="casino-history-reason">Kunne ikke hente historik</span></li>';
+  }
+}
+
+async function loadCasinoStats() {
+  const el = document.getElementById('casino-stats');
+  if (!el) return;
+  try {
+    const res = await api('/api/casino/stats');
+    const data = await res.json().catch(() => ({}));
+    const stats = data.stats || [];
+    if (stats.length === 0) {
+      el.innerHTML = '<p class="casino-stat-detail">Ingen spil denne måned</p>';
+      return;
+    }
+    el.innerHTML = stats.map((s) => {
+      const net = s.net ?? 0;
+      const netClass = net > 0 ? 'positive' : (net < 0 ? 'negative' : 'zero');
+      const netText = (net >= 0 ? '+' : '') + net + ' pt';
+      const detail = [s.wins + ' vind', s.losses + ' tab'].filter(Boolean).join(' · ');
+      return '<div class="casino-stat-row">' +
+        '<span><span class="casino-stat-game">' + (s.game || s.key) + '</span><span class="casino-stat-detail">' + detail + '</span></span>' +
+        '<span class="casino-stat-net ' + netClass + '">' + netText + '</span></div>';
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<p class="casino-stat-detail">Kunne ikke hente statistik</p>';
   }
 }
 

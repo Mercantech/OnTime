@@ -533,4 +533,86 @@ router.post('/blackjack/stand', async (req, res) => {
   });
 });
 
+const CASINO_REASONS = [
+  'Casino spin', 'Casino gevinst', 'Roulette', 'Roulette gevinst',
+  'Blackjack', 'Blackjack push', 'Blackjack gevinst',
+  'Coinflip', 'Coinflip gevinst',
+  'Poker buy-in', 'Poker refund', 'Poker afsluttet', 'Poker afsluttet (admin)',
+];
+
+/** Seneste casino-transaktioner (historik) */
+router.get('/history', auth, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT id, delta, reason, created_at
+       FROM point_transactions
+       WHERE user_id = $1 AND reason = ANY($2::text[])
+       ORDER BY created_at DESC
+       LIMIT 40`,
+      [req.userId, CASINO_REASONS]
+    );
+    res.json(r.rows.map((row) => ({
+      id: row.id,
+      delta: row.delta,
+      reason: row.reason,
+      at: row.created_at,
+    })));
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+/** Statistik per spil denne måned: antal spill, vundet/tabt, netto */
+router.get('/stats', auth, async (req, res) => {
+  try {
+    const r = await pool.query(
+      `SELECT reason, COUNT(*)::int AS cnt, SUM(delta)::int AS net
+       FROM point_transactions
+       WHERE user_id = $1 AND ${monthWindowSql('created_at')} AND reason = ANY($2::text[])
+       GROUP BY reason`,
+      [req.userId, CASINO_REASONS]
+    );
+
+    const gameKey = (reason) => {
+      if (reason === 'Casino spin' || reason === 'Casino gevinst') return 'slot';
+      if (reason === 'Roulette' || reason === 'Roulette gevinst') return 'roulette';
+      if (reason === 'Blackjack' || reason === 'Blackjack push' || reason === 'Blackjack gevinst') return 'blackjack';
+      if (reason === 'Coinflip' || reason === 'Coinflip gevinst') return 'coinflip';
+      if (reason.startsWith('Poker')) return 'poker';
+      return 'other';
+    };
+
+    const byGame = {};
+    r.rows.forEach((row) => {
+      const key = gameKey(row.reason);
+      if (!byGame[key]) byGame[key] = { plays: 0, wins: 0, losses: 0, net: 0 };
+      const n = row.cnt || 1;
+      const net = row.net || 0;
+      if (net < 0) {
+        byGame[key].plays += n;
+        byGame[key].losses += n;
+      } else if (net > 0) {
+        byGame[key].wins += n;
+      }
+      byGame[key].net += net;
+    });
+
+    const gameNames = { slot: 'Enarmet bandit', roulette: 'Roulette', blackjack: 'Blackjack', coinflip: 'Coinflip', poker: 'Poker' };
+    const stats = Object.entries(byGame).map(([key, v]) => ({
+      game: gameNames[key] || key,
+      key,
+      plays: v.plays,
+      wins: v.wins,
+      losses: v.losses,
+      net: v.net,
+    }));
+
+    res.json({ stats });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 module.exports = router;

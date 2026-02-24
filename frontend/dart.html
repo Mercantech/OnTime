@@ -59,11 +59,15 @@
             <!-- Fyldes af JS -->
           </div>
 
+          <div id="dart-live-stats" class="dart-live-stats" aria-live="polite">
+            <!-- Fyldes af JS: bedste/laveste runde under spil -->
+          </div>
+
           <div class="dart-turn-area" id="dart-turn-area">
             <p class="dart-whose-turn" id="dart-whose-turn">Det er <strong id="dart-current-name"></strong>s tur</p>
             <div class="dart-enter-score">
-              <label for="dart-score-input" class="dart-score-label">Point denne runde</label>
-              <input type="number" id="dart-score-input" class="dart-score-input" min="0" max="180" step="1" placeholder="0–180" aria-label="Point denne runde" autocomplete="off">
+              <label for="dart-score-input" class="dart-score-label">Point denne runde (fx 17+17+17 eller 60+60)</label>
+              <input type="text" id="dart-score-input" class="dart-score-input" inputmode="numeric" placeholder="0–180 eller 20+19+12" aria-label="Point denne runde – tal eller plus-udtryk" autocomplete="off">
               <button type="button" id="dart-register-btn" class="dart-btn dart-btn-register">Registrér</button>
             </div>
             <details class="dart-helper" id="dart-helper">
@@ -82,6 +86,12 @@
       <div id="dart-winner" class="dart-winner" hidden>
         <h2 class="dart-ranking-title">Rangliste</h2>
         <ol id="dart-ranking-list" class="dart-ranking-list"></ol>
+        <section id="dart-final-stats" class="dart-final-stats" aria-label="Statistik for spillet">
+          <h3 class="dart-stats-title">Statistik for spillet</h3>
+          <dl id="dart-stats-list" class="dart-stats-list">
+            <!-- Fyldes af JS: highscore, laveste runde, antal runder, gennemsnit, 180/140/100 -->
+          </dl>
+        </section>
         <button type="button" id="dart-new-game-btn" class="dart-btn dart-btn-primary">Nyt spil</button>
       </div>
       <button type="button" id="dart-reset-btn" class="dart-back-link">← Tilbage til start</button>
