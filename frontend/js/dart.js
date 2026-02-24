@@ -57,18 +57,24 @@
       var p0 = polar(a0, rIn), p1 = polar(a0, rOut), p2 = polar(a1, rOut), p3 = polar(a1, rIn);
       return 'M ' + p0.x + ' ' + p0.y + ' L ' + p1.x + ' ' + p1.y + ' A ' + rOut + ' ' + rOut + ' 0 0 1 ' + p2.x + ' ' + p2.y + ' L ' + p3.x + ' ' + p3.y + ' A ' + rIn + ' ' + rIn + ' 0 0 0 ' + p0.x + ' ' + p0.y + ' Z';
     }
+    var ringLabels = ['triple', 'single', 'double'];
+    var ringTitles = ['T', 'Single ', 'D'];
     for (var i = 0; i < 20; i++) {
       var a0 = i * 18, a1 = (i + 1) * 18;
+      var seg = BOARD_ORDER[i];
       var green = (i % 2) === 0;
       var fill = green ? '#1a472a' : '#c41e3a';
-      ['triple', 'single', 'double'].forEach(function (ring, idx) {
+      ringLabels.forEach(function (ring, idx) {
         var rIn = idx === 0 ? rBullOut : (idx === 1 ? rTriple : rSingle);
         var rOut = idx === 0 ? rTriple : (idx === 1 ? rSingle : rDouble);
+        var pts = idx === 0 ? seg * 3 : (idx === 1 ? seg : seg * 2);
+        var title = ringTitles[idx] + seg + ' = ' + pts;
         var path = document.createElementNS(ns, 'path');
         path.setAttribute('d', wedgePath(rIn, rOut, a0, a1));
         path.setAttribute('fill', fill);
         path.setAttribute('stroke', '#2d5a3d');
         path.setAttribute('stroke-width', '0.5');
+        path.setAttribute('title', title);
         svg.appendChild(path);
       });
     }
@@ -80,6 +86,7 @@
     bullOut.setAttribute('fill', '#c41e3a');
     bullOut.setAttribute('stroke', '#2d5a3d');
     bullOut.setAttribute('stroke-width', '0.5');
+    bullOut.setAttribute('title', 'Bull = 25');
     svg.appendChild(bullOut);
     var bullIn = document.createElementNS(ns, 'circle');
     bullIn.setAttribute('cx', cx);
@@ -88,6 +95,7 @@
     bullIn.setAttribute('fill', '#8b0000');
     bullIn.setAttribute('stroke', '#2d5a3d');
     bullIn.setAttribute('stroke-width', '0.5');
+    bullIn.setAttribute('title', 'Dobbel bull = 50');
     svg.appendChild(bullIn);
 
     for (var i = 0; i < 20; i++) {

@@ -132,7 +132,7 @@
 
 .dart-game-layout {
   display: grid;
-  grid-template-columns: minmax(200px, 320px) 1fr;
+  grid-template-columns: minmax(260px, 360px) 1fr;
   gap: 2rem;
   align-items: start;
 }
@@ -144,7 +144,49 @@
   }
 }
 
-/* ---------- Dartskive (visuel) ---------- */
+/* ---------- Interaktiv skive (stor, altid synlig) ---------- */
+.dart-interactive-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.dart-board-label {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.dart-click-board-large {
+  max-width: 320px;
+  width: 100%;
+}
+
+.dart-click-board-large .dart-board-svg path,
+.dart-click-board-large .dart-board-svg circle {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.dart-click-board-large .dart-board-svg path:hover,
+.dart-click-board-large .dart-board-svg circle:hover {
+  opacity: 0.85;
+}
+
+.dart-click-status-block {
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+}
+
+/* ---------- Dartskive (visuel, legacy) ---------- */
 .dart-board-wrap {
   position: relative;
   display: flex;
@@ -380,7 +422,6 @@
 
 .dart-click-board {
   display: inline-block;
-  max-width: 220px;
   width: 100%;
   cursor: pointer;
   border-radius: 50%;
@@ -406,8 +447,8 @@
 }
 
 .dart-click-status {
-  margin: 0.5rem 0 0.5rem;
-  font-size: 0.95rem;
+  margin: 0.5rem 0;
+  font-size: 1rem;
   color: var(--text);
 }
 

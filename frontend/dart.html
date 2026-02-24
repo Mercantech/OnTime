@@ -37,14 +37,19 @@
       <p id="dart-setup-error" class="dart-error" hidden></p>
     </section>
 
-    <!-- Spil: dartskive + scoreboard + input -->
+    <!-- Spil: interaktiv skive + scoreboard + input -->
     <section id="dart-game" class="dart-game" hidden>
       <div class="dart-game-layout">
-        <div class="dart-board-wrap" aria-hidden="true">
-          <div class="dart-board">
-            <div class="dart-board-inner">
-              <div class="dart-bull"></div>
-              <div class="dart-board-segments"></div>
+        <div class="dart-interactive-wrap">
+          <p class="dart-board-label">Klik hvor du ramte – hover for point</p>
+          <div class="dart-click-board dart-click-board-large" id="dart-click-board" role="img" aria-label="Interaktiv dartskive – klik for at vælge ramte felter">
+            <!-- SVG fyldes af JS -->
+          </div>
+          <div class="dart-click-status-block">
+            <p class="dart-click-status" id="dart-click-status">Pil 1: <span id="dart-click-p1">–</span> &nbsp; Pil 2: <span id="dart-click-p2">–</span> &nbsp; Pil 3: <span id="dart-click-p3">–</span> &nbsp; = <strong id="dart-click-total">0</strong></p>
+            <div class="dart-click-actions">
+              <button type="button" id="dart-click-use-btn" class="dart-btn dart-btn-helper">Brug dette tal</button>
+              <button type="button" id="dart-click-reset-btn" class="dart-btn dart-btn-helper">Nulstil runde</button>
             </div>
           </div>
         </div>
@@ -62,23 +67,9 @@
               <button type="button" id="dart-register-btn" class="dart-btn dart-btn-register">Registrér</button>
             </div>
             <details class="dart-helper" id="dart-helper">
-              <summary class="dart-helper-summary">Hjælp: Beregn point (klik på skiven eller vælg S/D/T)</summary>
+              <summary class="dart-helper-summary">Eller vælg point med felter (S/D/T)</summary>
               <div class="dart-helper-inner">
-                <p class="dart-helper-desc">Klik på skiven der, hvor du ramte. Pil 1, 2 og 3 fyldes i rækkefølge.</p>
-                <div class="dart-click-board-wrap">
-                  <div class="dart-click-board" id="dart-click-board" role="img" aria-label="Interaktiv dartskive – klik for at vælge ramte felter">
-                    <!-- SVG fyldes af JS -->
-                  </div>
-                  <p class="dart-click-status" id="dart-click-status">Pil 1: <span id="dart-click-p1">–</span> &nbsp; Pil 2: <span id="dart-click-p2">–</span> &nbsp; Pil 3: <span id="dart-click-p3">–</span> &nbsp; = <strong id="dart-click-total">0</strong></p>
-                  <div class="dart-click-actions">
-                    <button type="button" id="dart-click-use-btn" class="dart-btn dart-btn-helper">Brug dette tal</button>
-                    <button type="button" id="dart-click-reset-btn" class="dart-btn dart-btn-helper">Nulstil runde</button>
-                  </div>
-                </div>
-                <p class="dart-helper-or">eller vælg med felterne herunder:</p>
-                <div class="dart-helper-darts" id="dart-helper-darts">
-                  <!-- 3 rækker: segment + type -->
-                </div>
+                <div class="dart-helper-darts" id="dart-helper-darts"></div>
                 <p class="dart-helper-total">Runde i alt: <strong id="dart-helper-total">0</strong></p>
                 <button type="button" id="dart-helper-use-btn" class="dart-btn dart-btn-helper">Brug dette tal</button>
               </div>
