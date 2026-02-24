@@ -374,6 +374,59 @@
   color: var(--text-muted);
 }
 
+.dart-click-board-wrap {
+  margin-bottom: 1rem;
+}
+
+.dart-click-board {
+  display: inline-block;
+  max-width: 220px;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 0 4px #3d2914, 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.dart-click-board:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.dart-board-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.dart-click-board .dart-board-svg path:hover,
+.dart-click-board .dart-board-svg circle:hover {
+  opacity: 0.9;
+}
+
+.dart-click-status {
+  margin: 0.5rem 0 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.dart-click-status strong {
+  color: var(--accent);
+}
+
+.dart-click-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.dart-helper-or {
+  margin: 1rem 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 .dart-helper-darts {
   display: flex;
   flex-direction: column;

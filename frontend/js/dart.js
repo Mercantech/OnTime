@@ -27,6 +27,141 @@
   const helperDartsEl = document.getElementById('dart-helper-darts');
   const helperTotalEl = document.getElementById('dart-helper-total');
   const helperUseBtn = document.getElementById('dart-helper-use-btn');
+  const clickBoardEl = document.getElementById('dart-click-board');
+  const clickStatusEl = document.getElementById('dart-click-status');
+  const clickTotalEl = document.getElementById('dart-click-total');
+  const clickUseBtn = document.getElementById('dart-click-use-btn');
+  const clickResetBtn = document.getElementById('dart-click-reset-btn');
+
+  var clickRound = [];
+
+  var BOARD_ORDER = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
+
+  function buildClickBoard() {
+    if (!clickBoardEl) return;
+    var cx = 100, cy = 100;
+    var rBull = 6, rBullOut = 12, rTriple = 32, rSingle = 82, rDouble = 98;
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 200 200');
+    svg.setAttribute('class', 'dart-board-svg');
+    svg.setAttribute('focusable', 'false');
+
+    function deg2rad(d) { return d * Math.PI / 180; }
+    function polar(angleDeg, r) {
+      var a = deg2rad(angleDeg - 90);
+      return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+    }
+
+    function wedgePath(rIn, rOut, a0, a1) {
+      var p0 = polar(a0, rIn), p1 = polar(a0, rOut), p2 = polar(a1, rOut), p3 = polar(a1, rIn);
+      return 'M ' + p0.x + ' ' + p0.y + ' L ' + p1.x + ' ' + p1.y + ' A ' + rOut + ' ' + rOut + ' 0 0 1 ' + p2.x + ' ' + p2.y + ' L ' + p3.x + ' ' + p3.y + ' A ' + rIn + ' ' + rIn + ' 0 0 0 ' + p0.x + ' ' + p0.y + ' Z';
+    }
+    for (var i = 0; i < 20; i++) {
+      var a0 = i * 18, a1 = (i + 1) * 18;
+      var green = (i % 2) === 0;
+      var fill = green ? '#1a472a' : '#c41e3a';
+      ['triple', 'single', 'double'].forEach(function (ring, idx) {
+        var rIn = idx === 0 ? rBullOut : (idx === 1 ? rTriple : rSingle);
+        var rOut = idx === 0 ? rTriple : (idx === 1 ? rSingle : rDouble);
+        var path = document.createElementNS(ns, 'path');
+        path.setAttribute('d', wedgePath(rIn, rOut, a0, a1));
+        path.setAttribute('fill', fill);
+        path.setAttribute('stroke', '#2d5a3d');
+        path.setAttribute('stroke-width', '0.5');
+        svg.appendChild(path);
+      });
+    }
+
+    var bullOut = document.createElementNS(ns, 'circle');
+    bullOut.setAttribute('cx', cx);
+    bullOut.setAttribute('cy', cy);
+    bullOut.setAttribute('r', rBullOut);
+    bullOut.setAttribute('fill', '#c41e3a');
+    bullOut.setAttribute('stroke', '#2d5a3d');
+    bullOut.setAttribute('stroke-width', '0.5');
+    svg.appendChild(bullOut);
+    var bullIn = document.createElementNS(ns, 'circle');
+    bullIn.setAttribute('cx', cx);
+    bullIn.setAttribute('cy', cy);
+    bullIn.setAttribute('r', rBull);
+    bullIn.setAttribute('fill', '#8b0000');
+    bullIn.setAttribute('stroke', '#2d5a3d');
+    bullIn.setAttribute('stroke-width', '0.5');
+    svg.appendChild(bullIn);
+
+    for (var i = 0; i < 20; i++) {
+      var a = i * 18 - 90;
+      var rad = deg2rad(a);
+      var x2 = cx + rDouble * Math.cos(rad), y2 = cy + rDouble * Math.sin(rad);
+      var line = document.createElementNS(ns, 'line');
+      line.setAttribute('x1', cx);
+      line.setAttribute('y1', cy);
+      line.setAttribute('x2', x2);
+      line.setAttribute('y2', y2);
+      line.setAttribute('stroke', '#1a1a1a');
+      line.setAttribute('stroke-width', '0.8');
+      svg.appendChild(line);
+    }
+
+    clickBoardEl.innerHTML = '';
+    clickBoardEl.appendChild(svg);
+
+    svg.addEventListener('click', function (e) {
+      var rect = clickBoardEl.getBoundingClientRect();
+      var x = (e.clientX - rect.left) / rect.width * 200;
+      var y = (e.clientY - rect.top) / rect.height * 200;
+      var dx = x - cx, dy = y - cy;
+      var r = Math.sqrt(dx * dx + dy * dy);
+      if (r > rDouble + 2) return;
+      if (clickRound.length >= 3) return;
+
+      var angleDeg = (Math.atan2(dx, -dy) * 180 / Math.PI + 360) % 360;
+      var segIndex = Math.floor(angleDeg / 18) % 20;
+      var segment = BOARD_ORDER[segIndex];
+      var rNorm = r / rDouble;
+      var mult, pts;
+      if (rNorm < rBull / rDouble) {
+        pts = 50;
+      } else if (rNorm < rBullOut / rDouble) {
+        pts = 25;
+      } else if (rNorm < rTriple / rDouble) {
+        pts = segment * 3;
+      } else if (rNorm < rSingle / rDouble) {
+        pts = segment;
+      } else {
+        pts = segment * 2;
+      }
+      clickRound.push(pts);
+      updateClickBoardDisplay();
+    });
+  }
+
+  function updateClickBoardDisplay() {
+    var p1El = document.getElementById('dart-click-p1');
+    var p2El = document.getElementById('dart-click-p2');
+    var p3El = document.getElementById('dart-click-p3');
+    var totalEl = document.getElementById('dart-click-total');
+    if (!p1El || !totalEl) return;
+    var a = clickRound[0], b = clickRound[1], c = clickRound[2];
+    p1El.textContent = a !== undefined ? a : '–';
+    if (p2El) p2El.textContent = b !== undefined ? b : '–';
+    if (p3El) p3El.textContent = c !== undefined ? c : '–';
+    var total = clickRound.reduce(function (sum, p) { return sum + p; }, 0);
+    totalEl.textContent = total;
+  }
+
+  function useClickTotal() {
+    if (!scoreInput) return;
+    var total = clickRound.reduce(function (sum, p) { return sum + p; }, 0);
+    scoreInput.value = total;
+    scoreInput.focus();
+  }
+
+  function resetClickRound() {
+    clickRound = [];
+    updateClickBoardDisplay();
+  }
 
   function buildHelperDarts() {
     if (!helperDartsEl) return;
@@ -239,5 +374,8 @@
   if (resetBtn) resetBtn.addEventListener('click', backToSetup);
 
   buildHelperDarts();
+  buildClickBoard();
   if (helperUseBtn) helperUseBtn.addEventListener('click', useHelperTotal);
+  if (clickUseBtn) clickUseBtn.addEventListener('click', useClickTotal);
+  if (clickResetBtn) clickResetBtn.addEventListener('click', resetClickRound);
 })();
