@@ -74,7 +74,10 @@ router.get('/search', async (req, res) => {
     res.json({ tracks });
   } catch (e) {
     if (e.message && e.message.includes('SPOTIFY_CLIENT')) {
-      return res.status(503).json({ error: 'Spotify er ikke konfigureret' });
+      console.warn('Sangønsker søgning: Spotify er ikke konfigureret (sæt SPOTIFY_CLIENT_ID og SPOTIFY_CLIENT_SECRET i .env)');
+      return res.status(503).json({
+        error: 'Spotify er ikke konfigureret. Sæt SPOTIFY_CLIENT_ID og SPOTIFY_CLIENT_SECRET i .env (se README).',
+      });
     }
     console.error(e);
     res.status(502).json({ error: 'Kunne ikke søge i Spotify' });
