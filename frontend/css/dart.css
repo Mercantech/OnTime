@@ -1,0 +1,379 @@
+/* 501 Dart – visuel side med dartskive og live scoreboard */
+
+.dart-page {
+  min-height: 100vh;
+  background: linear-gradient(160deg, var(--bg) 0%, #15151a 50%, #0d0d10 100%);
+}
+
+.dart-main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.dart-title {
+  margin: 0 0 0.25rem;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  text-align: center;
+}
+
+.dart-subtitle {
+  margin: 0 0 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* ---------- Setup ---------- */
+.dart-setup {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.dart-section-title {
+  margin: 0 0 1.25rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.dart-player-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 520px) {
+  .dart-player-inputs {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dart-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.dart-input-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.dart-name-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.dart-name-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.dart-name-input::placeholder {
+  color: var(--text-muted);
+}
+
+.dart-input-optional .dart-name-input {
+  opacity: 0.9;
+}
+
+.dart-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.dart-btn:active {
+  transform: scale(0.98);
+}
+
+.dart-btn-primary {
+  background: var(--accent);
+  color: #fff;
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  margin: 0 auto;
+}
+
+.dart-btn-primary:hover {
+  background: var(--accent-dim);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
+}
+
+.dart-error {
+  margin: 1rem 0 0;
+  color: var(--danger);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ---------- Game layout ---------- */
+.dart-game {
+  margin-top: 1rem;
+}
+
+.dart-game-layout {
+  display: grid;
+  grid-template-columns: minmax(200px, 320px) 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 700px) {
+  .dart-game-layout {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
+/* ---------- Dartskive (visuel) ---------- */
+.dart-board-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dart-board {
+  --board-size: min(280px, 85vw);
+  width: var(--board-size);
+  height: var(--board-size);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #1a472a 0%, #0d2818 40%, #000 100%);
+  box-shadow:
+    inset 0 0 0 4px #2d5a3d,
+    inset 0 0 0 8px #1a472a,
+    inset 0 0 40px 12px rgba(0,0,0,0.6),
+    0 0 0 6px #3d2914,
+    0 8px 32px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dart-board-inner {
+  width: 88%;
+  height: 88%;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 50%, #1a472a 0%, #0d2818 55%, #000 100%);
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.7);
+}
+
+/* Bull (midte) */
+.dart-bull {
+  position: absolute;
+  width: 18%;
+  height: 18%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #c41e3a, #8b0000);
+  box-shadow: inset 0 0 8px rgba(255,255,255,0.2), 0 0 6px rgba(0,0,0,0.8);
+}
+
+/* Segmenter – 20 segmenter som “pie slices” */
+.dart-board-segments {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(
+    #1a472a 0deg 18deg,
+    #c41e3a 18deg 36deg,
+    #1a472a 36deg 54deg,
+    #c41e3a 54deg 72deg,
+    #1a472a 72deg 90deg,
+    #c41e3a 90deg 108deg,
+    #1a472a 108deg 126deg,
+    #c41e3a 126deg 144deg,
+    #1a472a 144deg 162deg,
+    #c41e3a 162deg 180deg,
+    #1a472a 180deg 198deg,
+    #c41e3a 198deg 216deg,
+    #1a472a 216deg 234deg,
+    #c41e3a 234deg 252deg,
+    #1a472a 252deg 270deg,
+    #c41e3a 270deg 288deg,
+    #1a472a 288deg 306deg,
+    #c41e3a 306deg 324deg,
+    #1a472a 324deg 342deg,
+    #c41e3a 342deg 360deg
+  );
+  opacity: 0.85;
+}
+
+/* ---------- Scoreboard ---------- */
+.dart-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.dart-scoreboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.dart-score-card {
+  flex: 1 1 140px;
+  min-width: 0;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dart-score-card.is-active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
+}
+
+.dart-score-card.is-bust {
+  opacity: 0.7;
+}
+
+.dart-score-name {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  color: var(--text);
+}
+
+.dart-score-value {
+  font-size: 1.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.dart-score-card.is-active .dart-score-value {
+  color: var(--accent);
+}
+
+/* ---------- Turn + input ---------- */
+.dart-turn-area {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.dart-whose-turn {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+.dart-whose-turn strong {
+  color: var(--text);
+}
+
+.dart-enter-score {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.dart-score-label {
+  width: 100%;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: -0.5rem;
+}
+
+.dart-score-input {
+  flex: 1 1 120px;
+  min-width: 100px;
+  padding: 0.9rem 1rem;
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  background: var(--surface-2);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  transition: border-color 0.2s ease;
+}
+
+.dart-score-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.dart-btn-register {
+  background: var(--accent);
+  color: #fff;
+  padding: 0.9rem 1.5rem;
+}
+
+.dart-btn-register:hover {
+  background: var(--accent-dim);
+}
+
+.dart-bust-msg {
+  margin: 1rem 0 0;
+  color: var(--danger);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* ---------- Winner ---------- */
+.dart-winner {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-1) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.dart-winner-text {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+.dart-reset-btn {
+  margin-top: 1rem;
+}
+
+.dart-back-link {
+  display: inline-block;
+  margin-top: 1.5rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.dart-back-link:hover {
+  color: var(--text);
+}
+
+.dart-back-app {
+  margin-top: 0.5rem;
+}

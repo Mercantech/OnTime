@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – 501 Dart</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dart.css">
+</head>
+<body class="dart-page">
+  <main class="dart-main">
+    <h1 class="dart-title">🎯 501 Dart</h1>
+    <p class="dart-subtitle">Op til 4 spillere – første der når 0 vinder</p>
+
+    <!-- Setup: spillernavne -->
+    <section id="dart-setup" class="dart-setup">
+      <h2 class="dart-section-title">Vælg spillere (2–4)</h2>
+      <div class="dart-player-inputs">
+        <label class="dart-input-wrap">
+          <span class="dart-input-label">Spiller 1</span>
+          <input type="text" id="dart-name-1" class="dart-name-input" placeholder="Navn" maxlength="20" autocomplete="off">
+        </label>
+        <label class="dart-input-wrap">
+          <span class="dart-input-label">Spiller 2</span>
+          <input type="text" id="dart-name-2" class="dart-name-input" placeholder="Navn" maxlength="20" autocomplete="off">
+        </label>
+        <label class="dart-input-wrap dart-input-optional">
+          <span class="dart-input-label">Spiller 3 (valgfri)</span>
+          <input type="text" id="dart-name-3" class="dart-name-input" placeholder="Navn" maxlength="20" autocomplete="off">
+        </label>
+        <label class="dart-input-wrap dart-input-optional">
+          <span class="dart-input-label">Spiller 4 (valgfri)</span>
+          <input type="text" id="dart-name-4" class="dart-name-input" placeholder="Navn" maxlength="20" autocomplete="off">
+        </label>
+      </div>
+      <button type="button" id="dart-start-btn" class="dart-btn dart-btn-primary">Start spil</button>
+      <p id="dart-setup-error" class="dart-error" hidden></p>
+    </section>
+
+    <!-- Spil: dartskive + scoreboard + input -->
+    <section id="dart-game" class="dart-game" hidden>
+      <div class="dart-game-layout">
+        <div class="dart-board-wrap" aria-hidden="true">
+          <div class="dart-board">
+            <div class="dart-board-inner">
+              <div class="dart-bull"></div>
+              <div class="dart-board-segments"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dart-right">
+          <div class="dart-scoreboard" id="dart-scoreboard" aria-live="polite">
+            <!-- Fyldes af JS -->
+          </div>
+
+          <div class="dart-turn-area" id="dart-turn-area">
+            <p class="dart-whose-turn" id="dart-whose-turn">Det er <strong id="dart-current-name"></strong>s tur</p>
+            <div class="dart-enter-score">
+              <label for="dart-score-input" class="dart-score-label">Point denne runde</label>
+              <input type="number" id="dart-score-input" class="dart-score-input" min="0" max="180" step="1" placeholder="0–180" aria-label="Point denne runde" autocomplete="off">
+              <button type="button" id="dart-register-btn" class="dart-btn dart-btn-register">Registrér</button>
+            </div>
+            <p id="dart-bust-msg" class="dart-bust-msg" hidden>Bust! Score under 0 – turen går tabt.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="dart-winner" class="dart-winner" hidden>
+        <p class="dart-winner-text"><strong id="dart-winner-name"></strong> vinder! 🎉</p>
+        <button type="button" id="dart-new-game-btn" class="dart-btn dart-btn-primary">Nyt spil</button>
+      </div>
+      <button type="button" id="dart-reset-btn" class="dart-back-link">← Tilbage til start</button>
+    </section>
+
+    <a href="/app" class="dart-back-link dart-back-app">← Tilbage til app</a>
+  </main>
+  <script src="js/dart.js"></script>
+</body>
+</html>

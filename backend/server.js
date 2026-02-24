@@ -99,6 +99,10 @@ app.get('/casino', (req, res) => {
   noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'casino.html'));
 });
+app.get('/dart', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'dart.html'));
+});
 
 app.get('/profil/:id', (req, res) => {
   noCacheHeaders(res);
