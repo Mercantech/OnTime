@@ -40,19 +40,6 @@
     <!-- Spil: interaktiv skive + scoreboard + input -->
     <section id="dart-game" class="dart-game" hidden>
       <div class="dart-game-layout">
-        <aside id="dart-history-sidebar" class="dart-history-sidebar" aria-label="Rundens historik">
-          <h3 class="dart-history-title">Rundens historik</h3>
-          <div id="dart-history-table-wrap" class="dart-history-table-wrap">
-            <table class="dart-history-table" id="dart-history-table">
-              <thead>
-                <tr><th>Navn</th><th>Point</th></tr>
-              </thead>
-              <tbody id="dart-history-tbody">
-              </tbody>
-            </table>
-          </div>
-          <p id="dart-history-empty" class="dart-history-empty">Ingen runder endnu.</p>
-        </aside>
         <div class="dart-interactive-wrap">
           <p class="dart-board-label">Klik hvor du ramte – hover for point</p>
           <div class="dart-click-board dart-click-board-large" id="dart-click-board" role="img" aria-label="Interaktiv dartskive – klik for at vælge ramte felter">
@@ -94,6 +81,19 @@
             <p id="dart-bust-msg" class="dart-bust-msg" hidden>Bust! Score under 0 – turen går tabt.</p>
           </div>
         </div>
+        <aside id="dart-history-sidebar" class="dart-history-sidebar" aria-label="Rundens historik">
+          <h3 class="dart-history-title">Rundens historik</h3>
+          <div id="dart-history-table-wrap" class="dart-history-table-wrap">
+            <table class="dart-history-table" id="dart-history-table">
+              <thead>
+                <tr><th>Navn</th><th>Point</th></tr>
+              </thead>
+              <tbody id="dart-history-tbody">
+              </tbody>
+            </table>
+          </div>
+          <p id="dart-history-empty" class="dart-history-empty">Ingen runder endnu.</p>
+        </aside>
       </div>
 
       <div id="dart-winner" class="dart-winner" hidden>
