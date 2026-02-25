@@ -26,6 +26,9 @@
   const rankingListEl = document.getElementById('dart-ranking-list');
   const liveStatsEl = document.getElementById('dart-live-stats');
   const finalStatsListEl = document.getElementById('dart-stats-list');
+  const historyTbodyEl = document.getElementById('dart-history-tbody');
+  const historySidebarEl = document.getElementById('dart-history-sidebar');
+  const historyEmptyEl = document.getElementById('dart-history-empty');
   const helperDartsEl = document.getElementById('dart-helper-darts');
   const helperTotalEl = document.getElementById('dart-helper-total');
   const helperUseBtn = document.getElementById('dart-helper-use-btn');
@@ -254,7 +257,8 @@
       players: names.map(function (name) { return { name: name, score: START_SCORE, roundScores: [] }; }),
       currentIndex: 0,
       gameOver: false,
-      finishedOrder: []
+      finishedOrder: [],
+      roundHistory: []
     };
     setupEl.hidden = true;
     gameEl.hidden = false;
@@ -330,6 +334,7 @@
     }).join('');
 
     renderLiveStats();
+    renderRoundHistory();
 
     if (state.gameOver) {
       currentNameEl.textContent = '';
@@ -374,6 +379,20 @@
       html += '</dd></div>';
     }
     finalStatsListEl.innerHTML = html;
+  }
+
+  function renderRoundHistory() {
+    if (!historyTbodyEl || !historySidebarEl || !historyEmptyEl) return;
+    var history = (state.roundHistory || []).slice().reverse();
+    if (history.length === 0) {
+      historySidebarEl.classList.remove('has-rows');
+      historyTbodyEl.innerHTML = '';
+      return;
+    }
+    historySidebarEl.classList.add('has-rows');
+    historyTbodyEl.innerHTML = history.map(function (entry) {
+      return '<tr><td>' + escapeHtml(entry.name) + '</td><td>' + entry.points + '</td></tr>';
+    }).join('');
   }
 
   function renderRanking() {
@@ -447,6 +466,8 @@
     p.score = newScore;
     if (!p.roundScores) p.roundScores = [];
     p.roundScores.push(points);
+    if (!state.roundHistory) state.roundHistory = [];
+    state.roundHistory.push({ name: p.name, points: points });
     scoreInput.value = '';
     updateRegisterButton();
     scoreInput.focus();
@@ -469,7 +490,7 @@
   function backToSetup() {
     setupEl.hidden = false;
     gameEl.hidden = true;
-    state = { players: [], currentIndex: 0, gameOver: false, finishedOrder: [] };
+    state = { players: [], currentIndex: 0, gameOver: false, finishedOrder: [], roundHistory: [] };
   }
 
   if (startBtn) startBtn.addEventListener('click', startGame);

@@ -132,16 +132,91 @@
 
 .dart-game-layout {
   display: grid;
-  grid-template-columns: minmax(260px, 360px) 1fr;
-  gap: 2rem;
+  grid-template-columns: minmax(180px, 220px) minmax(260px, 360px) 1fr;
+  gap: 1.5rem 2rem;
   align-items: start;
+}
+
+@media (max-width: 900px) {
+  .dart-game-layout {
+    grid-template-columns: minmax(260px, 360px) 1fr;
+    grid-template-areas: "board right" "history history";
+  }
+  .dart-history-sidebar { grid-area: history; }
+  .dart-interactive-wrap { grid-area: board; }
+  .dart-right { grid-area: right; }
 }
 
 @media (max-width: 700px) {
   .dart-game-layout {
     grid-template-columns: 1fr;
+    grid-template-areas: "board" "right" "history";
     justify-items: center;
   }
+  .dart-history-sidebar { grid-area: history; width: 100%; max-width: 360px; }
+}
+
+/* ---------- Rundhistorik (sidebar) ---------- */
+.dart-history-sidebar {
+  position: sticky;
+  top: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.dart-history-title {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dart-history-table-wrap {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.dart-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.dart-history-table th,
+.dart-history-table td {
+  padding: 0.4rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.dart-history-table th {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.dart-history-table td:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.dart-history-empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.dart-history-sidebar:not(.has-rows) .dart-history-table-wrap {
+  display: none;
+}
+
+.dart-history-sidebar.has-rows .dart-history-empty {
+  display: none;
 }
 
 /* ---------- Interaktiv skive (stor, altid synlig) ---------- */
