@@ -19,7 +19,10 @@
   const bustMsg = document.getElementById('dart-bust-msg');
   const turnArea = document.getElementById('dart-turn-area');
   const winnerEl = document.getElementById('dart-winner');
-  const winnerNameEl = document.getElementById('dart-winner-name');
+  const winnerChoiceEl = document.getElementById('dart-winner-choice');
+  const winnerChoiceMsgEl = document.getElementById('dart-winner-choice-msg');
+  const endNowBtn = document.getElementById('dart-end-now-btn');
+  const continueBtn = document.getElementById('dart-continue-btn');
   const newGameBtn = document.getElementById('dart-new-game-btn');
   const resetBtn = document.getElementById('dart-reset-btn');
 
@@ -258,11 +261,14 @@
       currentIndex: 0,
       gameOver: false,
       finishedOrder: [],
-      roundHistory: []
+      roundHistory: [],
+      playingOutRound: false,
+      playOutTurnsLeft: 0
     };
     setupEl.hidden = true;
     gameEl.hidden = false;
     winnerEl.hidden = true;
+    if (winnerChoiceEl) winnerChoiceEl.hidden = true;
     turnArea.hidden = false;
     bustMsg.hidden = true;
     scoreInput.value = '';
@@ -339,11 +345,22 @@
     if (state.gameOver) {
       currentNameEl.textContent = '';
       turnArea.hidden = true;
+      if (winnerChoiceEl) winnerChoiceEl.hidden = true;
       renderRanking();
       renderFinalStats();
       return;
     }
 
+    var remaining = getRemainingPlayerIndices();
+    if (remaining.length === 1 && state.finishedOrder.length === 1 && !state.playingOutRound) {
+      var winnerName = state.players[state.finishedOrder[0]].name;
+      if (winnerChoiceMsgEl) winnerChoiceMsgEl.textContent = winnerName + ' har vundet! Afslut spillet nu eller lad de andre spille én runde (for 2./3./4. plads).';
+      if (winnerChoiceEl) winnerChoiceEl.hidden = false;
+      turnArea.hidden = true;
+      return;
+    }
+
+    if (winnerChoiceEl) winnerChoiceEl.hidden = true;
     const current = state.players[state.currentIndex];
     currentNameEl.textContent = current.name;
     whoseTurnEl.hidden = false;
@@ -397,14 +414,15 @@
 
   function renderRanking() {
     if (!rankingListEl) return;
-    const order = state.finishedOrder.slice();
-    const remaining = getRemainingPlayerIndices();
-    if (remaining.length === 1) {
-      order.push(remaining[0]);
+    var order = state.finishedOrder.slice();
+    var remaining = getRemainingPlayerIndices();
+    if (remaining.length > 0) {
+      remaining.sort(function (a, b) { return state.players[a].score - state.players[b].score; });
+      order = order.concat(remaining);
     }
     rankingListEl.innerHTML = order.map(function (playerIndex, i) {
       const name = state.players[playerIndex].name;
-      const isLast = i === order.length - 1 && remaining.length === 1;
+      const isLast = i === order.length - 1;
       const label = isLast ? 'Sidste plads' : (i + 1) + '. plads';
       return '<li class="dart-ranking-item"><span class="dart-ranking-place">' + label + '</span> ' + escapeHtml(name) + '</li>';
     }).join('');
@@ -455,7 +473,20 @@
 
     if (newScore < 0) {
       bustMsg.hidden = false;
-      nextPlayer();
+      if (state.playingOutRound) {
+        state.playOutTurnsLeft--;
+        nextPlayer();
+        if (state.playOutTurnsLeft <= 0) {
+          state.gameOver = true;
+          var rem = getRemainingPlayerIndices();
+          rem.sort(function (a, b) { return state.players[a].score - state.players[b].score; });
+          rem.forEach(function (i) { state.finishedOrder.push(i); });
+          winnerEl.hidden = false;
+          turnArea.hidden = true;
+        }
+      } else {
+        nextPlayer();
+      }
       scoreInput.value = '';
       updateRegisterButton();
       scoreInput.focus();
@@ -473,10 +504,24 @@
     scoreInput.focus();
 
     if (newScore === 0) {
-      state.gameOver = true;
-      winnerNameEl.textContent = p.name;
-      winnerEl.hidden = false;
-      turnArea.hidden = true;
+      state.finishedOrder.push(state.currentIndex);
+      state.gameOver = false;
+      winnerEl.hidden = true;
+      render();
+      return;
+    }
+
+    if (state.playingOutRound) {
+      state.playOutTurnsLeft--;
+      nextPlayer();
+      if (state.playOutTurnsLeft <= 0) {
+        state.gameOver = true;
+        var remaining = getRemainingPlayerIndices();
+        remaining.sort(function (a, b) { return state.players[a].score - state.players[b].score; });
+        remaining.forEach(function (i) { state.finishedOrder.push(i); });
+        winnerEl.hidden = false;
+        turnArea.hidden = true;
+      }
     } else {
       nextPlayer();
     }
@@ -484,14 +529,50 @@
   }
 
   function nextPlayer() {
+    if (state.playingOutRound) {
+      var remaining = getRemainingPlayerIndices();
+      var idx = state.players.length;
+      for (var i = state.currentIndex + 1; i < state.players.length; i++) {
+        if (state.finishedOrder.indexOf(i) === -1) { state.currentIndex = i; return; }
+      }
+      for (var j = 0; j < state.currentIndex; j++) {
+        if (state.finishedOrder.indexOf(j) === -1) { state.currentIndex = j; return; }
+      }
+      return;
+    }
     state.currentIndex = (state.currentIndex + 1) % state.players.length;
+  }
+
+  function endGameNow() {
+    state.gameOver = true;
+    var remaining = getRemainingPlayerIndices();
+    remaining.sort(function (a, b) { return state.players[a].score - state.players[b].score; });
+    remaining.forEach(function (i) { state.finishedOrder.push(i); });
+    if (winnerChoiceEl) winnerChoiceEl.hidden = true;
+    winnerEl.hidden = false;
+    turnArea.hidden = true;
+    render();
+  }
+
+  function continueAfterWinner() {
+    state.playingOutRound = true;
+    state.playOutTurnsLeft = getRemainingPlayerIndices().length;
+    var remaining = getRemainingPlayerIndices();
+    var first = remaining[0];
+    if (first !== undefined) state.currentIndex = first;
+    if (winnerChoiceEl) winnerChoiceEl.hidden = true;
+    turnArea.hidden = false;
+    render();
   }
 
   function backToSetup() {
     setupEl.hidden = false;
     gameEl.hidden = true;
-    state = { players: [], currentIndex: 0, gameOver: false, finishedOrder: [], roundHistory: [] };
+    state = { players: [], currentIndex: 0, gameOver: false, finishedOrder: [], roundHistory: [], playingOutRound: false, playOutTurnsLeft: 0 };
   }
+
+  if (endNowBtn) endNowBtn.addEventListener('click', endGameNow);
+  if (continueBtn) continueBtn.addEventListener('click', continueAfterWinner);
 
   if (startBtn) startBtn.addEventListener('click', startGame);
 

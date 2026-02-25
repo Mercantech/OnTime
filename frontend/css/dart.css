@@ -402,6 +402,31 @@
   border-color: var(--text-muted);
 }
 
+/* ---------- Valg når nogen når 0 (afslut nu / lad resten spille) ---------- */
+.dart-winner-choice {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.dart-winner-choice-msg {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.dart-winner-choice-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.dart-winner-choice-btns .dart-btn-primary {
+  margin: 0;
+}
+
 /* ---------- Turn + input ---------- */
 .dart-turn-area {
   background: var(--surface);
