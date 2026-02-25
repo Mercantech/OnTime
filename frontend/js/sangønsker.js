@@ -16,12 +16,21 @@ function escapeHtml(str) {
 }
 
 // ---------- Bruger i header + log ud ----------
+let currentUser = null;
+
 (function initHeader() {
   const el = document.getElementById('user-name');
   if (el) {
     api('/api/auth/me')
       .then((res) => res.ok ? res.json() : null)
-      .then((user) => { if (user && user.name) el.textContent = user.name; })
+      .then((user) => {
+        if (user) {
+          if (user.name) el.textContent = user.name;
+          currentUser = { id: user.id, isAdmin: !!user.isAdmin };
+          if (currentUser.isAdmin && adminBarEl) adminBarEl.hidden = false;
+        }
+        loadRequests(showAllCheckbox?.checked ?? false);
+      })
       .catch(() => {});
   }
   document.getElementById('logout')?.addEventListener('click', () => {
@@ -32,6 +41,8 @@ function escapeHtml(str) {
 
 // ---------- Liste over forespørgsler ----------
 const requestsListEl = document.getElementById('requests-list');
+const adminBarEl = document.getElementById('sangønsker-admin-bar');
+const showAllCheckbox = document.getElementById('sangønsker-show-all');
 
 function renderRequests(requests) {
   if (!requestsListEl) return;
@@ -39,14 +50,20 @@ function renderRequests(requests) {
     requestsListEl.innerHTML = '<p class="sangønsker-empty">Ingen sangønsker endnu. Brug søgen ovenfor til at tilføje et ønske.</p>';
     return;
   }
+  const canDelete = (r) => currentUser && (currentUser.isAdmin || r.requestedBy === currentUser.id);
+
   requestsListEl.innerHTML = requests
     .map(
-      (r) => `
+      (r) => {
+        const showDelete = canDelete(r);
+        const classLabel = r.className ? `<span class="sangønsker-row-class">${escapeHtml(r.className)}</span>` : '';
+        return `
     <div class="sangønsker-row" data-id="${r.id}">
       <div class="sangønsker-row-cover">
         ${r.albumArtUrl ? `<img src="${escapeHtml(r.albumArtUrl)}" alt="" width="56" height="56">` : '<span class="sangønsker-row-no-art">♪</span>'}
       </div>
       <div class="sangønsker-row-info">
+        ${classLabel}
         <span class="sangønsker-row-title">${escapeHtml(r.trackName)}</span>
         <span class="sangønsker-row-artist">${escapeHtml(r.artistName)}</span>
         ${r.requestedByName ? `<span class="sangønsker-row-by">Ønsket af ${escapeHtml(r.requestedByName)}</span>` : ''}
@@ -59,18 +76,25 @@ function renderRequests(requests) {
       </div>
       ${r.previewUrl ? `<a href="${escapeHtml(r.previewUrl)}" target="_blank" rel="noopener noreferrer" class="sangønsker-preview-link">Lyt 30s</a>` : ''}
       <a href="https://open.spotify.com/track/${escapeHtml(r.spotifyTrackId)}" target="_blank" rel="noopener noreferrer" class="sangønsker-spotify-link">Åbn i Spotify</a>
-    </div>`
+      ${showDelete ? `<button type="button" class="sangønsker-delete-btn" data-id="${r.id}" title="Fjern fra listen">Slet</button>` : ''}
+    </div>`;
+      }
     )
     .join('');
 
   requestsListEl.querySelectorAll('.sangønsker-vote-btn').forEach((btn) => {
     btn.addEventListener('click', () => toggleVote(Number(btn.getAttribute('data-id')), btn.getAttribute('data-voted') === 'true'));
   });
+  requestsListEl.querySelectorAll('.sangønsker-delete-btn').forEach((btn) => {
+    btn.addEventListener('click', () => deleteRequest(Number(btn.getAttribute('data-id'))));
+  });
 }
 
-function loadRequests() {
+function loadRequests(showAll) {
+  if (!requestsListEl) return;
   requestsListEl.textContent = 'Indlæser…';
-  api('/api/song-requests')
+  const url = showAll ? '/api/song-requests?all=1' : '/api/song-requests';
+  api(url)
     .then((res) => {
       if (!res.ok) throw new Error('Kunne ikke hente listen');
       return res.json();
@@ -79,6 +103,21 @@ function loadRequests() {
     .catch(() => {
       requestsListEl.innerHTML = '<p class="sangønsker-error">Kunne ikke indlæse sangønsker. Prøv igen.</p>';
     });
+}
+
+if (adminBarEl && showAllCheckbox) {
+  showAllCheckbox.addEventListener('change', () => {
+    loadRequests(showAllCheckbox.checked);
+  });
+}
+
+function deleteRequest(requestId) {
+  api(`/api/song-requests/${requestId}`, { method: 'DELETE' })
+    .then((res) => {
+      if (!res.ok) return res.json().then((d) => Promise.reject(new Error(d.error || 'Kunne ikke slette')));
+      loadRequests(showAllCheckbox?.checked ?? false);
+    })
+    .catch(() => {});
 }
 
 function toggleVote(requestId, currentlyVoted) {

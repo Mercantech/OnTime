@@ -584,6 +584,36 @@ main.app-main.dashboard {
 .sangønsker-vote-btn.voted:hover { background: var(--surface-2); }
 .sangønsker-preview-link, .sangønsker-spotify-link { font-size: 0.85rem; color: var(--accent); text-decoration: none; white-space: nowrap; }
 .sangønsker-preview-link:hover, .sangønsker-spotify-link:hover { text-decoration: underline; }
+.sangønsker-admin-bar { margin-bottom: 0.75rem; }
+.sangønsker-show-all-label { font-size: 0.9rem; color: var(--text-muted); cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; }
+.sangønsker-row-class { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.15rem; }
+.sangønsker-delete-btn { padding: 0.35rem 0.6rem; font-size: 0.85rem; background: transparent; color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: border-color var(--transition), color var(--transition); flex-shrink: 0; }
+.sangønsker-delete-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+/* Debug / fejlrapport-knap */
+.debug-issue-btn {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: color var(--transition), background var(--transition), transform 0.15s;
+}
+.debug-issue-btn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+  transform: scale(1.05);
+}
 
 /* Profil-side (andres profiler) */
 .profile-page { max-width: 520px; margin: 0 auto; }

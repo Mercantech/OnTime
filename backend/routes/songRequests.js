@@ -15,14 +15,54 @@ async function getUserClassId(client, userId) {
   return r.rows[0]?.class_id ?? null;
 }
 
+async function isAdmin(client, userId) {
+  const r = await client.query('SELECT is_admin FROM users WHERE id = $1', [userId]);
+  return !!r.rows[0]?.is_admin;
+}
+
 router.use(auth);
 
-/** GET /api/song-requests – liste for brugerens klasse med vote count og current_user_has_voted */
+/** GET /api/song-requests – liste for brugerens klasse (eller alle klasser hvis admin + ?all=1) */
 router.get('/', async (req, res) => {
   try {
     const client = await pool.connect();
     try {
+      const showAll = req.query.all === '1' || req.query.all === 'true';
+      const admin = await isAdmin(client, req.userId);
       const classId = await getUserClassId(client, req.userId);
+
+      if (showAll && admin) {
+        const listRes = await client.query(
+          `SELECT sr.id, sr.class_id, sr.requested_by, sr.spotify_track_id, sr.track_name, sr.artist_name, sr.album_art_url, sr.preview_url, sr.created_at,
+                  u.name AS requested_by_name,
+                  c.name AS class_name,
+                  COALESCE(vc.cnt, 0)::int AS vote_count,
+                  (EXISTS (SELECT 1 FROM song_request_votes v WHERE v.request_id = sr.id AND v.user_id = $1)) AS current_user_has_voted
+           FROM song_requests sr
+           LEFT JOIN users u ON u.id = sr.requested_by
+           LEFT JOIN classes c ON c.id = sr.class_id
+           LEFT JOIN (SELECT request_id, COUNT(*) AS cnt FROM song_request_votes GROUP BY request_id) vc ON vc.request_id = sr.id
+           ORDER BY sr.class_id, COALESCE(vc.cnt, 0) DESC, sr.created_at DESC`,
+          [req.userId]
+        );
+        const list = listRes.rows.map((row) => ({
+          id: row.id,
+          classId: row.class_id,
+          className: row.class_name,
+          requestedBy: row.requested_by,
+          requestedByName: row.requested_by_name,
+          spotifyTrackId: row.spotify_track_id,
+          trackName: row.track_name,
+          artistName: row.artist_name,
+          albumArtUrl: row.album_art_url,
+          previewUrl: row.preview_url,
+          createdAt: row.created_at,
+          voteCount: row.vote_count,
+          currentUserHasVoted: row.current_user_has_voted,
+        }));
+        return res.json({ requests: list });
+      }
+
       if (!classId) return res.status(400).json({ error: 'Klasse ikke fundet' });
 
       const listRes = await client.query(
@@ -190,6 +230,35 @@ router.delete('/:id/vote', async (req, res) => {
         [requestId, req.userId]
       );
 
+      res.json({ ok: true });
+    } finally {
+      client.release();
+    }
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+/** DELETE /api/song-requests/:id – slet forespørgsel (egen eller admin sletter alle) */
+router.delete('/:id', async (req, res) => {
+  const requestId = toInt(req.params.id);
+  if (!requestId) return res.status(400).json({ error: 'Ugyldigt id' });
+
+  try {
+    const client = await pool.connect();
+    try {
+      const row = await client.query(
+        'SELECT id, requested_by, class_id FROM song_requests WHERE id = $1',
+        [requestId]
+      );
+      if (!row.rows.length) return res.status(404).json({ error: 'Forespørgsel ikke fundet' });
+
+      const rec = row.rows[0];
+      const canDelete = rec.requested_by === req.userId || (await isAdmin(client, req.userId));
+      if (!canDelete) return res.status(403).json({ error: 'Du kan kun slette egne ønsker' });
+
+      await client.query('DELETE FROM song_requests WHERE id = $1', [requestId]);
       res.json({ ok: true });
     } finally {
       client.release();
