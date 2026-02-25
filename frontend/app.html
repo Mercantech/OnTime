@@ -15,8 +15,28 @@
     <a href="/spotify" class="admin-link">Sangønsker</a>
     <a href="https://edumercantec-my.sharepoint.com/:x:/g/personal/jekn_edu_mercantec_dk/IQBX8mxWSzlWSasK_yzr_SkLASt16MWWzyDc5oT8KDOzLeY?rtime=6iLN3xhx3kg" class="admin-link" target="_blank" rel="noopener noreferrer">Skema</a>
     <span id="user-name" class="user-info"></span>
+    <button type="button" id="btn-change-password" class="admin-link header-btn">Skift adgangskode</button>
     <button id="logout" class="btn-logout">Log ud</button>
   </header>
+
+  <!-- Modal: Skift egen adgangskode -->
+  <div id="change-password-overlay" class="modal-overlay" hidden aria-hidden="true"></div>
+  <div id="change-password-modal" class="modal change-password-modal" role="dialog" aria-labelledby="change-password-title" aria-modal="true" hidden>
+    <div class="modal-header">
+      <h2 id="change-password-title">Skift adgangskode</h2>
+      <button type="button" id="change-password-close" class="modal-close" aria-label="Luk">×</button>
+    </div>
+    <form id="form-change-password" class="modal-body">
+      <label for="change-password-current">Nuværende adgangskode</label>
+      <input type="password" id="change-password-current" autocomplete="current-password" required minlength="4" placeholder="Din nuværende adgangskode">
+      <label for="change-password-new">Ny adgangskode</label>
+      <input type="password" id="change-password-new" autocomplete="new-password" required minlength="4" placeholder="Min. 4 tegn">
+      <label for="change-password-confirm">Gentag ny adgangskode</label>
+      <input type="password" id="change-password-confirm" autocomplete="new-password" required minlength="4" placeholder="Gentag">
+      <p id="change-password-message" class="message" hidden></p>
+      <button type="submit" class="btn-primary">Opdater adgangskode</button>
+    </form>
+  </div>
   <main class="app-main dashboard">
     <!-- Hero + Check-in CTA -->
     <section class="card dashboard-hero">

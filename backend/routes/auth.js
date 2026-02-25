@@ -62,6 +62,29 @@ router.post('/login', async (req, res) => {
   }
 });
 
+/** Skift egen adgangskode – kræver nuværende adgangskode. */
+router.put('/change-password', auth, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Nuværende og ny adgangskode kræves' });
+  }
+  if (newPassword.length < 4) {
+    return res.status(400).json({ error: 'Ny adgangskode skal være mindst 4 tegn' });
+  }
+  try {
+    const r = await pool.query('SELECT password_hash FROM users WHERE id = $1', [req.userId]);
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Bruger ikke fundet' });
+    const ok = await bcrypt.compare(currentPassword, r.rows[0].password_hash);
+    if (!ok) return res.status(401).json({ error: 'Forkert nuværende adgangskode' });
+    const hash = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hash, req.userId]);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 router.get('/me', auth, async (req, res) => {
   try {
     const r = await pool.query(

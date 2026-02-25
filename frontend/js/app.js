@@ -648,6 +648,83 @@ document.getElementById('logout').addEventListener('click', () => {
   window.location.href = '/';
 });
 
+function openChangePasswordModal() {
+  const overlay = document.getElementById('change-password-overlay');
+  const modal = document.getElementById('change-password-modal');
+  const msgEl = document.getElementById('change-password-message');
+  if (!overlay || !modal) return;
+  if (msgEl) { msgEl.hidden = true; msgEl.textContent = ''; }
+  document.getElementById('change-password-current').value = '';
+  document.getElementById('change-password-new').value = '';
+  document.getElementById('change-password-confirm').value = '';
+  overlay.hidden = false;
+  modal.hidden = false;
+  overlay.removeAttribute('aria-hidden');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+  document.getElementById('change-password-current').focus();
+}
+
+function closeChangePasswordModal() {
+  const overlay = document.getElementById('change-password-overlay');
+  const modal = document.getElementById('change-password-modal');
+  if (overlay) overlay.hidden = true;
+  if (modal) modal.hidden = true;
+  if (overlay) overlay.setAttribute('aria-hidden', 'true');
+  if (modal) modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+}
+
+document.getElementById('btn-change-password').addEventListener('click', openChangePasswordModal);
+document.getElementById('change-password-close').addEventListener('click', closeChangePasswordModal);
+document.getElementById('change-password-overlay').addEventListener('click', closeChangePasswordModal);
+
+document.getElementById('form-change-password').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const current = document.getElementById('change-password-current').value;
+  const newPw = document.getElementById('change-password-new').value;
+  const confirmPw = document.getElementById('change-password-confirm').value;
+  const msgEl = document.getElementById('change-password-message');
+  if (newPw.length < 4) {
+    msgEl.textContent = 'Ny adgangskode skal være mindst 4 tegn.';
+    msgEl.className = 'message error';
+    msgEl.hidden = false;
+    return;
+  }
+  if (newPw !== confirmPw) {
+    msgEl.textContent = 'De to nye adgangskoder matcher ikke.';
+    msgEl.className = 'message error';
+    msgEl.hidden = false;
+    return;
+  }
+  msgEl.textContent = 'Opdaterer…';
+  msgEl.className = 'message';
+  msgEl.hidden = false;
+  const res = await api('/api/auth/change-password', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ currentPassword: current, newPassword: newPw }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    msgEl.textContent = data.error || 'Kunne ikke skifte adgangskode.';
+    msgEl.className = 'message error';
+    return;
+  }
+  msgEl.textContent = 'Adgangskode opdateret. Du kan lukke vinduet.';
+  msgEl.className = 'message success';
+  document.getElementById('change-password-current').value = '';
+  document.getElementById('change-password-new').value = '';
+  document.getElementById('change-password-confirm').value = '';
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.body.classList.contains('modal-open')) {
+    const modal = document.getElementById('change-password-modal');
+    if (modal && !modal.hidden) closeChangePasswordModal();
+  }
+});
+
 function showWiFiMode() {
   const geoIntro = document.getElementById('geo-intro');
   const wifiIntro = document.getElementById('wifi-intro');

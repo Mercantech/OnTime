@@ -322,7 +322,8 @@ function renderUserList(users) {
     } else {
       adminBtn = u.isAdmin ? '<span class="muted">(dig)</span>' : '';
     }
-    return '<tr data-user-id="' + u.id + '"><td class="name">' + u.name + '</td><td class="email">' + u.email + '</td><td class="class">' + u.className + '</td><td>' + (u.isAdmin ? '<span class="badge">Admin</span>' : '') + '</td><td class="actions">' + adminBtn + ' ' + deleteBtn + '</td></tr>';
+    const resetPwBtn = '<button type="button" class="btn-reset-password" data-user-id="' + u.id + '" data-user-name="' + escapeHtml(u.name || '') + '">Nulstil adgangskode</button>';
+    return '<tr data-user-id="' + u.id + '"><td class="name">' + u.name + '</td><td class="email">' + u.email + '</td><td class="class">' + u.className + '</td><td>' + (u.isAdmin ? '<span class="badge">Admin</span>' : '') + '</td><td class="actions">' + resetPwBtn + ' ' + adminBtn + ' ' + deleteBtn + '</td></tr>';
   }).join('');
 
   tbody.querySelectorAll('.btn-toggle-admin').forEach(btn => {
@@ -347,6 +348,33 @@ function renderUserList(users) {
       const filter = document.getElementById('filter-class').value;
       const list = await loadUsers(filter ? parseInt(filter, 10) : undefined);
       renderUserList(list);
+    });
+  });
+
+  tbody.querySelectorAll('.btn-reset-password').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-user-id');
+      const name = btn.getAttribute('data-user-name') || 'brugeren';
+      const newPassword = prompt('Ny adgangskode for ' + name + ' (min. 4 tegn):');
+      if (newPassword == null) return;
+      if (newPassword.length < 4) {
+        alert('Adgangskode skal være mindst 4 tegn.');
+        return;
+      }
+      btn.disabled = true;
+      const res = await api('/api/admin/users/' + id + '/password', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: newPassword }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.error || 'Kunne ikke nulstille adgangskode');
+        btn.disabled = false;
+        return;
+      }
+      alert('Adgangskode nulstillet for ' + name + '.');
+      btn.disabled = false;
     });
   });
 
