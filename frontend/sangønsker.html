@@ -33,14 +33,41 @@
       <h3>Afspil her</h3>
       <p class="sangønsker-play-intro">Afspil ønskelisten fra toppen i dette vindue. Sange slettes automatisk fra listen, når de er afspillet.</p>
       <div id="spotify-connect-area" class="sangønsker-connect-area">
-        <button type="button" id="spotify-connect-btn" class="btn-primary">Forbind Spotify</button>
-        <span id="spotify-connected-label" class="sangønsker-connected-label" hidden>Spotify forbundet</span>
-        <button type="button" id="spotify-disconnect-btn" class="btn-secondary" hidden>Fjern forbindelse</button>
+        <button type="button" id="spotify-connect-btn" class="btn-spotify-connect">Forbind Spotify</button>
       </div>
       <div id="spotify-play-area" class="sangønsker-play-area" hidden>
-        <button type="button" id="spotify-play-top-btn" class="btn-primary">Afspil fra toppen</button>
+        <button type="button" id="spotify-play-top-btn" class="btn-spotify-green">Afspil fra toppen</button>
         <p id="spotify-play-hint" class="sangønsker-play-hint">Sætter hele ønskelisten i kø og starter fra øverste sang. Kræver Spotify Premium.</p>
-        <div id="spotify-now-playing" class="sangønsker-now-playing" hidden></div>
+        <div id="spotify-player-ui" class="spotify-player-ui" hidden>
+          <div class="spotify-now-playing-card">
+            <div class="spotify-now-art"><img id="spotify-now-art-img" src="" alt="" width="120" height="120"></div>
+            <div class="spotify-now-info">
+              <p class="spotify-now-label">Spiller nu</p>
+              <h4 id="spotify-now-title" class="spotify-now-title"></h4>
+              <p id="spotify-now-artist" class="spotify-now-artist"></p>
+              <div class="spotify-progress-wrap">
+                <input type="range" id="spotify-progress" class="spotify-progress" min="0" max="1000" value="0" aria-label="Sangposition">
+                <div class="spotify-time">
+                  <span id="spotify-time-pos">0:00</span>
+                  <span id="spotify-time-dur">0:00</span>
+                </div>
+              </div>
+              <div class="spotify-controls">
+                <button type="button" id="spotify-btn-prev" class="spotify-btn spotify-btn-prev" title="Forrige">‹</button>
+                <button type="button" id="spotify-btn-play" class="spotify-btn spotify-btn-play" title="Play/Pause">▶</button>
+                <button type="button" id="spotify-btn-next" class="spotify-btn spotify-btn-next" title="Næste">›</button>
+              </div>
+            </div>
+          </div>
+          <div class="spotify-queue-wrap">
+            <h4 class="spotify-queue-title">Kø</h4>
+            <ul id="spotify-queue-list" class="spotify-queue-list"></ul>
+          </div>
+        </div>
+      </div>
+      <div id="spotify-connect-footer" class="spotify-connect-footer" hidden>
+        <span id="spotify-connected-label" class="sangønsker-connected-label">Spotify forbundet</span>
+        <button type="button" id="spotify-disconnect-btn" class="btn-spotify-black">Fjern forbindelse</button>
       </div>
     </section>
 

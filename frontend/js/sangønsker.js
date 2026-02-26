@@ -246,19 +246,31 @@ searchInput?.addEventListener('keydown', (e) => {
 const spotifyConnectBtn = document.getElementById('spotify-connect-btn');
 const spotifyConnectedLabel = document.getElementById('spotify-connected-label');
 const spotifyDisconnectBtn = document.getElementById('spotify-disconnect-btn');
+const spotifyConnectFooter = document.getElementById('spotify-connect-footer');
 const spotifyPlayArea = document.getElementById('spotify-play-area');
 const spotifyPlayTopBtn = document.getElementById('spotify-play-top-btn');
-const spotifyNowPlaying = document.getElementById('spotify-now-playing');
+const spotifyPlayerUi = document.getElementById('spotify-player-ui');
+const spotifyNowArtImg = document.getElementById('spotify-now-art-img');
+const spotifyNowTitle = document.getElementById('spotify-now-title');
+const spotifyNowArtist = document.getElementById('spotify-now-artist');
+const spotifyProgress = document.getElementById('spotify-progress');
+const spotifyTimePos = document.getElementById('spotify-time-pos');
+const spotifyTimeDur = document.getElementById('spotify-time-dur');
+const spotifyBtnPrev = document.getElementById('spotify-btn-prev');
+const spotifyBtnPlay = document.getElementById('spotify-btn-play');
+const spotifyBtnNext = document.getElementById('spotify-btn-next');
+const spotifyQueueList = document.getElementById('spotify-queue-list');
 
 let spotifyPlayer = null;
 let spotifyDeviceId = null;
-let trackIdToRequestId = {}; // spotifyTrackId -> song request id (slettes når sangen er afspillet)
+let trackIdToRequestId = {};
+let spotifyPlayQueue = []; // { spotifyTrackId, trackName, artistName, albumArtUrl } – resten af køen
+let spotifyProgressInterval = null;
 
 function showSpotifyConnected(connected) {
   if (spotifyConnectBtn) spotifyConnectBtn.hidden = connected;
-  if (spotifyConnectedLabel) spotifyConnectedLabel.hidden = !connected;
-  if (spotifyDisconnectBtn) spotifyDisconnectBtn.hidden = !connected;
   if (spotifyPlayArea) spotifyPlayArea.hidden = !connected;
+  if (spotifyConnectFooter) spotifyConnectFooter.hidden = !connected;
 }
 
 function checkSpotifyConnected() {
@@ -286,6 +298,73 @@ function getSpotifyToken() {
     if (!res.ok) return res.json().then((d) => Promise.reject(new Error(d.error || 'Ingen token')));
     return res.json().then((data) => data.access_token);
   });
+}
+
+function formatSpotifyTime(ms) {
+  if (ms == null || !Number.isFinite(ms)) return '0:00';
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  return `${m}:${String(s % 60).padStart(2, '0')}`;
+}
+
+function clearSpotifyProgressInterval() {
+  if (spotifyProgressInterval) {
+    clearInterval(spotifyProgressInterval);
+    spotifyProgressInterval = null;
+  }
+}
+
+function updateSpotifyNowPlaying(state) {
+  if (!spotifyPlayerUi) return;
+  const track = state?.track_window?.current_track;
+  if (!track) {
+    spotifyPlayerUi.hidden = true;
+    return;
+  }
+  spotifyPlayerUi.hidden = false;
+  const artUrl = track.album?.images?.[0]?.url;
+  if (spotifyNowArtImg) {
+    spotifyNowArtImg.src = artUrl || '';
+    spotifyNowArtImg.style.display = artUrl ? '' : 'none';
+  }
+  if (spotifyNowTitle) spotifyNowTitle.textContent = track.name || '';
+  if (spotifyNowArtist) spotifyNowArtist.textContent = (track.artists || []).map((a) => a.name).join(', ') || '';
+  const pos = state.position != null ? state.position : 0;
+  const dur = state.duration || 0;
+  if (spotifyTimePos) spotifyTimePos.textContent = formatSpotifyTime(pos);
+  if (spotifyTimeDur) spotifyTimeDur.textContent = formatSpotifyTime(dur);
+  const pct = dur > 0 ? Math.min(1000, Math.round((pos / dur) * 1000)) : 0;
+  if (spotifyProgress) {
+    spotifyProgress.value = pct;
+  }
+  if (spotifyBtnPlay) spotifyBtnPlay.textContent = state.paused ? '▶' : '❚❚';
+  if (state.paused) clearSpotifyProgressInterval();
+  else if (!spotifyProgressInterval) {
+    spotifyProgressInterval = setInterval(() => {
+      if (!spotifyPlayer) return;
+      spotifyPlayer.getCurrentState().then((s) => {
+        if (s) updateSpotifyNowPlaying(s);
+      });
+    }, 1000);
+  }
+}
+
+function renderSpotifyQueue() {
+  if (!spotifyQueueList) return;
+  if (spotifyPlayQueue.length === 0) {
+    spotifyQueueList.innerHTML = '<li class="spotify-queue-empty">Ingen flere sange i køen</li>';
+    return;
+  }
+  spotifyQueueList.innerHTML = spotifyPlayQueue
+    .map(
+      (q, i) =>
+        `<li class="spotify-queue-item" data-index="${i}">
+          ${q.albumArtUrl ? `<img src="${escapeHtml(q.albumArtUrl)}" alt="" width="36" height="36">` : '<span class="spotify-queue-no-art">♪</span>'}
+          <span class="spotify-queue-item-title">${escapeHtml(q.trackName)}</span>
+          <span class="spotify-queue-item-artist">${escapeHtml(q.artistName)}</span>
+        </li>`
+    )
+    .join('');
 }
 
 function waitForSpotifySDK() {
@@ -321,6 +400,7 @@ function ensureSpotifyPlayer(token) {
         const lastPlayed = prev[0];
         const uri = lastPlayed.uri || '';
         const trackId = uri.split(':')[2];
+        spotifyPlayQueue = spotifyPlayQueue.filter((q) => q.spotifyTrackId !== trackId);
         if (trackId && trackIdToRequestId[trackId]) {
           const requestId = trackIdToRequestId[trackId];
           delete trackIdToRequestId[trackId];
@@ -329,6 +409,13 @@ function ensureSpotifyPlayer(token) {
             .catch(() => {});
         }
       }
+      const current = state.track_window.current_track;
+      if (current) {
+        const currentId = (current.uri || '').split(':')[2];
+        spotifyPlayQueue = spotifyPlayQueue.filter((q) => q.spotifyTrackId !== currentId);
+      }
+      updateSpotifyNowPlaying(state);
+      renderSpotifyQueue();
     });
 
     player.connect().catch(reject);
@@ -371,6 +458,12 @@ spotifyPlayTopBtn?.addEventListener('click', () => {
         spotifyPlayTopBtn.disabled = false;
         return;
       }
+      spotifyPlayQueue = requests.map((r) => ({
+        spotifyTrackId: r.spotifyTrackId,
+        trackName: r.trackName,
+        artistName: r.artistName,
+        albumArtUrl: r.albumArtUrl || null,
+      }));
       return getSpotifyToken().then((token) =>
         ensureSpotifyPlayer(token).then(({ deviceId }) => {
           trackIdToRequestId = {};
@@ -378,7 +471,10 @@ spotifyPlayTopBtn?.addEventListener('click', () => {
           const uris = requests.map((r) => `spotify:track:${r.spotifyTrackId}`);
           return spotifyTransferAndPlay(token, deviceId, uris);
         })
-      );
+      ).then(() => {
+        if (spotifyPlayerUi) spotifyPlayerUi.hidden = false;
+        renderSpotifyQueue();
+      });
     })
     .then(() => {
       spotifyPlayTopBtn.disabled = false;
@@ -387,6 +483,29 @@ spotifyPlayTopBtn?.addEventListener('click', () => {
       spotifyPlayTopBtn.disabled = false;
       alert(err.message || 'Afspilning kunne ikke startes. Har du Spotify Premium og forbundet enhed?');
     });
+});
+
+spotifyBtnPlay?.addEventListener('click', () => {
+  if (!spotifyPlayer) return;
+  spotifyPlayer.togglePlay();
+});
+spotifyBtnPrev?.addEventListener('click', () => {
+  if (!spotifyPlayer) return;
+  spotifyPlayer.previousTrack();
+});
+spotifyBtnNext?.addEventListener('click', () => {
+  if (!spotifyPlayer) return;
+  spotifyPlayer.nextTrack();
+});
+
+spotifyProgress?.addEventListener('input', (e) => {
+  const pct = Number(e.target.value);
+  if (!spotifyPlayer || !Number.isFinite(pct)) return;
+  spotifyPlayer.getCurrentState().then((state) => {
+    if (!state || !state.duration) return;
+    const posMs = Math.round((pct / 1000) * state.duration);
+    spotifyPlayer.seek(posMs);
+  });
 });
 
 // URL-parametre efter Spotify OAuth redirect
