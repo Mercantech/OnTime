@@ -22,6 +22,7 @@ const config = require('./config');
 const { run: runMigrations } = require('./migrate');
 const { run: ensureAdmin } = require('./ensureAdmin');
 const { getVersion } = require('./version');
+const { isCasinoClosed } = require('./casinoHours');
 
 const app = express();
 app.set('trust proxy', 1); // Så klient-IP bruges ved WiFi-tjek bag proxy
@@ -37,7 +38,12 @@ app.use('/api/public/class', classDashboardRoutes);
 app.use('/api/badges', badgesRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/bets', betsRoutes);
-app.use('/api/casino', casinoRoutes);
+app.use('/api/casino', (req, res, next) => {
+  if (isCasinoClosed()) {
+    return res.status(404).json({ error: 'Casinoet har lukket, da manager er i skole!' });
+  }
+  next();
+}, casinoRoutes);
 app.use('/api/poker', pokerRoutes);
 app.use('/api/song-requests', songRequestsRoutes);
 app.use('/api/spotify', spotifyRoutes);
@@ -101,8 +107,33 @@ app.get('/spil', (req, res) => {
   noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'games.html'));
 });
+const CASINO_CLOSED_HTML = `<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Casino lukket – OnTime</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .casino-closed { max-width: 28rem; margin: 4rem auto; padding: 2rem; text-align: center; }
+    .casino-closed h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+    .casino-closed p { color: var(--text-muted, #666); margin-bottom: 1.5rem; }
+  </style>
+</head>
+<body>
+  <main class="casino-closed">
+    <h1>🎰 Casino lukket</h1>
+    <p>Casinoet har lukket, da manager er i skole!</p>
+    <p><a href="/app">← Tilbage til app</a></p>
+  </main>
+</body>
+</html>`;
+
 app.get('/casino', (req, res) => {
   noCacheHeaders(res);
+  if (isCasinoClosed()) {
+    return res.status(404).send(CASINO_CLOSED_HTML);
+  }
   res.sendFile(path.join(frontendDir, 'casino.html'));
 });
 app.get('/dart', (req, res) => {
