@@ -301,9 +301,80 @@ let trackIdToRequestId = {};
 let spotifyPlayQueue = []; // { spotifyTrackId, trackName, artistName, albumArtUrl } – resten af køen
 let spotifyProgressInterval = null;
 let spotifyPlaybackSessionActive = false;
+let spotifyInitialTrackId = null;
+let spotifyInitialTrackDeleted = false;
+let spotifyQueueRefreshTimer = null;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getRequestsUrl() {
+  return showAllCheckbox?.checked ? '/api/song-requests?all=1' : '/api/song-requests';
+}
+
+function scheduleSpotifyQueueRefresh() {
+  if (!spotifyPlaybackSessionActive) return;
+  if (spotifyQueueRefreshTimer) clearTimeout(spotifyQueueRefreshTimer);
+  spotifyQueueRefreshTimer = setTimeout(() => {
+    refreshSpotifyQueueFromWishlist().catch(() => {});
+  }, 900);
+}
+
+/**
+ * Opdaterer Spotify-afspilningskøen ud fra den aktuelle ønskeliste, uden at "starte forfra".
+ * Vi kalder /play med hele listen + offset til den track, der allerede spiller.
+ * Det gør at nye ønsker (og ny sortering) kommer med i Spotify, typisk efter hver sang.
+ */
+async function refreshSpotifyQueueFromWishlist() {
+  if (!spotifyPlaybackSessionActive || !spotifyPlayer || !spotifyDeviceId) return;
+
+  const state = await spotifyPlayer.getCurrentState();
+  if (!state?.track_window?.current_track) return;
+
+  const currentId = String(state.track_window.current_track.uri || '').split(':')[2];
+  if (!currentId) return;
+
+  const reqRes = await api(getRequestsUrl());
+  if (!reqRes.ok) return;
+  const data = await reqRes.json();
+  const requests = data.requests || [];
+  if (!requests.length) return;
+
+  // Rebuild mapping så nye ønsker kan slettes når de afspilles.
+  trackIdToRequestId = {};
+  requests.forEach((r) => { trackIdToRequestId[r.spotifyTrackId] = r.id; });
+
+  const uris = requests.map((r) => `spotify:track:${r.spotifyTrackId}`);
+  const idx = requests.findIndex((r) => r.spotifyTrackId === currentId);
+  if (idx < 0) return;
+
+  spotifyPlayQueue = requests.slice(idx + 1).map((r) => ({
+    spotifyTrackId: r.spotifyTrackId,
+    trackName: r.trackName,
+    artistName: r.artistName,
+    albumArtUrl: r.albumArtUrl || null,
+  }));
+  renderSpotifyQueue();
+
+  const token = await getSpotifyToken();
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  };
+
+  // Bevar position så vi ikke hopper tilbage, selvom vi re-sender hele playlisten/køen.
+  const positionMs = state.position != null ? state.position : 0;
+  const playUrl = `https://api.spotify.com/v1/me/player/play?${new URLSearchParams({ device_id: spotifyDeviceId })}`;
+  await fetch(playUrl, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({
+      uris,
+      offset: { position: idx },
+      position_ms: positionMs,
+    }),
+  }).catch(() => {});
 }
 
 function showSpotifyConnected(connected) {
@@ -469,14 +540,24 @@ function ensureSpotifyPlayer(token) {
             .then(() => loadRequests(showAllCheckbox?.checked ?? false))
             .catch(() => {});
         }
+
+        // Når en sang er færdig, opdaterer vi Spotify-køen ud fra ny ønskeliste,
+        // så nye ønsker kommer med i Spotify uden manuel "Afspil fra toppen".
+        scheduleSpotifyQueueRefresh();
       }
       const current = state.track_window.current_track;
       if (current) {
         const currentId = (current.uri || '').split(':')[2];
         spotifyPlayQueue = spotifyPlayQueue.filter((q) => q.spotifyTrackId !== currentId);
-
-        // Første sang ligger ikke i previous_tracks, så vi sletter den her når sessionen er startet.
-        if (spotifyPlaybackSessionActive && currentId && trackIdToRequestId[currentId]) {
+        // Første sang ligger ikke i previous_tracks, så vi sletter KUN den første sang når den faktisk starter.
+        if (
+          spotifyPlaybackSessionActive &&
+          !spotifyInitialTrackDeleted &&
+          spotifyInitialTrackId &&
+          currentId === spotifyInitialTrackId &&
+          trackIdToRequestId[currentId]
+        ) {
+          spotifyInitialTrackDeleted = true;
           const requestId = trackIdToRequestId[currentId];
           delete trackIdToRequestId[currentId];
           api(`/api/song-requests/${requestId}`, { method: 'DELETE' })
@@ -558,6 +639,8 @@ spotifyPlayTopBtn?.addEventListener('click', () => {
         ensureSpotifyPlayer(token).then(({ player, deviceId }) => {
           trackIdToRequestId = {};
           requests.forEach((r) => { trackIdToRequestId[r.spotifyTrackId] = r.id; });
+          spotifyInitialTrackId = requests[0]?.spotifyTrackId || null;
+          spotifyInitialTrackDeleted = false;
           const uris = requests.map((r) => `spotify:track:${r.spotifyTrackId}`);
           // Kræves i nogle browsere for at Web Playback må afspille efter et klik.
           player.activateElement?.().catch(() => {});
