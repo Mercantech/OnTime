@@ -28,6 +28,7 @@
   }
 
   const lobbyEl = document.getElementById('pirat-lobby');
+  const lobbyActionsEl = document.getElementById('pirat-lobby-actions');
   const gameEl = document.getElementById('pirat-game');
   const createBtn = document.getElementById('pirat-create-btn');
   const joinCodeInput = document.getElementById('pirat-join-code');
@@ -73,6 +74,7 @@
   function showLobby() {
     if (lobbyEl) lobbyEl.hidden = false;
     if (gameEl) gameEl.hidden = true;
+    if (lobbyActionsEl) lobbyActionsEl.hidden = false;
     if (waitingEl) waitingEl.hidden = true;
     if (lobbyErrorEl) lobbyErrorEl.hidden = true;
   }
@@ -98,6 +100,7 @@
     if (state.phase === 'lobby') {
       if (lobbyEl) lobbyEl.hidden = false;
       if (gameEl) gameEl.hidden = true;
+      if (lobbyActionsEl) lobbyActionsEl.hidden = true;
       if (waitingEl) waitingEl.hidden = false;
       if (gameCodeEl) gameCodeEl.textContent = state.gameCode || '';
       if (gameLinkEl) {
