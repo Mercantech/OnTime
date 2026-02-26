@@ -304,6 +304,8 @@ let spotifyPlaybackSessionActive = false;
 let spotifyInitialTrackId = null;
 let spotifyInitialTrackDeleted = false;
 let spotifyQueueRefreshTimer = null;
+/** Track-ids der er afspillet eller skippet denne session – så de ikke tilføjes til køen igen ved refresh. */
+let spotifyPlayedOrSkippedIds = new Set();
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -345,20 +347,26 @@ async function refreshSpotifyQueueFromWishlist() {
   // Opdater mapping for alle ønsker (så nye kan slettes når de afspilles).
   requests.forEach((r) => { trackIdToRequestId[r.spotifyTrackId] = r.id; });
 
-  const toAdd = requests.filter((r) => !alreadyInQueue.has(r.spotifyTrackId));
+  // Tilføj ikke sange der allerede er afspillet/skippet denne session (så de ikke dukker op i køen igen).
+  const toAdd = requests.filter(
+    (r) => !alreadyInQueue.has(r.spotifyTrackId) && !spotifyPlayedOrSkippedIds.has(r.spotifyTrackId)
+  );
   if (!toAdd.length) {
-    // Synk visningen af "kommer næste" med ønskelisten (efter current).
+    // Synk visningen af "kommer næste" med ønskelisten (efter current), uden afspillede/skippede.
     if (currentId) {
       const idx = requests.findIndex((r) => r.spotifyTrackId === currentId);
-          if (idx >= 0) {
-            spotifyPlayQueue = requests.slice(idx + 1).map((r) => ({
-              spotifyTrackId: r.spotifyTrackId,
-              trackName: r.trackName,
-              artistName: r.artistName,
-              albumArtUrl: r.albumArtUrl || null,
-            }));
-            renderSpotifyQueue();
-          }
+      if (idx >= 0) {
+        spotifyPlayQueue = requests
+          .slice(idx + 1)
+          .filter((r) => !spotifyPlayedOrSkippedIds.has(r.spotifyTrackId))
+          .map((r) => ({
+            spotifyTrackId: r.spotifyTrackId,
+            trackName: r.trackName,
+            artistName: r.artistName,
+            albumArtUrl: r.albumArtUrl || null,
+          }));
+        renderSpotifyQueue();
+      }
     }
     return;
   }
@@ -428,11 +436,14 @@ function clearSpotifyProgressInterval() {
   }
 }
 
+const SANGØNSKER_DEFAULT_TITLE = 'OnTime – Sangønsker';
+
 function updateSpotifyNowPlaying(state) {
   if (!spotifyPlayerUi) return;
   const track = state?.track_window?.current_track;
   if (!track) {
     spotifyPlayerUi.hidden = true;
+    document.title = SANGØNSKER_DEFAULT_TITLE;
     return;
   }
   spotifyPlayerUi.hidden = false;
@@ -442,7 +453,9 @@ function updateSpotifyNowPlaying(state) {
     spotifyNowArtImg.style.display = artUrl ? '' : 'none';
   }
   if (spotifyNowTitle) spotifyNowTitle.textContent = track.name || '';
-  if (spotifyNowArtist) spotifyNowArtist.textContent = (track.artists || []).map((a) => a.name).join(', ') || '';
+  const artistStr = (track.artists || []).map((a) => a.name).join(', ') || '';
+  if (spotifyNowArtist) spotifyNowArtist.textContent = artistStr;
+  document.title = track.name ? `▶ ${track.name}${artistStr ? ` – ${artistStr}` : ''} | OnTime` : SANGØNSKER_DEFAULT_TITLE;
   const pos = state.position != null ? state.position : 0;
   const dur = state.duration || 0;
   if (spotifyTimePos) spotifyTimePos.textContent = formatSpotifyTime(pos);
@@ -536,6 +549,7 @@ function ensureSpotifyPlayer(token) {
         const lastPlayed = prev[0];
         const uri = lastPlayed.uri || '';
         const trackId = uri.split(':')[2];
+        if (trackId) spotifyPlayedOrSkippedIds.add(trackId);
         spotifyPlayQueue = spotifyPlayQueue.filter((q) => q.spotifyTrackId !== trackId);
         if (trackId && trackIdToRequestId[trackId]) {
           const requestId = trackIdToRequestId[trackId];
@@ -562,6 +576,7 @@ function ensureSpotifyPlayer(token) {
           trackIdToRequestId[currentId]
         ) {
           spotifyInitialTrackDeleted = true;
+          if (currentId) spotifyPlayedOrSkippedIds.add(currentId);
           const requestId = trackIdToRequestId[currentId];
           delete trackIdToRequestId[currentId];
           api(`/api/song-requests/${requestId}`, { method: 'DELETE' })
@@ -642,6 +657,7 @@ spotifyPlayTopBtn?.addEventListener('click', () => {
       return getSpotifyToken().then((token) =>
         ensureSpotifyPlayer(token).then(({ player, deviceId }) => {
           trackIdToRequestId = {};
+          spotifyPlayedOrSkippedIds = new Set();
           requests.forEach((r) => { trackIdToRequestId[r.spotifyTrackId] = r.id; });
           spotifyInitialTrackId = requests[0]?.spotifyTrackId || null;
           spotifyInitialTrackDeleted = false;

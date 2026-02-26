@@ -20,6 +20,11 @@ async function isAdmin(client, userId) {
   return !!r.rows[0]?.is_admin;
 }
 
+async function hasSpotifyConnected(client, userId) {
+  const r = await client.query('SELECT 1 FROM spotify_user_tokens WHERE user_id = $1', [userId]);
+  return !!r.rows[0];
+}
+
 router.use(auth);
 
 /** GET /api/song-requests – liste for brugerens klasse (eller alle klasser hvis admin + ?all=1) */
@@ -255,7 +260,10 @@ router.delete('/:id', async (req, res) => {
       if (!row.rows.length) return res.status(404).json({ error: 'Forespørgsel ikke fundet' });
 
       const rec = row.rows[0];
-      const canDelete = rec.requested_by === req.userId || (await isAdmin(client, req.userId));
+      const canDelete =
+        rec.requested_by === req.userId ||
+        (await isAdmin(client, req.userId)) ||
+        (await hasSpotifyConnected(client, req.userId));
       if (!canDelete) return res.status(403).json({ error: 'Du kan kun slette egne ønsker' });
 
       await client.query('DELETE FROM song_requests WHERE id = $1', [requestId]);
