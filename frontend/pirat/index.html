@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Piratbridge</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/pirat.css">
+</head>
+<body class="pirat-page">
+  <header class="app-header">
+    <h1><a href="/app" class="header-home">OnTime</a></h1>
+    <a href="/spil" class="admin-link">Spil</a>
+    <a href="/spotify" class="admin-link">Sangønsker</a>
+    <a href="/jokes" class="admin-link">Dagens joke</a>
+    <span id="pirat-user-name" class="user-info"></span>
+    <button id="pirat-logout" class="btn-logout">Log ud</button>
+  </header>
+
+  <main class="pirat-main">
+    <h1 class="pirat-title">🏴‍☠️ Piratbridge</h1>
+    <p class="pirat-subtitle">4 spillere · Spar er trumf · Tip stik med tændstikker</p>
+
+    <!-- Setup: spillernavne -->
+    <section id="pirat-setup" class="pirat-setup">
+      <h2 class="pirat-section-title">Spillere (4)</h2>
+      <div class="pirat-player-inputs">
+        <label class="pirat-input-wrap"><span class="pirat-input-label">Spiller 1</span><input type="text" id="pirat-name-1" class="pirat-name-input" placeholder="Navn" maxlength="20" autocomplete="off"></label>
+        <label class="pirat-input-wrap"><span class="pirat-input-label">Spiller 2</span><input type="text" id="pirat-name-2" class="pirat-name-input" placeholder="Navn" maxlength="20" autocomplete="off"></label>
+        <label class="pirat-input-wrap"><span class="pirat-input-label">Spiller 3</span><input type="text" id="pirat-name-3" class="pirat-name-input" placeholder="Navn" maxlength="20" autocomplete="off"></label>
+        <label class="pirat-input-wrap"><span class="pirat-input-label">Spiller 4</span><input type="text" id="pirat-name-4" class="pirat-name-input" placeholder="Navn" maxlength="20" autocomplete="off"></label>
+      </div>
+      <button type="button" id="pirat-start-btn" class="pirat-btn pirat-btn-primary">Start spil</button>
+      <p id="pirat-setup-error" class="pirat-error" hidden></p>
+    </section>
+
+    <!-- Spil -->
+    <section id="pirat-game" class="pirat-game" hidden>
+      <div class="pirat-game-top">
+        <p class="pirat-round-info" id="pirat-round-info">Runde 1 · 1 kort hver</p>
+        <p class="pirat-scores" id="pirat-scores"></p>
+      </div>
+
+      <!-- Fase: bud (tændstikker) -->
+      <div id="pirat-bid-phase" class="pirat-phase" hidden>
+        <p class="pirat-phase-msg">Tip antal stik – vælg med tændstikker (skjult)</p>
+        <div class="pirat-bid-choices" id="pirat-bid-choices"></div>
+        <button type="button" id="pirat-bid-confirm" class="pirat-btn pirat-btn-primary">Bekræft bud</button>
+      </div>
+
+      <!-- Fase: vis bud -->
+      <div id="pirat-bid-reveal" class="pirat-phase" hidden>
+        <p class="pirat-phase-msg">Bud afsløret</p>
+        <div class="pirat-bid-reveal-list" id="pirat-bid-reveal-list"></div>
+        <button type="button" id="pirat-bid-reveal-ok" class="pirat-btn pirat-btn-primary">Start stik</button>
+      </div>
+
+      <!-- Fase: spil stik -->
+      <div id="pirat-play-phase" class="pirat-phase" hidden>
+        <p class="pirat-whose-lead" id="pirat-whose-lead"></p>
+        <div class="pirat-trick-center" id="pirat-trick-center"></div>
+        <div class="pirat-hand-wrap">
+          <p class="pirat-hand-label">Din hånd (spiller <span id="pirat-current-hand-player"></span>)</p>
+          <div class="pirat-hand" id="pirat-hand"></div>
+        </div>
+      </div>
+
+      <!-- Runde afsluttet -->
+      <div id="pirat-round-done" class="pirat-phase" hidden>
+        <p class="pirat-phase-msg">Runde slut – point</p>
+        <div class="pirat-round-scores" id="pirat-round-scores"></div>
+        <button type="button" id="pirat-next-round-btn" class="pirat-btn pirat-btn-primary">Næste runde</button>
+      </div>
+
+      <!-- Spil slut -->
+      <div id="pirat-game-over" class="pirat-phase" hidden>
+        <p class="pirat-phase-msg">Spil slut – vinder</p>
+        <p class="pirat-winner" id="pirat-winner"></p>
+        <button type="button" id="pirat-play-again-btn" class="pirat-btn pirat-btn-primary">Spil igen</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="/js/pirat.js"></script>
+  <script src="/js/debug-issue.js"></script>
+</body>
+</html>

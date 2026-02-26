@@ -123,6 +123,16 @@ app.get('/jokes', (req, res) => {
   res.sendFile(path.join(frontendDir, 'jokes.html'));
 });
 
+app.get('/pirat', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'pirat', 'index.html'));
+});
+
+app.get('/pirat/', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'pirat', 'index.html'));
+});
+
 const PORT = config.port;
 const server = http.createServer(app);
 const io = attachSocket(server);
