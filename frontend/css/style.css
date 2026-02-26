@@ -151,6 +151,23 @@ body {
   border-color: var(--text-muted);
 }
 
+.app-header .btn-header-secondary {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  transition: color var(--transition), border-color var(--transition), background var(--transition);
+}
+.app-header .btn-header-secondary:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 .app-header .admin-link {
   color: var(--accent);
   text-decoration: none;
@@ -1463,6 +1480,20 @@ main.app-main.admin-main {
 .btn-toggle-admin:hover:not(:disabled) { background: var(--accent); color: #fff; }
 .btn-toggle-admin:disabled { opacity: 0.6; cursor: not-allowed; }
 
+.btn-reset-password {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8rem;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: background var(--transition), color var(--transition);
+}
+.btn-reset-password:hover:not(:disabled) { background: var(--accent); color: #fff; }
+.btn-reset-password:disabled { opacity: 0.6; cursor: not-allowed; }
+
 /* Footer version – meget diskret */
 .app-footer {
   text-align: center;
@@ -1639,6 +1670,24 @@ body.modal-open { overflow: hidden; }
 .modal-body input[type="password"] { width: 100%; padding: 0.5rem; margin-bottom: 0.25rem; box-sizing: border-box; }
 .modal-body .message { margin: 0.5rem 0 0; }
 .modal-body .btn-primary { margin-top: 0.75rem; }
+.btn-primary.btn-submit-accent {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition), transform 0.1s;
+}
+.btn-primary.btn-submit-accent:hover {
+  background: var(--accent-dim);
+}
+.btn-primary.btn-submit-accent:active {
+  transform: scale(0.98);
+}
 
 .bet-modal-hint {
   font-size: 0.8rem;
