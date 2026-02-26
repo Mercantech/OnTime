@@ -44,6 +44,7 @@
   const roundInfoEl = document.getElementById('pirat-round-info');
   const scoresEl = document.getElementById('pirat-scores');
   const bidPhaseEl = document.getElementById('pirat-bid-phase');
+  const bidHandEl = document.getElementById('pirat-bid-hand');
   const bidChoicesEl = document.getElementById('pirat-bid-choices');
   const bidConfirmBtn = document.getElementById('pirat-bid-confirm');
   const bidRevealEl = document.getElementById('pirat-bid-reveal');
@@ -126,6 +127,12 @@
 
     if (state.phase === 'bid') {
       if (bidPhaseEl) bidPhaseEl.hidden = false;
+      if (bidHandEl) {
+        bidHandEl.innerHTML = '';
+        (state.myHand || []).forEach((card) => {
+          bidHandEl.appendChild(renderCard(card, false, null));
+        });
+      }
       const isMyTurn = state.currentPlayer === state.myIndex;
       const n = state.n || 0;
       if (isMyTurn) {
