@@ -1,7 +1,13 @@
 const SUITS = ['C', 'D', 'H', 'S'];
 const TRUMP = 'S';
-const CARDS_PER_ROUND = [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1];
-const NUM_PLAYERS = 4;
+
+/** Rundeplan per antal spillere: antal kort per spiller per runde. */
+function getCardsPerRound(numPlayers) {
+  if (numPlayers === 4) return [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1];
+  if (numPlayers === 3) return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+  if (numPlayers === 2) return Array(26).fill(1);
+  return [1];
+}
 
 function makeDeck() {
   const deck = [];
@@ -31,7 +37,7 @@ function legalPlays(hand, leadSuit) {
   return hand.slice();
 }
 
-function trickWinner(cards, leaderIndex) {
+function trickWinner(cards, leaderIndex, numPlayers) {
   const leadSuit = cards[0].s;
   let best = 0;
   for (let i = 1; i < cards.length; i++) {
@@ -43,40 +49,44 @@ function trickWinner(cards, leaderIndex) {
     else if (c.s !== leadSuit && b.s === leadSuit) {}
     else if (c.s === b.s && c.r > b.r) best = i;
   }
-  return (leaderIndex + best) % NUM_PLAYERS;
+  return (leaderIndex + best) % numPlayers;
 }
 
 function createGameState(playerIds, playerNames) {
+  const n = playerIds.length;
   return {
     playerIds: [...playerIds],
     playerNames: [...playerNames],
+    numPlayers: n,
     roundIndex: 0,
     dealer: 0,
-    hands: [[], [], [], []],
-    bids: [null, null, null, null],
+    hands: Array.from({ length: n }, () => []),
+    bids: Array(n).fill(null),
     phase: 'lobby',
     currentPlayer: 0,
     leader: 0,
     trick: [],
     trickLeader: 0,
-    tricksWon: [0, 0, 0, 0],
-    scores: [0, 0, 0, 0],
+    tricksWon: Array(n).fill(0),
+    scores: Array(n).fill(0),
   };
 }
 
 function startRound(state) {
-  const n = CARDS_PER_ROUND[state.roundIndex] || 1;
+  const numPlayers = state.numPlayers || state.playerIds.length;
+  const schedule = getCardsPerRound(numPlayers);
+  const n = schedule[state.roundIndex] ?? 1;
   const deck = shuffle(makeDeck());
-  state.hands = [[], [], [], []];
-  state.dealer = state.roundIndex % NUM_PLAYERS;
-  state.leader = (state.dealer + 1) % NUM_PLAYERS;
-  let idx = 0;
-  for (let i = 0; i < n * NUM_PLAYERS; i++) {
-    state.hands[i % NUM_PLAYERS].push(deck[idx++]);
+  const cardsToDeal = n * numPlayers;
+  state.hands = Array.from({ length: numPlayers }, () => []);
+  state.dealer = state.roundIndex % numPlayers;
+  state.leader = (state.dealer + 1) % numPlayers;
+  for (let i = 0; i < cardsToDeal && i < deck.length; i++) {
+    state.hands[i % numPlayers].push(deck[i]);
   }
   state.hands.forEach((h) => h.sort((a, b) => cardOrder(a) - cardOrder(b)));
-  state.bids = [null, null, null, null];
-  state.tricksWon = [0, 0, 0, 0];
+  state.bids = Array(numPlayers).fill(null);
+  state.tricksWon = Array(numPlayers).fill(0);
   state.phase = 'bid';
   state.currentPlayer = state.leader;
   state.trick = [];
@@ -90,17 +100,21 @@ function cardEq(a, b) {
 function getPublicState(state, userId) {
   const myIndex = state.playerIds.indexOf(userId);
   if (myIndex < 0) return null;
-  const n = CARDS_PER_ROUND[state.roundIndex] || 1;
+  const numPlayers = state.numPlayers || state.playerIds.length;
+  const schedule = getCardsPerRound(numPlayers);
+  const n = schedule[state.roundIndex] ?? 1;
   const leadSuit = state.trick.length > 0 ? state.trick[0].s : null;
   const myHand = state.hands[myIndex] || [];
   const legalCards = legalPlays(myHand, leadSuit);
   const trickWithPlayer = (state.trick || []).map((c, i) => ({
     card: c,
-    playedBy: (state.trickLeader + i) % NUM_PLAYERS,
+    playedBy: (state.trickLeader + i) % numPlayers,
   }));
   return {
     gameCode: state.gameCode,
     myIndex,
+    numPlayers,
+    numRounds: schedule.length,
     playerNames: state.playerNames,
     roundIndex: state.roundIndex,
     n,
@@ -120,8 +134,7 @@ function getPublicState(state, userId) {
 module.exports = {
   SUITS,
   TRUMP,
-  CARDS_PER_ROUND,
-  NUM_PLAYERS,
+  getCardsPerRound,
   makeDeck,
   shuffle,
   cardOrder,

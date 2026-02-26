@@ -2,7 +2,6 @@
   const SUITS = ['C', 'D', 'H', 'S'];
   const RANK_NAMES = { 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9: '9', 10: '10', 11: 'Kn', 12: 'D', 13: 'K', 14: 'E' };
   const TRUMP = 'S';
-  const NUM_PLAYERS = 4;
 
   function cardStr(c) {
     const suitNames = { C: 'Klør', D: 'Ruder', H: 'Hjerter', S: 'Spar' };
@@ -37,6 +36,7 @@
   const gameCodeEl = document.getElementById('pirat-game-code');
   const gameLinkEl = document.getElementById('pirat-game-link');
   const playerWaitListEl = document.getElementById('pirat-player-wait-list');
+  const startGameBtn = document.getElementById('pirat-start-btn');
   const lobbyErrorEl = document.getElementById('pirat-lobby-error');
   const turnStatusEl = document.getElementById('pirat-turn-status');
   const turnNameEl = document.getElementById('pirat-turn-name');
@@ -106,6 +106,10 @@
       }
       if (playerWaitListEl) {
         playerWaitListEl.innerHTML = (state.playerNames || []).map((n) => '<li>' + escapeHtml(n) + '</li>').join('');
+      }
+      const count = (state.playerIds || []).length;
+      if (startGameBtn) {
+        startGameBtn.hidden = count < 2 || count > 4;
       }
       return;
     }
@@ -236,6 +240,10 @@
     }
     if (lobbyErrorEl) lobbyErrorEl.hidden = true;
     if (socket) socket.emit('pirat:join', { code });
+  });
+
+  startGameBtn?.addEventListener('click', () => {
+    if (socket) socket.emit('pirat:start');
   });
 
   document.getElementById('pirat-logout')?.addEventListener('click', () => {
