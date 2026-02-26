@@ -114,6 +114,7 @@ function getPublicState(state, userId) {
     gameCode: state.gameCode,
     myIndex,
     numPlayers,
+    playerCount: state.playerIds.length,
     numRounds: schedule.length,
     playerNames: state.playerNames,
     roundIndex: state.roundIndex,

@@ -110,7 +110,7 @@
       if (playerWaitListEl) {
         playerWaitListEl.innerHTML = (state.playerNames || []).map((n) => '<li>' + escapeHtml(n) + '</li>').join('');
       }
-      const count = (state.playerIds || []).length;
+      const count = state.playerCount ?? (state.playerIds || []).length;
       if (startGameBtn) {
         startGameBtn.hidden = count < 2 || count > 4;
       }
