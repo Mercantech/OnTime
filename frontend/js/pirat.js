@@ -126,7 +126,7 @@
     if (lobbyEl) lobbyEl.hidden = true;
     if (gameEl) gameEl.hidden = false;
     if (roundInfoEl) roundInfoEl.textContent = 'Runde ' + (state.roundIndex + 1) + ' · ' + (state.n || 0) + ' kort hver';
-    if (scoresEl) scoresEl.textContent = (state.playerNames || []).map((n, i) => n + ': ' + (state.scores || [])[i]).join(' · ');
+    if (scoresEl) scoresEl.textContent = (state.playerNames || []).map((n, i) => n + ': ' + ((state.scores || [])[i] ?? 0)).join(' · ');
     updateTurnStatus(state);
     hideAllPhases();
 

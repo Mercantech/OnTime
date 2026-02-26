@@ -300,6 +300,11 @@ let spotifyDeviceId = null;
 let trackIdToRequestId = {};
 let spotifyPlayQueue = []; // { spotifyTrackId, trackName, artistName, albumArtUrl } – resten af køen
 let spotifyProgressInterval = null;
+let spotifyPlaybackSessionActive = false;
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function showSpotifyConnected(connected) {
   if (spotifyConnectBtn) spotifyConnectBtn.hidden = connected;
@@ -469,6 +474,15 @@ function ensureSpotifyPlayer(token) {
       if (current) {
         const currentId = (current.uri || '').split(':')[2];
         spotifyPlayQueue = spotifyPlayQueue.filter((q) => q.spotifyTrackId !== currentId);
+
+        // Første sang ligger ikke i previous_tracks, så vi sletter den her når sessionen er startet.
+        if (spotifyPlaybackSessionActive && currentId && trackIdToRequestId[currentId]) {
+          const requestId = trackIdToRequestId[currentId];
+          delete trackIdToRequestId[currentId];
+          api(`/api/song-requests/${requestId}`, { method: 'DELETE' })
+            .then(() => loadRequests(showAllCheckbox?.checked ?? false))
+            .catch(() => {});
+        }
       }
       updateSpotifyNowPlaying(state);
       renderSpotifyQueue();
@@ -490,15 +504,35 @@ function spotifyTransferAndPlay(token, deviceId, uris) {
   }).then((res) => {
     if (res.status === 204 || res.status === 200) return;
     return res.text().then((t) => Promise.reject(new Error(t || 'Kunne ikke vælge enhed')));
-  }).then(() =>
-    fetch('https://api.spotify.com/v1/me/player/play', {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({ uris }),
-    })
-  ).then((res) => {
-    if (res.status === 204 || res.status === 200) return;
-    return res.json().then((d) => Promise.reject(new Error(d.error?.message || 'Kunne ikke starte afspilning')));
+  }).then(async () => {
+    // Giv Spotify Connect et øjeblik til at skifte aktiv device, ellers kan første play give 404.
+    await sleep(350);
+    const playUrl = `https://api.spotify.com/v1/me/player/play?${new URLSearchParams({ device_id: deviceId })}`;
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      // eslint-disable-next-line no-await-in-loop
+      const res = await fetch(playUrl, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ uris }),
+      });
+      if (res.status === 204 || res.status === 200) return;
+
+      // 404 sker typisk hvis device endnu ikke er aktiv. Prøv igen kort efter.
+      if (res.status === 404 && attempt < 3) {
+        // eslint-disable-next-line no-await-in-loop
+        await sleep(500);
+        continue;
+      }
+
+      const text = await res.text().catch(() => '');
+      try {
+        const d = text ? JSON.parse(text) : null;
+        throw new Error(d?.error?.message || text || 'Kunne ikke starte afspilning');
+      } catch {
+        throw new Error(text || 'Kunne ikke starte afspilning');
+      }
+    }
   });
 }
 
@@ -521,11 +555,15 @@ spotifyPlayTopBtn?.addEventListener('click', () => {
         albumArtUrl: r.albumArtUrl || null,
       }));
       return getSpotifyToken().then((token) =>
-        ensureSpotifyPlayer(token).then(({ deviceId }) => {
+        ensureSpotifyPlayer(token).then(({ player, deviceId }) => {
           trackIdToRequestId = {};
           requests.forEach((r) => { trackIdToRequestId[r.spotifyTrackId] = r.id; });
           const uris = requests.map((r) => `spotify:track:${r.spotifyTrackId}`);
-          return spotifyTransferAndPlay(token, deviceId, uris);
+          // Kræves i nogle browsere for at Web Playback må afspille efter et klik.
+          player.activateElement?.().catch(() => {});
+          return spotifyTransferAndPlay(token, deviceId, uris).then(() => {
+            spotifyPlaybackSessionActive = true;
+          });
         })
       ).then(() => {
         if (spotifyPlayerUi) spotifyPlayerUi.hidden = false;

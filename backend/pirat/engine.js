@@ -3,10 +3,13 @@ const TRUMP = 'S';
 
 /** Rundeplan per antal spillere: antal kort per spiller per runde. */
 function getCardsPerRound(numPlayers) {
-  if (numPlayers === 4) return [1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1];
-  if (numPlayers === 3) return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
-  if (numPlayers === 2) return Array(26).fill(1);
-  return [1];
+  const players = Math.max(2, Math.min(4, Number(numPlayers) || 0));
+  const deckSize = 52;
+  const maxByDeck = Math.floor(deckSize / players); // 4 spillere => 13
+  const maxCards = Math.min(15, Math.max(1, maxByDeck));
+  const up = Array.from({ length: maxCards }, (_, i) => i + 1);
+  const down = Array.from({ length: Math.max(0, maxCards - 1) }, (_, i) => maxCards - 1 - i);
+  return up.concat(down);
 }
 
 function makeDeck() {

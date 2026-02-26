@@ -81,6 +81,9 @@ function registerPirat(io) {
       const name = await getUserName(userId);
       game.state.playerIds.push(userId);
       game.state.playerNames.push(name);
+      game.state.numPlayers = game.state.playerIds.length;
+      if (!Array.isArray(game.state.scores)) game.state.scores = [];
+      while (game.state.scores.length < game.state.playerIds.length) game.state.scores.push(0);
       game.playerSockets.set(userId, socket.id);
       await socket.join(ROOM_PREFIX + code);
       socket.piratGameCode = code;
