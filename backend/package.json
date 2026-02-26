@@ -1,6 +1,6 @@
 {
   "name": "ontime-backend",
-  "version": "1.0.81",
+  "version": "1.0.82",
   "description": "OnTime elev-indstempling backend",
   "main": "server.js",
   "scripts": {
