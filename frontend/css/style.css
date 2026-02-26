@@ -590,8 +590,15 @@ main.app-main.dashboard {
 .sangønsker-empty, .sangønsker-error { color: var(--text-muted); padding: 1rem 0; }
 .sangønsker-error { color: var(--danger); }
 .sangønsker-row {
-  display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; margin-bottom: 0.5rem;
-  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
 }
 .sangønsker-row-cover img, .sangønsker-row-no-art { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
 .sangønsker-row-no-art { display: flex; align-items: center; justify-content: center; background: var(--surface-1); color: var(--text-muted); font-size: 1.5rem; }
@@ -599,6 +606,16 @@ main.app-main.dashboard {
 .sangønsker-row-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sangønsker-row-artist { color: var(--text-muted); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sangønsker-row-by { font-size: 0.8rem; color: var(--text-muted); }
+.sangønsker-row-actions {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--border);
+}
 .sangønsker-row-votes { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 .sangønsker-vote-count { font-weight: 700; color: var(--accent); min-width: 1.5rem; text-align: center; }
 .sangønsker-vote-btn {

@@ -68,15 +68,17 @@ function renderRequests(requests) {
         <span class="sangønsker-row-artist">${escapeHtml(r.artistName)}</span>
         ${r.requestedByName ? `<span class="sangønsker-row-by">Ønsket af ${escapeHtml(r.requestedByName)}</span>` : ''}
       </div>
-      <div class="sangønsker-row-votes">
-        <span class="sangønsker-vote-count" aria-label="Antal stemmer">${r.voteCount}</span>
-        <button type="button" class="sangønsker-vote-btn ${r.currentUserHasVoted ? 'voted' : ''}" data-id="${r.id}" data-voted="${r.currentUserHasVoted}">
-          ${r.currentUserHasVoted ? 'Fjern stemme' : 'Stem op'}
-        </button>
+      <div class="sangønsker-row-actions">
+        <div class="sangønsker-row-votes">
+          <span class="sangønsker-vote-count" aria-label="Antal stemmer">${r.voteCount}</span>
+          <button type="button" class="sangønsker-vote-btn ${r.currentUserHasVoted ? 'voted' : ''}" data-id="${r.id}" data-voted="${r.currentUserHasVoted}">
+            ${r.currentUserHasVoted ? 'Fjern stemme' : 'Stem op'}
+          </button>
+        </div>
+        ${r.previewUrl ? `<a href="${escapeHtml(r.previewUrl)}" target="_blank" rel="noopener noreferrer" class="sangønsker-preview-link">Lyt 30s</a>` : ''}
+        <a href="https://open.spotify.com/track/${escapeHtml(r.spotifyTrackId)}" target="_blank" rel="noopener noreferrer" class="sangønsker-spotify-link">Åbn i Spotify</a>
+        ${showDelete ? `<button type="button" class="sangønsker-delete-btn" data-id="${r.id}" title="Fjern fra listen">Slet</button>` : ''}
       </div>
-      ${r.previewUrl ? `<a href="${escapeHtml(r.previewUrl)}" target="_blank" rel="noopener noreferrer" class="sangønsker-preview-link">Lyt 30s</a>` : ''}
-      <a href="https://open.spotify.com/track/${escapeHtml(r.spotifyTrackId)}" target="_blank" rel="noopener noreferrer" class="sangønsker-spotify-link">Åbn i Spotify</a>
-      ${showDelete ? `<button type="button" class="sangønsker-delete-btn" data-id="${r.id}" title="Fjern fra listen">Slet</button>` : ''}
     </div>`;
       }
     )
@@ -101,7 +103,8 @@ function loadRequests(showAll) {
     })
     .then((data) => {
       renderRequests(data.requests);
-      updateSpotifyQueueFromRequests(data.requests);
+      if (spotifyPlayQueue.length === 0) updateSpotifyQueueFromRequests(data.requests);
+      else renderSpotifyQueue();
     })
     .catch(() => {
       requestsListEl.innerHTML = '<p class="sangønsker-error">Kunne ikke indlæse sangønsker. Prøv igen.</p>';
@@ -290,6 +293,7 @@ const spotifyBtnPrev = document.getElementById('spotify-btn-prev');
 const spotifyBtnPlay = document.getElementById('spotify-btn-play');
 const spotifyBtnNext = document.getElementById('spotify-btn-next');
 const spotifyQueueList = document.getElementById('spotify-queue-list');
+const spotifyQueueSubtitle = document.getElementById('spotify-queue-subtitle');
 
 let spotifyPlayer = null;
 let spotifyDeviceId = null;
@@ -379,9 +383,10 @@ function updateSpotifyNowPlaying(state) {
   }
 }
 
-/** Opdaterer kø-panelet med den live ønskeliste (sorteret efter stemmer). Kaldes ved loadRequests så køen opdateres ved stemmer. */
+/** Opdaterer kø-panelet med den live ønskeliste (sorteret efter stemmer). Bruges når der ikke afspilles. */
 function updateSpotifyQueueFromRequests(requests) {
   if (!spotifyQueueList) return;
+  if (spotifyQueueSubtitle) spotifyQueueSubtitle.textContent = '(ønskeliste – opdateres ved stemmer)';
   if (!requests || requests.length === 0) {
     spotifyQueueList.innerHTML = '<li class="spotify-queue-empty">Ingen sangønsker endnu</li>';
     return;
@@ -398,9 +403,10 @@ function updateSpotifyQueueFromRequests(requests) {
     .join('');
 }
 
-/** Bruges kun under afspilning til at fjerne afspillede sange fra den interne kø (sletning sker via API, kø-visning opdateres via loadRequests). */
+/** Viser den faktiske afspilningskø (kommer næste) – matcher hvad der spilles i Spotify. */
 function renderSpotifyQueue() {
   if (!spotifyQueueList) return;
+  if (spotifyQueueSubtitle) spotifyQueueSubtitle.textContent = '(kommer næste)';
   if (spotifyPlayQueue.length === 0) {
     spotifyQueueList.innerHTML = '<li class="spotify-queue-empty">Ingen flere sange i køen</li>';
     return;
@@ -465,6 +471,7 @@ function ensureSpotifyPlayer(token) {
         spotifyPlayQueue = spotifyPlayQueue.filter((q) => q.spotifyTrackId !== currentId);
       }
       updateSpotifyNowPlaying(state);
+      renderSpotifyQueue();
     });
 
     player.connect().catch(reject);
@@ -522,7 +529,7 @@ spotifyPlayTopBtn?.addEventListener('click', () => {
         })
       ).then(() => {
         if (spotifyPlayerUi) spotifyPlayerUi.hidden = false;
-        updateSpotifyQueueFromRequests(requests);
+        renderSpotifyQueue();
       });
     })
     .then(() => {
