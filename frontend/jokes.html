@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Dagens joke</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1><a href="/app" class="header-home">OnTime</a></h1>
+    <a href="/spil" class="admin-link">Spil</a>
+    <a href="/spotify" class="admin-link">Sangønsker</a>
+    <a href="/jokes" class="admin-link">Dagens joke</a>
+    <a href="https://edumercantec-my.sharepoint.com/:x:/g/personal/jekn_edu_mercantec_dk/IQBX8mxWSzlWSasK_yzr_SkLASt16MWWzyDc5oT8KDOzLeY?rtime=6iLN3xhx3kg" class="admin-link" target="_blank" rel="noopener noreferrer">Skema</a>
+    <span id="user-name" class="user-info"></span>
+    <button id="logout" class="btn-logout">Log ud</button>
+  </header>
+  <main class="app-main jokes-page">
+    <h2 class="jokes-title">Dagens joke</h2>
+    <p class="jokes-intro">Indsend én joke om dagen – de andre kan stemme på den bedste. Du kan ikke stemme på din egen.</p>
+
+    <div class="jokes-disclaimer card">
+      <p class="jokes-disclaimer-text">Dagens joke skal være skolevenlig. Upassende indhold kan medføre midlertidig udelukkelse fra hele OnTime i op til 1 uge. Ved at indsende accepterer du dette.</p>
+    </div>
+
+    <section class="card jokes-submit-wrap" id="jokes-submit-section">
+      <h3>Indsend din joke</h3>
+      <p id="jokes-already-submitted" class="jokes-already-msg" hidden>Du har allerede indsendt din joke i dag.</p>
+      <form id="form-joke" class="jokes-form">
+        <textarea id="joke-body" placeholder="Skriv din joke her… (max 500 tegn)" maxlength="500" rows="4" required></textarea>
+        <p class="jokes-char-count"><span id="joke-char-count">0</span> / 500</p>
+        <button type="submit" class="btn-primary btn-submit-accent">Indsend joke</button>
+      </form>
+      <p id="jokes-submit-message" class="message" hidden></p>
+    </section>
+
+    <section class="card jokes-list-wrap">
+      <h3>Jokes i dag</h3>
+      <div id="jokes-admin-bar" class="jokes-admin-bar" hidden>
+        <label class="jokes-show-all-label"><input type="checkbox" id="jokes-show-all"> Vis alle klasser</label>
+      </div>
+      <div id="jokes-list" class="jokes-list">Indlæser…</div>
+    </section>
+  </main>
+  <script src="/js/jokes.js"></script>
+  <script src="/js/debug-issue.js"></script>
+</body>
+</html>

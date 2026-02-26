@@ -222,6 +222,32 @@ router.delete('/users/:id', async (req, res) => {
   }
 });
 
+/** POST /api/admin/users/:id/ban – udeluk bruger fra hele platformen (fx 7 dage). Safe for school. */
+router.post('/users/:id/ban', async (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  if (Number.isNaN(userId)) return res.status(400).json({ error: 'Ugyldigt bruger-id' });
+  if (userId === req.userId) {
+    return res.status(400).json({ error: 'Du kan ikke udelukke dig selv' });
+  }
+  const durationDays = Math.min(365, Math.max(1, parseInt(req.body?.durationDays, 10) || 7));
+  const reason = req.body?.reason != null ? String(req.body.reason).trim() : null;
+  try {
+    const userRow = await pool.query('SELECT id FROM users WHERE id = $1', [userId]);
+    if (!userRow.rows.length) return res.status(404).json({ error: 'Bruger ikke fundet' });
+
+    const bannedUntil = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+    await pool.query(
+      `INSERT INTO user_bans (user_id, banned_until, banned_by, reason)
+       VALUES ($1, $2, $3, $4)`,
+      [userId, bannedUntil, req.userId, reason || 'Offensiv joke (dagens joke)']
+    );
+    res.json({ ok: true, bannedUntil: bannedUntil.toISOString() });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 /** Giv eller træk point fra en elev. Negativt tal = træk fra nuværende (min 0). */
 router.post('/give-points', async (req, res) => {
   const { userId, date, points } = req.body || {};

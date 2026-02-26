@@ -220,6 +220,45 @@ const MIGRATIONS = [
       CREATE INDEX IF NOT EXISTS idx_song_request_votes_request ON song_request_votes (request_id);
     `,
   },
+  {
+    name: 'jokes_tables',
+    sql: `
+      CREATE TABLE IF NOT EXISTS jokes (
+        id SERIAL PRIMARY KEY,
+        class_id INT NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        body TEXT NOT NULL,
+        submitted_date DATE NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE (class_id, user_id, submitted_date)
+      );
+      CREATE INDEX IF NOT EXISTS idx_jokes_class_date ON jokes (class_id, submitted_date);
+      CREATE INDEX IF NOT EXISTS idx_jokes_created ON jokes (created_at);
+
+      CREATE TABLE IF NOT EXISTS joke_votes (
+        joke_id INT NOT NULL REFERENCES jokes(id) ON DELETE CASCADE,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (joke_id, user_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_joke_votes_joke ON joke_votes (joke_id);
+    `,
+  },
+  {
+    name: 'user_bans',
+    sql: `
+      CREATE TABLE IF NOT EXISTS user_bans (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        banned_until TIMESTAMPTZ NOT NULL,
+        banned_by INT REFERENCES users(id) ON DELETE SET NULL,
+        reason TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE INDEX IF NOT EXISTS idx_user_bans_user ON user_bans (user_id);
+      CREATE INDEX IF NOT EXISTS idx_user_bans_until ON user_bans (banned_until);
+    `,
+  },
 ];
 
 async function run() {

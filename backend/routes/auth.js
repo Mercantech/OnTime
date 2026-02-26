@@ -40,6 +40,18 @@ router.post('/login', async (req, res) => {
     if (!ok) {
       return res.status(401).json({ error: 'Forkert email eller adgangskode' });
     }
+    const banRow = await pool.query(
+      'SELECT banned_until FROM user_bans WHERE user_id = $1 AND banned_until > NOW() ORDER BY banned_until DESC LIMIT 1',
+      [user.id]
+    );
+    if (banRow.rows.length > 0) {
+      const until = banRow.rows[0].banned_until;
+      const untilStr = until instanceof Date ? until.toISOString() : String(until);
+      return res.status(403).json({
+        error: 'Din konto er midlertidigt spærret. Kontakt en administrator.',
+        bannedUntil: untilStr,
+      });
+    }
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       config.jwtSecret,

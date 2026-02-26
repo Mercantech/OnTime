@@ -16,6 +16,7 @@ const betsRoutes = require('./routes/bets');
 const casinoRoutes = require('./routes/casino');
 const pokerRoutes = require('./routes/poker');
 const songRequestsRoutes = require('./routes/songRequests');
+const jokesRoutes = require('./routes/jokes');
 const config = require('./config');
 const { run: runMigrations } = require('./migrate');
 const { run: ensureAdmin } = require('./ensureAdmin');
@@ -38,6 +39,7 @@ app.use('/api/bets', betsRoutes);
 app.use('/api/casino', casinoRoutes);
 app.use('/api/poker', pokerRoutes);
 app.use('/api/song-requests', songRequestsRoutes);
+app.use('/api/jokes', jokesRoutes);
 
 const frontendDir = path.join(__dirname, process.env.NODE_ENV === 'production' ? 'frontend' : path.join('..', 'frontend'));
 app.use(express.static(frontendDir, {
@@ -114,6 +116,11 @@ app.get('/profil/:id', (req, res) => {
 app.get('/spotify', (req, res) => {
   noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'sangønsker.html'));
+});
+
+app.get('/jokes', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'jokes.html'));
 });
 
 const PORT = config.port;
