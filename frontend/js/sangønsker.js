@@ -318,22 +318,23 @@ function scheduleSpotifyQueueRefresh() {
   if (spotifyQueueRefreshTimer) clearTimeout(spotifyQueueRefreshTimer);
   spotifyQueueRefreshTimer = setTimeout(() => {
     refreshSpotifyQueueFromWishlist().catch(() => {});
-  }, 900);
+  }, 800);
 }
 
 /**
- * Opdaterer Spotify-afspilningskøen ud fra den aktuelle ønskeliste, uden at "starte forfra".
- * Vi kalder /play med hele listen + offset til den track, der allerede spiller.
- * Det gør at nye ønsker (og ny sortering) kommer med i Spotify, typisk efter hver sang.
+ * Tilføjer kun NYE sange fra ønskelisten til Spotify-køen via "Add to Queue".
+ * Vi kalder aldrig PUT /play her – så afspilningen hopper ikke eller starter forfra.
  */
 async function refreshSpotifyQueueFromWishlist() {
-  if (!spotifyPlaybackSessionActive || !spotifyPlayer || !spotifyDeviceId) return;
+  if (!spotifyPlaybackSessionActive || !spotifyPlayer) return;
 
   const state = await spotifyPlayer.getCurrentState();
-  if (!state?.track_window?.current_track) return;
+  const currentId = state?.track_window?.current_track
+    ? String(state.track_window.current_track.uri || '').split(':')[2]
+    : null;
 
-  const currentId = String(state.track_window.current_track.uri || '').split(':')[2];
-  if (!currentId) return;
+  const alreadyInQueue = new Set(spotifyPlayQueue.map((q) => q.spotifyTrackId));
+  if (currentId) alreadyInQueue.add(currentId);
 
   const reqRes = await api(getRequestsUrl());
   if (!reqRes.ok) return;
@@ -341,40 +342,43 @@ async function refreshSpotifyQueueFromWishlist() {
   const requests = data.requests || [];
   if (!requests.length) return;
 
-  // Rebuild mapping så nye ønsker kan slettes når de afspilles.
-  trackIdToRequestId = {};
+  // Opdater mapping for alle ønsker (så nye kan slettes når de afspilles).
   requests.forEach((r) => { trackIdToRequestId[r.spotifyTrackId] = r.id; });
 
-  const uris = requests.map((r) => `spotify:track:${r.spotifyTrackId}`);
-  const idx = requests.findIndex((r) => r.spotifyTrackId === currentId);
-  if (idx < 0) return;
-
-  spotifyPlayQueue = requests.slice(idx + 1).map((r) => ({
-    spotifyTrackId: r.spotifyTrackId,
-    trackName: r.trackName,
-    artistName: r.artistName,
-    albumArtUrl: r.albumArtUrl || null,
-  }));
-  renderSpotifyQueue();
+  const toAdd = requests.filter((r) => !alreadyInQueue.has(r.spotifyTrackId));
+  if (!toAdd.length) {
+    // Synk visningen af "kommer næste" med ønskelisten (efter current).
+    if (currentId) {
+      const idx = requests.findIndex((r) => r.spotifyTrackId === currentId);
+          if (idx >= 0) {
+            spotifyPlayQueue = requests.slice(idx + 1).map((r) => ({
+              spotifyTrackId: r.spotifyTrackId,
+              trackName: r.trackName,
+              artistName: r.artistName,
+              albumArtUrl: r.albumArtUrl || null,
+            }));
+            renderSpotifyQueue();
+          }
+    }
+    return;
+  }
 
   const token = await getSpotifyToken();
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
-  };
+  const headers = { Authorization: `Bearer ${token}` };
 
-  // Bevar position så vi ikke hopper tilbage, selvom vi re-sender hele playlisten/køen.
-  const positionMs = state.position != null ? state.position : 0;
-  const playUrl = `https://api.spotify.com/v1/me/player/play?${new URLSearchParams({ device_id: spotifyDeviceId })}`;
-  await fetch(playUrl, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify({
-      uris,
-      offset: { position: idx },
-      position_ms: positionMs,
-    }),
-  }).catch(() => {});
+  for (const r of toAdd) {
+    const uri = `spotify:track:${r.spotifyTrackId}`;
+    const addUrl = `https://api.spotify.com/v1/me/player/queue?${new URLSearchParams({ uri })}`;
+    const res = await fetch(addUrl, { method: 'POST', headers });
+    if (res.status !== 204 && res.status !== 200) break;
+    spotifyPlayQueue.push({
+      spotifyTrackId: r.spotifyTrackId,
+      trackName: r.trackName,
+      artistName: r.artistName,
+      albumArtUrl: r.albumArtUrl || null,
+    });
+  }
+  renderSpotifyQueue();
 }
 
 function showSpotifyConnected(connected) {
