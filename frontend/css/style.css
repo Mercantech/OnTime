@@ -556,9 +556,15 @@ main.app-main.dashboard {
 .game-card { margin-bottom: 1.5rem; }
 
 /* Sangønsker-side */
-.sangønsker-page { max-width: 42rem; margin: 0 auto; padding: 1rem; }
+.sangønsker-page { max-width: 72rem; margin: 0 auto; padding: 1rem; }
 .sangønsker-title { margin: 0 0 0.25rem; font-size: 1.5rem; }
 .sangønsker-intro { color: var(--text-muted); margin: 0 0 1.5rem; font-size: 0.95rem; }
+
+.sangønsker-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+@media (max-width: 768px) { .sangønsker-columns { grid-template-columns: 1fr; } }
+.sangønsker-col { min-width: 0; }
+.sangønsker-col-left .card { margin-bottom: 1.5rem; }
+.sangønsker-col-left .card:last-child { margin-bottom: 0; }
 .sangønsker-add { margin-bottom: 1.5rem; }
 .sangønsker-add h3 { margin: 0 0 0.75rem; font-size: 1.1rem; }
 .sangønsker-search-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
@@ -708,6 +714,7 @@ main.app-main.dashboard {
 .spotify-btn-play:hover { filter: brightness(1.1); }
 .spotify-queue-wrap { margin-top: 1rem; }
 .spotify-queue-title { margin: 0 0 0.5rem; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
+.spotify-queue-subtitle { font-weight: 400; font-size: 0.8rem; opacity: 0.85; }
 .spotify-queue-list { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-1); }
 .spotify-queue-item {
   display: flex;
@@ -721,7 +728,8 @@ main.app-main.dashboard {
 .spotify-queue-item img, .spotify-queue-no-art { width: 36px; height: 36px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
 .spotify-queue-no-art { display: flex; align-items: center; justify-content: center; background: var(--surface-2); color: var(--text-muted); font-size: 1rem; }
 .spotify-queue-item-title { font-weight: 500; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.spotify-queue-item-artist { color: var(--text-muted); font-size: 0.85rem; flex-shrink: 0; max-width: 45%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spotify-queue-item-artist,
+.spotify-queue-item-meta { color: var(--text-muted); font-size: 0.85rem; flex-shrink: 0; max-width: 55%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .spotify-queue-empty { padding: 0.75rem; color: var(--text-muted); font-size: 0.9rem; }
 
 /* ---------- Dagens joke ---------- */

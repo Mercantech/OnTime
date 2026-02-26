@@ -133,10 +133,23 @@
           bidHandEl.appendChild(renderCard(card, false, null));
         });
       }
-      const isMyTurn = state.currentPlayer === state.myIndex;
       const n = state.n || 0;
-      if (isMyTurn) {
-        bidChoicesEl.innerHTML = '<p class="pirat-bid-prompt">Vælg antal stik (0–' + n + ')</p>';
+      const bids = state.bids || [];
+      const myBid = state.myIndex != null ? bids[state.myIndex] : null;
+      const allBid = bids.every((b) => b !== null);
+      const names = state.playerNames || [];
+      let statusHtml = '<ul class="pirat-bid-status">';
+      for (let i = 0; i < names.length; i++) {
+        const name = escapeHtml(names[i] || 'Spiller ' + (i + 1));
+        const done = bids[i] !== null;
+        statusHtml += '<li>' + name + ': ' + (done ? '✓ Klar' : '…') + '</li>';
+      }
+      statusHtml += '</ul>';
+      if (myBid !== null) {
+        bidChoicesEl.innerHTML = '<p class="pirat-bid-prompt">Du har budt <strong>' + myBid + '</strong> stik.</p>' + statusHtml +
+          (allBid ? '' : '<p class="pirat-bid-wait">Venter på at alle har budt.</p>');
+      } else {
+        bidChoicesEl.innerHTML = '<p class="pirat-bid-prompt">Vælg antal stik (0–' + n + ') og lås dit bud:</p>' + statusHtml;
         const wrap = document.createElement('div');
         wrap.className = 'pirat-bid-buttons';
         for (let b = 0; b <= n; b++) {
@@ -150,11 +163,8 @@
           wrap.appendChild(btn);
         }
         bidChoicesEl.appendChild(wrap);
-        bidConfirmBtn.hidden = true;
-      } else {
-        bidChoicesEl.innerHTML = '<p class="pirat-bid-prompt">Venter på ' + escapeHtml((state.playerNames || [])[state.currentPlayer] || '') + ' …</p>';
-        bidConfirmBtn.hidden = true;
       }
+      bidConfirmBtn.hidden = true;
     } else if (state.phase === 'bid_reveal') {
       if (bidRevealEl) bidRevealEl.hidden = false;
       const bids = state.bids || [];

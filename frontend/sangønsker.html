@@ -20,16 +20,18 @@
     <h2 class="sangønsker-title">Sangønsker</h2>
     <p class="sangønsker-intro">Foreslå en sang – de andre kan stemme den op. Sorteret efter flest stemmer.</p>
 
-    <section class="card sangønsker-add">
-      <h3>Tilføj ønske</h3>
-      <div class="sangønsker-search-row">
-        <input type="search" id="search-input" class="sangønsker-search-input" placeholder="Søg efter sang eller kunstner…" autocomplete="off">
-        <button type="button" id="search-btn" class="btn-primary">Søg</button>
-      </div>
-      <div id="search-results" class="sangønsker-search-results" hidden aria-live="polite"></div>
-    </section>
+    <div class="sangønsker-columns">
+      <div class="sangønsker-col sangønsker-col-left">
+        <section class="card sangønsker-add">
+          <h3>Tilføj ønske</h3>
+          <div class="sangønsker-search-row">
+            <input type="search" id="search-input" class="sangønsker-search-input" placeholder="Søg efter sang eller kunstner…" autocomplete="off">
+            <button type="button" id="search-btn" class="btn-primary">Søg</button>
+          </div>
+          <div id="search-results" class="sangønsker-search-results" hidden aria-live="polite"></div>
+        </section>
 
-    <section class="card sangønsker-play-section" id="sangønsker-play-section">
+        <section class="card sangønsker-play-section" id="sangønsker-play-section">
       <h3>Afspil her</h3>
       <p class="sangønsker-play-intro">Afspil ønskelisten fra toppen i dette vindue. Sange slettes automatisk fra listen, når de er afspillet.</p>
       <div id="spotify-connect-area" class="sangønsker-connect-area">
@@ -59,25 +61,29 @@
               </div>
             </div>
           </div>
-          <div class="spotify-queue-wrap">
-            <h4 class="spotify-queue-title">Kø</h4>
-            <ul id="spotify-queue-list" class="spotify-queue-list"></ul>
-          </div>
+        </div>
+        <div class="spotify-queue-wrap">
+          <h4 class="spotify-queue-title">Kø <span class="spotify-queue-subtitle">(opdateres ved stemmer)</span></h4>
+          <ul id="spotify-queue-list" class="spotify-queue-list"></ul>
         </div>
       </div>
       <div id="spotify-connect-footer" class="spotify-connect-footer" hidden>
         <span id="spotify-connected-label" class="sangønsker-connected-label">Spotify forbundet</span>
         <button type="button" id="spotify-disconnect-btn" class="btn-spotify-black">Fjern forbindelse</button>
       </div>
-    </section>
-
-    <section class="card sangønsker-list-wrap">
-      <h3>Ønskeliste</h3>
-      <div id="sangønsker-admin-bar" class="sangønsker-admin-bar" hidden>
-        <label class="sangønsker-show-all-label"><input type="checkbox" id="sangønsker-show-all"> Vis alle klasser</label>
+        </section>
       </div>
-      <div id="requests-list" class="sangønsker-list">Indlæser…</div>
-    </section>
+
+      <div class="sangønsker-col sangønsker-col-right">
+        <section class="card sangønsker-list-wrap">
+          <h3>Ønskeliste</h3>
+          <div id="sangønsker-admin-bar" class="sangønsker-admin-bar" hidden>
+            <label class="sangønsker-show-all-label"><input type="checkbox" id="sangønsker-show-all"> Vis alle klasser</label>
+          </div>
+          <div id="requests-list" class="sangønsker-list">Indlæser…</div>
+        </section>
+      </div>
+    </div>
   </main>
   <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script src="/js/sangønsker.js"></script>

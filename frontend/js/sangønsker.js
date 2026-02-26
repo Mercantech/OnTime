@@ -99,10 +99,40 @@ function loadRequests(showAll) {
       if (!res.ok) throw new Error('Kunne ikke hente listen');
       return res.json();
     })
-    .then((data) => renderRequests(data.requests))
+    .then((data) => {
+      renderRequests(data.requests);
+      updateSpotifyQueueFromRequests(data.requests);
+    })
     .catch(() => {
       requestsListEl.innerHTML = '<p class="sangønsker-error">Kunne ikke indlæse sangønsker. Prøv igen.</p>';
+      updateSpotifyQueueFromRequests([]);
     });
+}
+
+/** Periodisk opdatering af ønskeliste og kø (nye ønsker + stemmer) uden at vise "Indlæser…". */
+const SANGØNSKER_POLL_INTERVAL_MS = 15000; // 15 sekunder
+let sangønskerPollTimer = null;
+function startSangønskerPolling() {
+  if (sangønskerPollTimer) return;
+  sangønskerPollTimer = setInterval(() => {
+    const showAll = showAllCheckbox?.checked ?? false;
+    const url = showAll ? '/api/song-requests?all=1' : '/api/song-requests';
+    api(url)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.requests) {
+          renderRequests(data.requests);
+          updateSpotifyQueueFromRequests(data.requests);
+        }
+      })
+      .catch(() => {});
+  }, SANGØNSKER_POLL_INTERVAL_MS);
+}
+function stopSangønskerPolling() {
+  if (sangønskerPollTimer) {
+    clearInterval(sangønskerPollTimer);
+    sangønskerPollTimer = null;
+  }
 }
 
 if (adminBarEl && showAllCheckbox) {
@@ -349,6 +379,26 @@ function updateSpotifyNowPlaying(state) {
   }
 }
 
+/** Opdaterer kø-panelet med den live ønskeliste (sorteret efter stemmer). Kaldes ved loadRequests så køen opdateres ved stemmer. */
+function updateSpotifyQueueFromRequests(requests) {
+  if (!spotifyQueueList) return;
+  if (!requests || requests.length === 0) {
+    spotifyQueueList.innerHTML = '<li class="spotify-queue-empty">Ingen sangønsker endnu</li>';
+    return;
+  }
+  spotifyQueueList.innerHTML = requests
+    .map(
+      (r, i) =>
+        `<li class="spotify-queue-item" data-id="${r.id}">
+          ${r.albumArtUrl ? `<img src="${escapeHtml(r.albumArtUrl)}" alt="" width="36" height="36">` : '<span class="spotify-queue-no-art">♪</span>'}
+          <span class="spotify-queue-item-title">${escapeHtml(r.trackName)}</span>
+          <span class="spotify-queue-item-meta">${escapeHtml(r.artistName)} · ${r.voteCount ?? 0} stemmer</span>
+        </li>`
+    )
+    .join('');
+}
+
+/** Bruges kun under afspilning til at fjerne afspillede sange fra den interne kø (sletning sker via API, kø-visning opdateres via loadRequests). */
 function renderSpotifyQueue() {
   if (!spotifyQueueList) return;
   if (spotifyPlayQueue.length === 0) {
@@ -361,7 +411,7 @@ function renderSpotifyQueue() {
         `<li class="spotify-queue-item" data-index="${i}">
           ${q.albumArtUrl ? `<img src="${escapeHtml(q.albumArtUrl)}" alt="" width="36" height="36">` : '<span class="spotify-queue-no-art">♪</span>'}
           <span class="spotify-queue-item-title">${escapeHtml(q.trackName)}</span>
-          <span class="spotify-queue-item-artist">${escapeHtml(q.artistName)}</span>
+          <span class="spotify-queue-item-meta">${escapeHtml(q.artistName)}</span>
         </li>`
     )
     .join('');
@@ -415,7 +465,6 @@ function ensureSpotifyPlayer(token) {
         spotifyPlayQueue = spotifyPlayQueue.filter((q) => q.spotifyTrackId !== currentId);
       }
       updateSpotifyNowPlaying(state);
-      renderSpotifyQueue();
     });
 
     player.connect().catch(reject);
@@ -473,7 +522,7 @@ spotifyPlayTopBtn?.addEventListener('click', () => {
         })
       ).then(() => {
         if (spotifyPlayerUi) spotifyPlayerUi.hidden = false;
-        renderSpotifyQueue();
+        updateSpotifyQueueFromRequests(requests);
       });
     })
     .then(() => {
@@ -526,3 +575,4 @@ spotifyProgress?.addEventListener('input', (e) => {
 // ---------- Init ----------
 loadRequests();
 checkSpotifyConnected();
+startSangønskerPolling();

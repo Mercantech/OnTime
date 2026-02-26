@@ -111,12 +111,13 @@ function registerPirat(io) {
       if (!code) return;
       const game = games.get(code);
       if (!game || game.state.phase !== 'bid') {
-        socket.emit('pirat:error', { message: 'Ikke din tur til at byde' });
+        socket.emit('pirat:error', { message: 'Budfasen er ikke aktiv' });
         return;
       }
       const playerIndex = game.state.playerIds.indexOf(socket.userId);
-      if (playerIndex !== game.state.currentPlayer) {
-        socket.emit('pirat:error', { message: 'Ikke din tur' });
+      if (playerIndex < 0) return;
+      if (game.state.bids[playerIndex] !== null) {
+        socket.emit('pirat:error', { message: 'Du har allerede budt' });
         return;
       }
       const schedule = getCardsPerRound(game.state.numPlayers || game.state.playerIds.length);
@@ -127,8 +128,6 @@ function registerPirat(io) {
         return;
       }
       game.state.bids[playerIndex] = bid;
-      const numPlayers = game.state.numPlayers || game.state.playerIds.length;
-      game.state.currentPlayer = (game.state.currentPlayer + 1) % numPlayers;
       if (game.state.bids.every((b) => b !== null)) {
         game.state.phase = 'bid_reveal';
       }
