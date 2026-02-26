@@ -110,7 +110,7 @@ function getPublicState(state, userId) {
     card: c,
     playedBy: (state.trickLeader + i) % numPlayers,
   }));
-  return {
+  const pub = {
     gameCode: state.gameCode,
     myIndex,
     numPlayers,
@@ -130,6 +130,11 @@ function getPublicState(state, userId) {
     tricksWon: state.tricksWon,
     scores: state.scores,
   };
+  if (state.phase === 'trick_done' && state.trickWinner != null) {
+    pub.trickWinner = state.trickWinner;
+    pub.trickWinningCardIndex = state.trickWinningCardIndex;
+  }
+  return pub;
 }
 
 module.exports = {

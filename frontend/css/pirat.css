@@ -36,16 +36,26 @@
 .pirat-phase { margin: 1rem 0; padding: 1rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); }
 .pirat-phase-msg { margin: 0 0 0.75rem; font-weight: 500; }
 .pirat-bid-prompt { margin: 0 0 0.5rem; }
+.pirat-bid-status { margin: 0.5rem 0; padding-left: 1.25rem; list-style: none; }
+.pirat-bid-status li { margin: 0.2rem 0; }
+.pirat-bid-wait { margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--text-muted); }
 .pirat-bid-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
 .pirat-btn-bid { background: var(--surface); color: var(--text); border: 1px solid var(--border); min-width: 2.5rem; }
 .pirat-btn-bid:hover { border-color: var(--accent); color: var(--accent); }
 .pirat-btn-bid.pirat-btn-selected { background: var(--accent); color: #fff; border-color: var(--accent); }
 .pirat-bid-total { margin: 0 0 0.5rem; }
+.pirat-bid-summary { margin: 0 0 0.75rem; padding: 0.75rem 1rem; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); font-weight: 500; }
+.pirat-bid-summary-warning { border-color: var(--accent); background: rgba(34, 197, 94, 0.1); }
 .pirat-bid-list { margin: 0; padding-left: 1.25rem; }
 .pirat-round-score-list { margin: 0 0 0.5rem; padding-left: 1.25rem; }
 .pirat-total-so-far { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
 
 .pirat-trick-center { display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 4rem; margin-bottom: 1rem; padding: 0.75rem; background: var(--surface); border-radius: var(--radius-sm); border: 1px dashed var(--border); }
+.pirat-trick-winner-msg { font-size: 1.1rem; font-weight: 600; margin: 0 0 0.75rem; color: var(--accent); }
+.pirat-trick-done-cards { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+.pirat-trick-done-card { display: inline-flex; align-items: center; justify-content: center; min-width: 2.8rem; height: 3.5rem; padding: 0 0.35rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); font-weight: 500; }
+.pirat-trick-done-card.pirat-trick-winner-card { border-width: 2px; border-color: var(--accent); background: var(--surface-2); box-shadow: 0 0 0 2px var(--accent); }
+.pirat-trick-done-hint { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
 .pirat-hand-wrap { margin-top: 1rem; }
 .pirat-hand-label { margin: 0 0 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
 .pirat-hand { display: flex; flex-wrap: wrap; gap: 0.35rem; }

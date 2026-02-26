@@ -56,6 +56,10 @@
   const handWrapEl = document.getElementById('pirat-hand-wrap');
   const handLabelPlayerEl = document.getElementById('pirat-current-hand-player');
   const handEl = document.getElementById('pirat-hand');
+  const trickDoneEl = document.getElementById('pirat-trick-done');
+  const trickWinnerMsgEl = document.getElementById('pirat-trick-winner-msg');
+  const trickDoneCardsEl = document.getElementById('pirat-trick-done-cards');
+  const trickDoneHintEl = document.getElementById('pirat-trick-done-hint');
   const roundDoneEl = document.getElementById('pirat-round-done');
   const roundScoresEl = document.getElementById('pirat-round-scores');
   const nextRoundBtn = document.getElementById('pirat-next-round-btn');
@@ -67,7 +71,7 @@
   let lastState = null;
 
   function hideAllPhases() {
-    [bidPhaseEl, bidRevealEl, playPhaseEl, roundDoneEl, gameOverEl].forEach((el) => {
+    [bidPhaseEl, bidRevealEl, playPhaseEl, trickDoneEl, roundDoneEl, gameOverEl].forEach((el) => {
       if (el) el.hidden = true;
     });
   }
@@ -170,12 +174,19 @@
       const bids = state.bids || [];
       const total = bids.reduce((a, b) => a + (b || 0), 0);
       const n = state.n || 0;
-      let msg = 'I alt budt: ' + total + ' stik. Der er ' + n + ' stik. ';
-      if (total > n) msg += 'Krig om stikkene!';
-      else if (total < n) msg += 'Stik til foræring.';
-      else msg += 'Lige op.';
-      bidRevealListEl.innerHTML = '<p class="pirat-bid-total">' + msg + '</p><ul class="pirat-bid-list">' +
-        (state.playerNames || []).map((p, i) => '<li>' + escapeHtml(p) + ': ' + (bids[i] ?? '–') + ' stik</li>').join('') + '</ul>';
+      let summaryClass = 'pirat-bid-summary';
+      let summaryText = 'I alt budt: ' + total + ' stik. Der er ' + n + ' stik. ';
+      if (total > n) {
+        summaryClass += ' pirat-bid-summary-warning';
+        summaryText += 'For mange tændstikker – krig om stikkene!';
+      } else if (total < n) {
+        summaryClass += ' pirat-bid-summary-warning';
+        summaryText += 'For få tændstikker – stik til foræring.';
+      } else {
+        summaryText += 'Lige op.';
+      }
+      const listHtml = (state.playerNames || []).map((p, i) => '<li><strong>' + escapeHtml(p) + '</strong>: ' + (bids[i] ?? '–') + ' stik</li>').join('');
+      bidRevealListEl.innerHTML = '<div class="' + summaryClass + '">' + summaryText + '</div><ul class="pirat-bid-list">' + listHtml + '</ul>';
       bidRevealOkBtn.onclick = () => { if (socket) socket.emit('pirat:reveal_ok'); };
     } else if (state.phase === 'play') {
       if (playPhaseEl) playPhaseEl.hidden = false;
@@ -204,6 +215,29 @@
           if (socket && state.currentPlayer === state.myIndex) socket.emit('pirat:play_card', { card });
         }));
       });
+    } else if (state.phase === 'trick_done') {
+      if (trickDoneEl) trickDoneEl.hidden = false;
+      const names = state.playerNames || [];
+      const winner = state.trickWinner;
+      const winningIdx = state.trickWinningCardIndex ?? 0;
+      const trickWithPlayer = state.trickWithPlayer || [];
+      const winningEntry = trickWithPlayer[winningIdx];
+      const winnerName = names[winner] || 'Spiller ' + (winner + 1);
+      const winningCard = winningEntry?.card;
+      const cardStrShort = winningCard ? (RANK_NAMES[winningCard.r] || winningCard.r) + (winningCard.s === 'S' ? '♠' : winningCard.s === 'H' ? '♥' : winningCard.s === 'D' ? '♦' : '♣') : '';
+      if (trickWinnerMsgEl) trickWinnerMsgEl.textContent = winnerName + ' vandt stikket med ' + cardStrShort;
+      if (trickDoneCardsEl) {
+        trickDoneCardsEl.innerHTML = '';
+        trickWithPlayer.forEach(({ card, playedBy }, i) => {
+          const span = document.createElement('span');
+          span.className = 'pirat-trick-done-card' + (i === winningIdx ? ' pirat-trick-winner-card' : '');
+          span.textContent = (RANK_NAMES[card.r] || card.r) + (card.s === 'S' ? '♠' : card.s === 'H' ? '♥' : card.s === 'D' ? '♦' : '♣');
+          span.title = (names[playedBy] || '') + ': ' + cardStr(card);
+          trickDoneCardsEl.appendChild(span);
+        });
+      }
+      const tricksSoFar = (state.tricksWon || []).reduce((a, b) => a + b, 0);
+      if (trickDoneHintEl) trickDoneHintEl.textContent = tricksSoFar === (state.n || 0) ? 'Runden er slut – point om lidt…' : 'Næste stik om lidt…';
     } else if (state.phase === 'round_done') {
       if (roundDoneEl) roundDoneEl.hidden = false;
       const bids = state.bids || [];
@@ -214,7 +248,8 @@
           const bid = bids[i];
           const took = tricksWon[i];
           const delta = bid === took ? 10 + took : -Math.abs(bid - took);
-          return '<li>' + escapeHtml(p) + ': budt ' + bid + ', tog ' + took + ' → ' + (delta >= 0 ? '+' : '') + delta + '</li>';
+          let resultText = bid === took ? 'lige' : (took > bid ? (took - bid) + ' for meget' : (bid - took) + ' mangler');
+          return '<li><strong>' + escapeHtml(p) + '</strong>: budt ' + bid + ', tog ' + took + ' → ' + resultText + ' (' + (delta >= 0 ? '+' : '') + delta + ' pt)</li>';
         }).join('') + '</ul><p class="pirat-total-so-far">Samlet: ' + (state.playerNames || []).map((p, i) => p + ' ' + (scores[i] || 0)).join(', ') + '</p>';
       nextRoundBtn.onclick = () => { if (socket) socket.emit('pirat:next_round'); };
     } else if (state.phase === 'game_over') {

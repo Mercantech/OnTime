@@ -178,27 +178,38 @@ function registerPirat(io) {
       if (game.state.trick.length === numPlayers) {
         const winner = trickWinner(game.state.trick, game.state.trickLeader, numPlayers);
         game.state.tricksWon[winner]++;
-        game.state.leader = winner;
-        game.state.currentPlayer = winner;
-        game.state.trick = [];
-        game.state.trickLeader = winner;
+        game.state.trickWinner = winner;
+        game.state.trickWinningCardIndex = (winner - game.state.trickLeader + numPlayers) % numPlayers;
+        game.state.phase = 'trick_done';
+        broadcastState(io, game);
+        const schedulePlay = getCardsPerRound(game.state.numPlayers || game.state.playerIds.length);
+        const n = schedulePlay[game.state.roundIndex] ?? 1;
+        const tricksSoFar = game.state.tricksWon.reduce((a, b) => a + b, 0);
+        const advance = () => {
+          delete game.state.trickWinner;
+          delete game.state.trickWinningCardIndex;
+          game.state.trick = [];
+          game.state.leader = winner;
+          game.state.trickLeader = winner;
+          game.state.currentPlayer = winner;
+          if (tricksSoFar === n) {
+            game.state.phase = 'round_done';
+            game.state.playerIds.forEach((_, i) => {
+              const bid = game.state.bids[i];
+              const took = game.state.tricksWon[i];
+              if (bid === took) game.state.scores[i] += 10 + took;
+              else game.state.scores[i] -= Math.abs(bid - took);
+            });
+          } else {
+            game.state.phase = 'play';
+          }
+          broadcastState(io, game);
+        };
+        setTimeout(advance, 2800);
       } else {
         game.state.currentPlayer = (game.state.currentPlayer + 1) % numPlayers;
+        broadcastState(io, game);
       }
-
-      const schedulePlay = getCardsPerRound(game.state.numPlayers || game.state.playerIds.length);
-      const n = schedulePlay[game.state.roundIndex] ?? 1;
-      const tricksSoFar = game.state.tricksWon.reduce((a, b) => a + b, 0);
-      if (tricksSoFar === n) {
-        game.state.phase = 'round_done';
-        game.state.playerIds.forEach((_, i) => {
-          const bid = game.state.bids[i];
-          const took = game.state.tricksWon[i];
-          if (bid === took) game.state.scores[i] += 10 + took;
-          else game.state.scores[i] -= Math.abs(bid - took);
-        });
-      }
-      broadcastState(io, game);
     });
 
     socket.on('pirat:next_round', () => {

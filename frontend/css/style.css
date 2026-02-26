@@ -556,13 +556,14 @@ main.app-main.dashboard {
 .game-card { margin-bottom: 1.5rem; }
 
 /* Sangønsker-side */
-.sangønsker-page { max-width: 72rem; margin: 0 auto; padding: 1rem; }
+.sangønsker-page { max-width: 160rem; width: 100%; margin: 0 auto; padding: 1rem 1.5rem; box-sizing: border-box; }
 .sangønsker-title { margin: 0 0 0.25rem; font-size: 1.5rem; }
 .sangønsker-intro { color: var(--text-muted); margin: 0 0 1.5rem; font-size: 0.95rem; }
 
-.sangønsker-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
-@media (max-width: 768px) { .sangønsker-columns { grid-template-columns: 1fr; } }
-.sangønsker-col { min-width: 0; }
+.sangønsker-columns { display: grid; grid-template-columns: minmax(28rem, 1fr) minmax(28rem, 1fr); gap: 2rem; align-items: start; min-width: 0; }
+@media (max-width: 900px) { .sangønsker-columns { grid-template-columns: 1fr; } }
+.sangønsker-col { min-width: 0; overflow: hidden; }
+.sangønsker-col .card { min-width: 0; }
 .sangønsker-col-left .card { margin-bottom: 1.5rem; }
 .sangønsker-col-left .card:last-child { margin-bottom: 0; }
 .sangønsker-add { margin-bottom: 1.5rem; }
@@ -584,7 +585,8 @@ main.app-main.dashboard {
 .sangønsker-search-loading, .sangønsker-search-none, .sangønsker-search-error { margin: 0; padding: 0.5rem 0; color: var(--text-muted); font-size: 0.9rem; }
 .sangønsker-search-error { color: var(--danger); }
 .sangønsker-list-wrap h3 { margin: 0 0 0.75rem; font-size: 1.1rem; }
-.sangønsker-list { min-height: 2rem; }
+.sangønsker-list { min-height: 2rem; min-width: 0; }
+.sangønsker-row { min-width: 0; }
 .sangønsker-empty, .sangønsker-error { color: var(--text-muted); padding: 1rem 0; }
 .sangønsker-error { color: var(--danger); }
 .sangønsker-row {
@@ -594,8 +596,8 @@ main.app-main.dashboard {
 .sangønsker-row-cover img, .sangønsker-row-no-art { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
 .sangønsker-row-no-art { display: flex; align-items: center; justify-content: center; background: var(--surface-1); color: var(--text-muted); font-size: 1.5rem; }
 .sangønsker-row-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
-.sangønsker-row-title { font-weight: 600; }
-.sangønsker-row-artist { color: var(--text-muted); font-size: 0.9rem; }
+.sangønsker-row-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sangønsker-row-artist { color: var(--text-muted); font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sangønsker-row-by { font-size: 0.8rem; color: var(--text-muted); }
 .sangønsker-row-votes { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 .sangønsker-vote-count { font-weight: 700; color: var(--accent); min-width: 1.5rem; text-align: center; }
