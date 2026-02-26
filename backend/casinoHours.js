@@ -12,7 +12,7 @@ const CLOSED_MINUTES = [
   [10 * 60, 11 * 60 + 30],     // 10:00 – 11:30
   [12 * 60, 13 * 60 + 30],     // 12:00 – 13:30
   [13 * 60 + 45, 15 * 60 + 15], // 13:45 – 15:15
-  [20 * 60, 20 * 60 + 20],       // 20:00 - 20:20
+  [20 * 60 +22, 20 * 60 + 40],       // 20:22 - 20:22
 ];
 
 function getNowInCopenhagen() {
@@ -34,4 +34,21 @@ function isCasinoClosed() {
   return CLOSED_MINUTES.some(([start, end]) => minutesSinceMidnight >= start && minutesSinceMidnight < end);
 }
 
-module.exports = { isCasinoClosed };
+/**
+ * Når casinoet er lukket: returnerer teksten til "Åbner igen kl. HH:MM" (dansk tid).
+ * Ellers null.
+ */
+function getNextOpenLabel() {
+  const { minutesSinceMidnight, isWeekday } = getNowInCopenhagen();
+  if (!isWeekday) return null;
+  for (const [start, end] of CLOSED_MINUTES) {
+    if (minutesSinceMidnight >= start && minutesSinceMidnight < end) {
+      const h = Math.floor(end / 60);
+      const m = end % 60;
+      return `kl. ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+  }
+  return null;
+}
+
+module.exports = { isCasinoClosed, getNextOpenLabel };
