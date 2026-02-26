@@ -16,6 +16,7 @@ const betsRoutes = require('./routes/bets');
 const casinoRoutes = require('./routes/casino');
 const pokerRoutes = require('./routes/poker');
 const songRequestsRoutes = require('./routes/songRequests');
+const spotifyRoutes = require('./routes/spotify');
 const jokesRoutes = require('./routes/jokes');
 const config = require('./config');
 const { run: runMigrations } = require('./migrate');
@@ -39,6 +40,7 @@ app.use('/api/bets', betsRoutes);
 app.use('/api/casino', casinoRoutes);
 app.use('/api/poker', pokerRoutes);
 app.use('/api/song-requests', songRequestsRoutes);
+app.use('/api/spotify', spotifyRoutes);
 app.use('/api/jokes', jokesRoutes);
 
 const frontendDir = path.join(__dirname, process.env.NODE_ENV === 'production' ? 'frontend' : path.join('..', 'frontend'));

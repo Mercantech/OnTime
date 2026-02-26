@@ -242,5 +242,168 @@ searchInput?.addEventListener('keydown', (e) => {
   }
 });
 
+// ---------- Spotify: Afspil i samme vindue ----------
+const spotifyConnectBtn = document.getElementById('spotify-connect-btn');
+const spotifyConnectedLabel = document.getElementById('spotify-connected-label');
+const spotifyDisconnectBtn = document.getElementById('spotify-disconnect-btn');
+const spotifyPlayArea = document.getElementById('spotify-play-area');
+const spotifyPlayTopBtn = document.getElementById('spotify-play-top-btn');
+const spotifyNowPlaying = document.getElementById('spotify-now-playing');
+
+let spotifyPlayer = null;
+let spotifyDeviceId = null;
+let trackIdToRequestId = {}; // spotifyTrackId -> song request id (slettes når sangen er afspillet)
+
+function showSpotifyConnected(connected) {
+  if (spotifyConnectBtn) spotifyConnectBtn.hidden = connected;
+  if (spotifyConnectedLabel) spotifyConnectedLabel.hidden = !connected;
+  if (spotifyDisconnectBtn) spotifyDisconnectBtn.hidden = !connected;
+  if (spotifyPlayArea) spotifyPlayArea.hidden = !connected;
+}
+
+function checkSpotifyConnected() {
+  api('/api/spotify/connected')
+    .then((res) => res.ok ? res.json() : { connected: false })
+    .then((data) => showSpotifyConnected(!!data.connected))
+    .catch(() => showSpotifyConnected(false));
+}
+
+spotifyConnectBtn?.addEventListener('click', () => {
+  api('/api/spotify/auth-url')
+    .then((res) => res.ok ? res.json() : Promise.reject(new Error('Kunne ikke hente link')))
+    .then((data) => { window.location.href = data.url; })
+    .catch((err) => { alert(err.message || 'Kunne ikke forbinde til Spotify'); });
+});
+
+spotifyDisconnectBtn?.addEventListener('click', () => {
+  api('/api/spotify/disconnect', { method: 'DELETE' })
+    .then((res) => { if (res.ok) showSpotifyConnected(false); })
+    .catch(() => {});
+});
+
+function getSpotifyToken() {
+  return api('/api/spotify/token').then((res) => {
+    if (!res.ok) return res.json().then((d) => Promise.reject(new Error(d.error || 'Ingen token')));
+    return res.json().then((data) => data.access_token);
+  });
+}
+
+function waitForSpotifySDK() {
+  if (window.Spotify) return Promise.resolve();
+  return new Promise((resolve) => {
+    window.onSpotifyWebPlaybackSDKReady = resolve;
+  });
+}
+
+function ensureSpotifyPlayer(token) {
+  return waitForSpotifySDK().then(() =>
+    new Promise((resolve, reject) => {
+      if (spotifyPlayer && spotifyDeviceId) {
+        resolve({ player: spotifyPlayer, deviceId: spotifyDeviceId });
+        return;
+      }
+    const player = new window.Spotify.Player({
+      name: 'OnTime Sangønsker',
+      getOAuthToken: (cb) => cb(token),
+      volume: 0.8,
+    });
+
+    player.addListener('ready', ({ device_id }) => {
+      spotifyDeviceId = device_id;
+      spotifyPlayer = player;
+      resolve({ player, deviceId: device_id });
+    });
+    player.addListener('not_ready', () => {});
+    player.addListener('player_state_changed', (state) => {
+      if (!state || !state.track_window) return;
+      const prev = state.track_window.previous_tracks;
+      if (prev && prev.length > 0) {
+        const lastPlayed = prev[0];
+        const uri = lastPlayed.uri || '';
+        const trackId = uri.split(':')[2];
+        if (trackId && trackIdToRequestId[trackId]) {
+          const requestId = trackIdToRequestId[trackId];
+          delete trackIdToRequestId[trackId];
+          api(`/api/song-requests/${requestId}`, { method: 'DELETE' })
+            .then(() => loadRequests(showAllCheckbox?.checked ?? false))
+            .catch(() => {});
+        }
+      }
+    });
+
+    player.connect().catch(reject);
+  }));
+}
+
+function spotifyTransferAndPlay(token, deviceId, uris) {
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json',
+  };
+  return fetch('https://api.spotify.com/v1/me/player', {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify({ device_ids: [deviceId], play: false }),
+  }).then((res) => {
+    if (res.status === 204 || res.status === 200) return;
+    return res.text().then((t) => Promise.reject(new Error(t || 'Kunne ikke vælge enhed')));
+  }).then(() =>
+    fetch('https://api.spotify.com/v1/me/player/play', {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ uris }),
+    })
+  ).then((res) => {
+    if (res.status === 204 || res.status === 200) return;
+    return res.json().then((d) => Promise.reject(new Error(d.error?.message || 'Kunne ikke starte afspilning')));
+  });
+}
+
+spotifyPlayTopBtn?.addEventListener('click', () => {
+  const url = showAllCheckbox?.checked ? '/api/song-requests?all=1' : '/api/song-requests';
+  spotifyPlayTopBtn.disabled = true;
+  api(url)
+    .then((res) => res.ok ? res.json() : Promise.reject(new Error('Kunne ikke hente listen')))
+    .then((data) => {
+      const requests = data.requests || [];
+      if (requests.length === 0) {
+        alert('Ingen sange på listen. Tilføj ønsker først.');
+        spotifyPlayTopBtn.disabled = false;
+        return;
+      }
+      return getSpotifyToken().then((token) =>
+        ensureSpotifyPlayer(token).then(({ deviceId }) => {
+          trackIdToRequestId = {};
+          requests.forEach((r) => { trackIdToRequestId[r.spotifyTrackId] = r.id; });
+          const uris = requests.map((r) => `spotify:track:${r.spotifyTrackId}`);
+          return spotifyTransferAndPlay(token, deviceId, uris);
+        })
+      );
+    })
+    .then(() => {
+      spotifyPlayTopBtn.disabled = false;
+    })
+    .catch((err) => {
+      spotifyPlayTopBtn.disabled = false;
+      alert(err.message || 'Afspilning kunne ikke startes. Har du Spotify Premium og forbundet enhed?');
+    });
+});
+
+// URL-parametre efter Spotify OAuth redirect
+(function checkSpotifyRedirectParams() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('connected') === '1') {
+    const label = spotifyConnectedLabel;
+    if (label) label.textContent = 'Spotify forbundet!';
+    checkSpotifyConnected();
+    window.history.replaceState({}, '', window.location.pathname);
+  } else if (params.get('error')) {
+    const msg = params.get('error');
+    alert('Spotify: ' + (msg === 'missing_params' ? 'Manglende parametre.' : decodeURIComponent(msg)));
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+})();
+
 // ---------- Init ----------
 loadRequests();
+checkSpotifyConnected();

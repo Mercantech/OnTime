@@ -608,6 +608,16 @@ main.app-main.dashboard {
 .sangønsker-delete-btn { padding: 0.35rem 0.6rem; font-size: 0.85rem; background: transparent; color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: border-color var(--transition), color var(--transition); flex-shrink: 0; }
 .sangønsker-delete-btn:hover { color: var(--danger); border-color: var(--danger); }
 
+.sangønsker-play-section { margin-bottom: 1.5rem; }
+.sangønsker-play-section h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
+.sangønsker-play-intro { color: var(--text-muted); font-size: 0.9rem; margin: 0 0 1rem; }
+.sangønsker-connect-area { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.sangønsker-connected-label { color: var(--success, #22c55e); font-size: 0.95rem; }
+.sangønsker-play-area { margin-top: 0.5rem; }
+.sangønsker-play-area .btn-primary { margin-right: 0.5rem; }
+.sangønsker-play-hint { color: var(--text-muted); font-size: 0.85rem; margin: 0.5rem 0 0; }
+.sangønsker-now-playing { margin-top: 0.75rem; padding: 0.5rem 0; font-size: 0.9rem; color: var(--text-muted); }
+
 /* ---------- Dagens joke ---------- */
 .jokes-page { max-width: 640px; margin: 0 auto; }
 .jokes-title { margin: 0 0 0.25rem; font-size: 1.5rem; animation: joke-intro-in 0.5s ease-out both; }

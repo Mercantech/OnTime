@@ -29,6 +29,21 @@
       <div id="search-results" class="sangønsker-search-results" hidden aria-live="polite"></div>
     </section>
 
+    <section class="card sangønsker-play-section" id="sangønsker-play-section">
+      <h3>Afspil her</h3>
+      <p class="sangønsker-play-intro">Afspil ønskelisten fra toppen i dette vindue. Sange slettes automatisk fra listen, når de er afspillet.</p>
+      <div id="spotify-connect-area" class="sangønsker-connect-area">
+        <button type="button" id="spotify-connect-btn" class="btn-primary">Forbind Spotify</button>
+        <span id="spotify-connected-label" class="sangønsker-connected-label" hidden>Spotify forbundet</span>
+        <button type="button" id="spotify-disconnect-btn" class="btn-secondary" hidden>Fjern forbindelse</button>
+      </div>
+      <div id="spotify-play-area" class="sangønsker-play-area" hidden>
+        <button type="button" id="spotify-play-top-btn" class="btn-primary">Afspil fra toppen</button>
+        <p id="spotify-play-hint" class="sangønsker-play-hint">Sætter hele ønskelisten i kø og starter fra øverste sang. Kræver Spotify Premium.</p>
+        <div id="spotify-now-playing" class="sangønsker-now-playing" hidden></div>
+      </div>
+    </section>
+
     <section class="card sangønsker-list-wrap">
       <h3>Ønskeliste</h3>
       <div id="sangønsker-admin-bar" class="sangønsker-admin-bar" hidden>
@@ -37,6 +52,7 @@
       <div id="requests-list" class="sangønsker-list">Indlæser…</div>
     </section>
   </main>
+  <script src="https://sdk.scdn.co/spotify-player.js"></script>
   <script src="/js/sangønsker.js"></script>
   <script src="/js/debug-issue.js"></script>
 </body>

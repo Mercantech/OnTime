@@ -259,6 +259,18 @@ const MIGRATIONS = [
       CREATE INDEX IF NOT EXISTS idx_user_bans_until ON user_bans (banned_until);
     `,
   },
+  {
+    name: 'spotify_user_tokens',
+    sql: `
+      CREATE TABLE IF NOT EXISTS spotify_user_tokens (
+        user_id INT NOT NULL PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        access_token TEXT NOT NULL,
+        refresh_token TEXT NOT NULL,
+        expires_at TIMESTAMPTZ NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `,
+  },
 ];
 
 async function run() {
