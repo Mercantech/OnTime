@@ -69,6 +69,7 @@
 
   let socket = null;
   let lastState = null;
+  let selectedBid = null;
 
   function hideAllPhases() {
     [bidPhaseEl, bidRevealEl, playPhaseEl, trickDoneEl, roundDoneEl, gameOverEl].forEach((el) => {
@@ -150,25 +151,47 @@
       }
       statusHtml += '</ul>';
       if (myBid !== null) {
+        selectedBid = null;
         bidChoicesEl.innerHTML = '<p class="pirat-bid-prompt">Du har budt <strong>' + myBid + '</strong> stik.</p>' + statusHtml +
           (allBid ? '' : '<p class="pirat-bid-wait">Venter på at alle har budt.</p>');
+        if (bidConfirmBtn) bidConfirmBtn.hidden = true;
       } else {
-        bidChoicesEl.innerHTML = '<p class="pirat-bid-prompt">Vælg antal stik (0–' + n + ') og lås dit bud:</p>' + statusHtml;
+        selectedBid = selectedBid ?? null;
+        bidChoicesEl.innerHTML = '<p class="pirat-bid-prompt">Vælg antal stik (0–' + n + '):</p>' + statusHtml;
         const wrap = document.createElement('div');
         wrap.className = 'pirat-bid-buttons';
         for (let b = 0; b <= n; b++) {
+          const isSelected = selectedBid === b;
           const btn = document.createElement('button');
           btn.type = 'button';
-          btn.className = 'pirat-btn pirat-btn-bid';
+          btn.className = 'pirat-btn pirat-btn-bid' + (isSelected ? ' pirat-btn-selected' : '');
           btn.textContent = b;
+          btn.dataset.bid = String(b);
           btn.addEventListener('click', () => {
-            if (socket) socket.emit('pirat:bid', { bid: b });
+            selectedBid = b;
+            wrap.querySelectorAll('.pirat-btn-bid').forEach((x) => x.classList.remove('pirat-btn-selected'));
+            btn.classList.add('pirat-btn-selected');
+            if (bidConfirmBtn) {
+              bidConfirmBtn.hidden = false;
+              bidConfirmBtn.disabled = false;
+              bidConfirmBtn.textContent = 'Lås bud (' + b + ' stik)';
+            }
           });
           wrap.appendChild(btn);
         }
         bidChoicesEl.appendChild(wrap);
+        if (bidConfirmBtn) {
+          bidConfirmBtn.hidden = false;
+          bidConfirmBtn.disabled = selectedBid === null;
+          bidConfirmBtn.textContent = selectedBid !== null ? 'Lås bud (' + selectedBid + ' stik)' : 'Lås bud';
+          bidConfirmBtn.onclick = () => {
+            if (socket && selectedBid !== null) {
+              socket.emit('pirat:bid', { bid: selectedBid });
+              selectedBid = null;
+            }
+          };
+        }
       }
-      bidConfirmBtn.hidden = true;
     } else if (state.phase === 'bid_reveal') {
       if (bidRevealEl) bidRevealEl.hidden = false;
       const bids = state.bids || [];
