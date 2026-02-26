@@ -138,6 +138,7 @@ const server = http.createServer(app);
 const io = attachSocket(server);
 app.set('io', io);
 require('./poker/socketHandler').registerPoker(io);
+require('./pirat/socketHandler').registerPirat(io);
 
 runMigrations()
   .then(() => ensureAdmin())
