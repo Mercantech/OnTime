@@ -15,6 +15,15 @@ const MIN_PLAYERS = 2;
 const ROOM_PREFIX = 'pirat:';
 const games = new Map();
 
+/** Afslut et Pirat-spil (admin). Notificér alle i rummet og fjern spillet fra memory. */
+function endPiratGame(io, code) {
+  const game = games.get(code);
+  if (!game) return false;
+  io.to(ROOM_PREFIX + code).emit('pirat:game_ended', { message: 'Spillet er afsluttet af admin.' });
+  games.delete(code);
+  return true;
+}
+
 function randomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let s = '';
@@ -257,4 +266,4 @@ function registerPirat(io) {
   });
 }
 
-module.exports = { registerPirat, games };
+module.exports = { registerPirat, games, endPiratGame };

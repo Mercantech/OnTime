@@ -503,6 +503,41 @@ router.get('/poker/tables', async (req, res) => {
   }
 });
 
+/** Liste aktive Pirat-spil (lobby + igangværende). */
+router.get('/pirat/games', (req, res) => {
+  try {
+    const { games } = require('../pirat/socketHandler');
+    const list = [];
+    for (const [code, game] of games) {
+      const s = game.state;
+      list.push({
+        code,
+        phase: s.phase || 'lobby',
+        playerCount: (s.playerNames || s.playerIds || []).length,
+        playerNames: s.playerNames || [],
+      });
+    }
+    list.sort((a, b) => (a.code < b.code ? -1 : 1));
+    res.json({ games: list });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+/** Afslut et Pirat-spil (admin). */
+router.post('/pirat/games/:code/end', (req, res) => {
+  const code = String(req.params.code || '').trim().toUpperCase();
+  if (!code || code.length !== 6) {
+    return res.status(400).json({ error: 'Ugyldig spilkode (6 tegn)' });
+  }
+  const io = req.app.get('io');
+  const { endPiratGame } = require('../pirat/socketHandler');
+  const ok = endPiratGame(io, code);
+  if (!ok) return res.status(404).json({ error: 'Spil ikke fundet eller allerede afsluttet' });
+  res.json({ ok: true, message: 'Pirat-spil afsluttet.' });
+});
+
 /** Afslut et pokerbord (admin) – refundér chips, notificér klienter. */
 router.post('/poker/tables/:id/end', async (req, res) => {
   const tableId = parseInt(req.params.id, 10);

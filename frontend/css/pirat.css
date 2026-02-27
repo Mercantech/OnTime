@@ -16,6 +16,7 @@
 .pirat-btn-primary:hover { background: var(--accent-dim); }
 .pirat-btn:active { transform: scale(0.98); }
 .pirat-error { color: var(--danger); font-size: 0.9rem; margin-top: 0.5rem; }
+.pirat-info { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem; }
 
 .pirat-lobby { margin-bottom: 1.5rem; }
 .pirat-lobby-actions { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }

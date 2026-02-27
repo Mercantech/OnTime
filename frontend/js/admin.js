@@ -673,12 +673,77 @@ async function loadPokerTables() {
             alert(data.error || 'Kunne ikke afslutte bord');
             return;
           }
-          loadPokerTables();
-        });
+loadPokerTables();
+  loadPiratGames();
+  });
       });
     }
   } catch (e) {
     if (loadingEl) { loadingEl.hidden = true; loadingEl.textContent = 'Fejl ved indlæsning'; }
     if (emptyEl) { emptyEl.hidden = false; emptyEl.textContent = 'Kunne ikke hente pokerborde.'; }
+  }
+}
+
+const PIRAT_PHASE_LABELS = {
+  lobby: 'Lobby',
+  playing: 'Spiller',
+  bid: 'Bud',
+  bid_reveal: 'Vis bud',
+  play: 'Spil',
+  trick_done: 'Stik',
+  round_done: 'Runde slut',
+  game_over: 'Slut',
+};
+
+async function loadPiratGames() {
+  const wrap = document.getElementById('admin-pirat-games-wrap');
+  const loadingEl = document.getElementById('admin-pirat-games-loading');
+  const listEl = document.getElementById('admin-pirat-games-list');
+  const emptyEl = document.getElementById('admin-pirat-games-empty');
+  if (!wrap) return;
+  if (loadingEl) loadingEl.hidden = false;
+  if (listEl) listEl.hidden = true;
+  if (emptyEl) emptyEl.hidden = true;
+  try {
+    const res = await api('/api/admin/pirat/games');
+    const data = await res.json().catch(() => ({}));
+    if (loadingEl) loadingEl.hidden = true;
+    const games = data.games || [];
+    if (games.length === 0) {
+      if (emptyEl) emptyEl.hidden = false;
+      return;
+    }
+    if (listEl) {
+      listEl.hidden = false;
+      listEl.innerHTML = games.map((g) => {
+        const names = (g.playerNames || []).join(', ') || '–';
+        const phaseLabel = PIRAT_PHASE_LABELS[g.phase] || g.phase;
+        return (
+          '<li class="admin-poker-table-item">' +
+          '<span class="admin-poker-table-info">' +
+          'Kode: <strong>' + (g.code || '–') + '</strong> · ' +
+          g.playerCount + ' spiller(e): ' + names + ' · ' + phaseLabel +
+          '</span> ' +
+          '<button type="button" class="btn-danger btn-end-pirat-game" data-pirat-code="' + (g.code || '').replace(/"/g, '&quot;') + '">Afslut spil</button>' +
+          '</li>'
+        );
+      }).join('');
+      listEl.querySelectorAll('.btn-end-pirat-game').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const code = btn.getAttribute('data-pirat-code');
+          if (!confirm('Afslut dette Pirat-spil? Alle spillere sendes tilbage til lobby.')) return;
+          const res = await api('/api/admin/pirat/games/' + encodeURIComponent(code) + '/end', { method: 'POST' });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            alert(data.error || 'Kunne ikke afslutte spil');
+            return;
+          }
+          loadPiratGames();
+        });
+      });
+    }
+  } catch (e) {
+    if (loadingEl) loadingEl.hidden = true;
+    if (emptyEl) { emptyEl.hidden = false; emptyEl.textContent = 'Kunne ikke hente Pirat-spil.'; }
   }
 }

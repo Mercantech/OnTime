@@ -88,6 +88,8 @@
   function showError(msg) {
     if (lobbyErrorEl) {
       lobbyErrorEl.textContent = msg;
+      lobbyErrorEl.classList.remove('pirat-info');
+      lobbyErrorEl.classList.add('pirat-error');
       lobbyErrorEl.hidden = false;
     }
   }
@@ -303,6 +305,21 @@
     });
     socket.on('pirat:state', (state) => renderState(state));
     socket.on('pirat:error', (data) => showError(data.message || 'Fejl'));
+    socket.on('pirat:game_ended', (data) => {
+      if (lobbyEl) lobbyEl.hidden = false;
+      if (gameEl) gameEl.hidden = true;
+      if (waitingEl) waitingEl.hidden = true;
+      if (lobbyActionsEl) lobbyActionsEl.hidden = false;
+      if (gameCodeEl) gameCodeEl.textContent = '';
+      if (playerWaitListEl) playerWaitListEl.innerHTML = '';
+      if (startGameBtn) startGameBtn.hidden = true;
+      if (lobbyErrorEl) {
+        lobbyErrorEl.textContent = data.message || 'Spillet er afsluttet.';
+        lobbyErrorEl.classList.remove('pirat-error');
+        lobbyErrorEl.classList.add('pirat-info');
+        lobbyErrorEl.hidden = false;
+      }
+    });
   }
 
   createBtn.addEventListener('click', () => {
