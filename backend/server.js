@@ -216,12 +216,23 @@ app.get('/pirat/', (req, res) => {
   res.sendFile(path.join(frontendDir, 'pirat', 'index.html'));
 });
 
+app.get('/meyer', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'meyer', 'index.html'));
+});
+
+app.get('/meyer/', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'meyer', 'index.html'));
+});
+
 const PORT = config.port;
 const server = http.createServer(app);
 const io = attachSocket(server);
 app.set('io', io);
 require('./poker/socketHandler').registerPoker(io);
 require('./pirat/socketHandler').registerPirat(io);
+require('./meyer/socketHandler').registerMeyer(io);
 
 runMigrations()
   .then(() => ensureAdmin())

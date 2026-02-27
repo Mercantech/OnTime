@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Meyer</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/meyer.css">
+</head>
+<body class="meyer-page">
+  <header class="app-header">
+    <h1><a href="/app" class="header-home">OnTime</a></h1>
+    <a href="/spil" class="admin-link">Spil</a>
+    <a href="/spotify" class="admin-link">Sangønsker</a>
+    <a href="/jokes" class="admin-link">Dagens joke</a>
+    <span id="meyer-user-name" class="user-info"></span>
+    <button id="meyer-logout" class="btn-logout">Log ud</button>
+  </header>
+
+  <main class="meyer-main">
+    <h1 class="meyer-title">Meyer</h1>
+    <p class="meyer-subtitle">Liar's dice · 2–6 spillere</p>
+
+    <!-- Lobby -->
+    <section id="meyer-lobby" class="meyer-lobby">
+      <h2 class="meyer-section-title">Spil med andre</h2>
+      <div id="meyer-lobby-actions" class="meyer-lobby-actions">
+        <button type="button" id="meyer-create-btn" class="meyer-btn meyer-btn-primary">Opret lobby</button>
+        <div class="meyer-join-row">
+          <input type="text" id="meyer-join-code" class="meyer-code-input" placeholder="Spilkode (6 tegn)" maxlength="6" autocomplete="off">
+          <button type="button" id="meyer-join-btn" class="meyer-btn meyer-btn-primary">Tilslut</button>
+        </div>
+      </div>
+      <div id="meyer-waiting" class="meyer-waiting" hidden>
+        <p class="meyer-waiting-msg">Venter på spillere… Del denne kode:</p>
+        <p class="meyer-game-code" id="meyer-game-code"></p>
+        <p class="meyer-game-link"><a id="meyer-game-link" href="#">Åbn link til spillet</a></p>
+        <ul class="meyer-player-wait-list" id="meyer-player-wait-list"></ul>
+        <button type="button" id="meyer-start-btn" class="meyer-btn meyer-btn-primary" hidden>Start spil</button>
+      </div>
+      <p id="meyer-lobby-error" class="meyer-error" hidden></p>
+    </section>
+
+    <!-- Spil -->
+    <section id="meyer-game" class="meyer-game" hidden>
+      <div class="meyer-game-layout">
+        <div class="meyer-game-center">
+          <p class="meyer-turn-info" id="meyer-turn-info"></p>
+          <p class="meyer-declared" id="meyer-declared"></p>
+          <div class="meyer-dice-wrap" id="meyer-dice-wrap" hidden>
+            <p class="meyer-dice-label">Dine terninger</p>
+            <div class="meyer-dice" id="meyer-dice"></div>
+          </div>
+          <div class="meyer-actions" id="meyer-actions"></div>
+        </div>
+        <div class="meyer-lives-panel">
+          <p class="meyer-lives-title">Liv</p>
+          <ul class="meyer-lives-list" id="meyer-lives-list"></ul>
+        </div>
+      </div>
+
+      <!-- Check / Roll of Cheers result -->
+      <div id="meyer-reveal" class="meyer-reveal" hidden>
+        <div class="meyer-reveal-content" id="meyer-reveal-content"></div>
+        <button type="button" id="meyer-next-round-btn" class="meyer-btn meyer-btn-primary">Næste runde</button>
+      </div>
+
+      <!-- Game over -->
+      <div id="meyer-game-over" class="meyer-game-over" hidden>
+        <p class="meyer-game-over-msg" id="meyer-game-over-msg"></p>
+        <button type="button" id="meyer-play-again-btn" class="meyer-btn meyer-btn-primary">Spil igen</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <script src="/js/meyer.js"></script>
+</body>
+</html>

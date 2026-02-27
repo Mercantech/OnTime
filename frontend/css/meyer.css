@@ -1,0 +1,48 @@
+/* ---------- Meyer ---------- */
+.meyer-page { min-height: 100vh; }
+.meyer-main { max-width: 720px; margin: 0 auto; padding: 1rem 1.5rem 2rem; }
+.meyer-title { margin: 0 0 0.25rem; font-size: 1.6rem; }
+.meyer-subtitle { color: var(--text-muted); margin: 0 0 1.5rem; font-size: 0.95rem; }
+
+.meyer-section-title { margin: 0 0 0.75rem; font-size: 1.1rem; }
+.meyer-lobby { margin-bottom: 1.5rem; }
+.meyer-lobby-actions { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
+.meyer-join-row { display: flex; gap: 0.5rem; align-items: center; }
+.meyer-code-input { padding: 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface-2); color: var(--text); font-size: 1rem; width: 10rem; text-transform: uppercase; }
+.meyer-btn { padding: 0.5rem 1rem; border-radius: var(--radius-sm); font-size: 0.95rem; cursor: pointer; border: none; transition: background var(--transition), transform 0.1s; }
+.meyer-btn-primary { background: var(--accent); color: #fff; }
+.meyer-btn-primary:hover { background: var(--accent-dim); }
+.meyer-btn:active { transform: scale(0.98); }
+.meyer-btn-action { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+.meyer-btn-action:hover { border-color: var(--accent); color: var(--accent); }
+.meyer-btn-bluff { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); margin: 0.25rem; }
+.meyer-btn-bluff:hover { border-color: var(--accent); }
+.meyer-error { color: var(--danger); font-size: 0.9rem; margin-top: 0.5rem; }
+.meyer-waiting { margin-top: 1rem; padding: 1rem; background: var(--surface-2); border-radius: var(--radius); }
+.meyer-waiting-msg { margin: 0 0 0.5rem; }
+.meyer-game-code { font-size: 1.5rem; font-weight: 700; letter-spacing: 0.2em; margin: 0.5rem 0; }
+.meyer-game-link { margin: 0.5rem 0; }
+.meyer-player-wait-list { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+
+.meyer-game { margin-top: 1rem; }
+.meyer-game-layout { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.meyer-game-center { flex: 1; min-width: 200px; }
+.meyer-lives-panel { min-width: 140px; padding: 1rem; background: var(--surface-2); border-radius: var(--radius); border: 1px solid var(--border); }
+.meyer-lives-title { margin: 0 0 0.5rem; font-weight: 600; font-size: 0.95rem; }
+.meyer-lives-list { margin: 0; padding-left: 1.25rem; }
+.meyer-lives-list li { margin: 0.25rem 0; }
+.meyer-turn-info { font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--accent); }
+.meyer-declared { margin: 0 0 0.75rem; color: var(--text-muted); font-size: 0.95rem; }
+.meyer-dice-wrap { margin: 1rem 0; padding: 1rem; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); }
+.meyer-dice-label { margin: 0 0 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
+.meyer-dice { font-size: 2rem; font-weight: 700; letter-spacing: 0.5rem; }
+.meyer-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 1rem; }
+
+.meyer-reveal { margin-top: 1.5rem; padding: 1.25rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); }
+.meyer-reveal-title { font-weight: 700; margin: 0 0 0.5rem; font-size: 1.1rem; }
+.meyer-reveal-content p { margin: 0.35rem 0; }
+.meyer-next-round-btn { margin-top: 1rem; }
+
+.meyer-game-over { margin-top: 1.5rem; padding: 1.25rem; text-align: center; }
+.meyer-game-over-msg { font-size: 1.2rem; font-weight: 600; margin: 0 0 1rem; color: var(--accent); }
+.meyer-play-again-btn { margin-top: 0.5rem; }

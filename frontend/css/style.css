@@ -548,6 +548,7 @@ main.app-main.dashboard {
 .game-preview-flag:hover { border-color: #0ea5e9; background: rgba(14, 165, 233, 0.08); }
 .game-preview-coinflip:hover { border-color: #eab308; background: rgba(234, 179, 8, 0.08); }
 .game-preview-pirat:hover { border-color: #a855f7; background: rgba(168, 85, 247, 0.08); }
+.game-preview-meyer:hover { border-color: #f59e0b; background: rgba(245, 158, 11, 0.08); }
 
 /* Spil-side */
 .games-page { max-width: 42rem; margin: 0 auto; padding: 1rem; }
