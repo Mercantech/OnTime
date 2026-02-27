@@ -60,10 +60,8 @@ function advanceTurn(state) {
   const n = state.numPlayers || state.playerIds.length;
   state.turnIndex = (state.turnIndex + 1) % n;
   state.turnNumber += 1;
-  const nextPlayer = state.turnIndex;
-  const dice = rollDice();
-  state.currentRoll = normalizeRoll(dice);
-  state.currentRollVisibleTo = nextPlayer;
+  state.currentRoll = null;
+  state.currentRollVisibleTo = null;
   state.currentRollHidden = false;
 }
 
@@ -154,6 +152,19 @@ function registerMeyer(io) {
       }
       const type = data?.type;
       const n = game.state.numPlayers || game.state.playerIds.length;
+
+      if (type === 'roll') {
+        if (game.state.currentRoll) {
+          socket.emit('meyer:error', { message: 'Du har allerede rullede' });
+          return;
+        }
+        const dice = rollDice();
+        game.state.currentRoll = normalizeRoll(dice);
+        game.state.currentRollVisibleTo = playerIndex;
+        game.state.currentRollHidden = false;
+        broadcastState(io, game);
+        return;
+      }
 
       if (type === 'check') {
         if (game.state.turnNumber === 1) {

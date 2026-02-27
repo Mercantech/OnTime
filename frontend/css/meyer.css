@@ -35,12 +35,25 @@
 .meyer-declared { margin: 0 0 0.75rem; color: var(--text-muted); font-size: 0.95rem; }
 .meyer-dice-wrap { margin: 1rem 0; padding: 1rem; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); }
 .meyer-dice-label { margin: 0 0 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
-.meyer-dice { font-size: 2rem; font-weight: 700; letter-spacing: 0.5rem; }
+.meyer-dice { display: flex; gap: 1rem; align-items: center; justify-content: center; flex-wrap: wrap; }
+.meyer-die { width: 3.5rem; height: 3.5rem; background: #fff; border: 2px solid var(--border); border-radius: 0.5rem; display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; padding: 0.35rem; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
+.meyer-die-dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #1a1a1a; justify-self: center; align-self: center; opacity: 0; }
+.meyer-die.face-1 .meyer-die-dot:nth-child(5) { opacity: 1; }
+.meyer-die.face-2 .meyer-die-dot:nth-child(1), .meyer-die.face-2 .meyer-die-dot:nth-child(9) { opacity: 1; }
+.meyer-die.face-3 .meyer-die-dot:nth-child(1), .meyer-die.face-3 .meyer-die-dot:nth-child(5), .meyer-die.face-3 .meyer-die-dot:nth-child(9) { opacity: 1; }
+.meyer-die.face-4 .meyer-die-dot:nth-child(1), .meyer-die.face-4 .meyer-die-dot:nth-child(3), .meyer-die.face-4 .meyer-die-dot:nth-child(7), .meyer-die.face-4 .meyer-die-dot:nth-child(9) { opacity: 1; }
+.meyer-die.face-5 .meyer-die-dot:nth-child(1), .meyer-die.face-5 .meyer-die-dot:nth-child(3), .meyer-die.face-5 .meyer-die-dot:nth-child(5), .meyer-die.face-5 .meyer-die-dot:nth-child(7), .meyer-die.face-5 .meyer-die-dot:nth-child(9) { opacity: 1; }
+.meyer-die.face-6 .meyer-die-dot:nth-child(1), .meyer-die.face-6 .meyer-die-dot:nth-child(3), .meyer-die.face-6 .meyer-die-dot:nth-child(4), .meyer-die.face-6 .meyer-die-dot:nth-child(6), .meyer-die.face-6 .meyer-die-dot:nth-child(7), .meyer-die.face-6 .meyer-die-dot:nth-child(9) { opacity: 1; }
+.meyer-die { position: relative; }
+.meyer-die.hidden { background: var(--surface-2); }
+.meyer-die.hidden .meyer-die-dot { opacity: 0 !important; }
+.meyer-die-question { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.75rem; font-weight: 700; color: var(--text-muted); }
 .meyer-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 1rem; }
 
 .meyer-reveal { margin-top: 1.5rem; padding: 1.25rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); }
 .meyer-reveal-title { font-weight: 700; margin: 0 0 0.5rem; font-size: 1.1rem; }
 .meyer-reveal-content p { margin: 0.35rem 0; }
+.meyer-reveal-dice { display: flex; gap: 0.75rem; justify-content: center; margin: 0.75rem 0; }
 .meyer-next-round-btn { margin-top: 1rem; }
 
 .meyer-game-over { margin-top: 1.5rem; padding: 1.25rem; text-align: center; }

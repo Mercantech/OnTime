@@ -25,6 +25,24 @@
     return div.innerHTML;
   }
 
+  function createDieFace(value) {
+    const div = document.createElement('div');
+    div.className = value == null ? 'meyer-die hidden' : 'meyer-die face-' + value;
+    if (value == null) {
+      const q = document.createElement('span');
+      q.className = 'meyer-die-question';
+      q.textContent = '?';
+      div.appendChild(q);
+    } else {
+      for (let i = 0; i < 9; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'meyer-die-dot';
+        div.appendChild(dot);
+      }
+    }
+    return div;
+  }
+
   const lobbyEl = document.getElementById('meyer-lobby');
   const lobbyActionsEl = document.getElementById('meyer-lobby-actions');
   const gameEl = document.getElementById('meyer-game');
@@ -119,7 +137,17 @@
           const declStr = r.declaredRoll ? rollToLabel(r.declaredRoll.high, r.declaredRoll.low) : '';
           const actualStr = r.actualRoll ? rollToLabel(r.actualRoll[0], r.actualRoll[1]) : '';
           const won = r.actualBeatsDeclared;
-          revealContentEl.innerHTML = '<p class="meyer-reveal-title">Check</p><p>' + escapeHtml(whoDecl) + ' havde erklæret ' + escapeHtml(declStr) + '. Faktisk: ' + escapeHtml(actualStr) + '.</p><p>' + (won ? escapeHtml(checker) + ' troede forkert og taber et liv.' : escapeHtml(whoDecl) + ' bluffede og taber et liv.') + '</p>';
+          revealContentEl.innerHTML = '<p class="meyer-reveal-title">Check</p><p>' + escapeHtml(whoDecl) + ' havde erklæret ' + escapeHtml(declStr) + '. Faktisk: ' + escapeHtml(actualStr) + '.</p>';
+          if (r.actualRoll && r.actualRoll.length >= 2) {
+            const diceRow = document.createElement('div');
+            diceRow.className = 'meyer-reveal-dice';
+            diceRow.appendChild(createDieFace(r.actualRoll[0]));
+            diceRow.appendChild(createDieFace(r.actualRoll[1]));
+            revealContentEl.appendChild(diceRow);
+          }
+          const p2 = document.createElement('p');
+          p2.textContent = won ? checker + ' troede forkert og taber et liv.' : whoDecl + ' bluffede og taber et liv.';
+          revealContentEl.appendChild(p2);
         } else {
           revealContentEl.textContent = '';
         }
@@ -142,11 +170,16 @@
     }
 
     if (diceWrapEl) diceWrapEl.hidden = !isMyTurn || !state.currentRoll;
-    if (isMyTurn && state.currentRoll && !state.currentRollHidden && diceEl) {
-      const [a, b] = state.currentRoll;
-      diceEl.textContent = a + '  ' + b;
-    } else if (isMyTurn && state.currentRollHidden && diceEl) {
-      diceEl.textContent = '?  ?';
+    if (diceEl && isMyTurn && state.currentRoll) {
+      diceEl.innerHTML = '';
+      if (state.currentRollHidden) {
+        diceEl.appendChild(createDieFace(null));
+        diceEl.appendChild(createDieFace(null));
+      } else {
+        const [a, b] = state.currentRoll;
+        diceEl.appendChild(createDieFace(a));
+        diceEl.appendChild(createDieFace(b));
+      }
     }
 
     if (actionsEl) {
@@ -155,13 +188,22 @@
         actionsEl.appendChild(document.createTextNode('Venter på ' + (names[state.turnIndex] || '') + '…'));
         return;
       }
-      if (state.canCheck) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'meyer-btn meyer-btn-action';
-        btn.textContent = 'Check';
-        btn.onclick = () => { if (socket) socket.emit('meyer:action', { type: 'check' }); };
-        actionsEl.appendChild(btn);
+      if (state.canRoll) {
+        if (state.canCheck) {
+          const checkBtn = document.createElement('button');
+          checkBtn.type = 'button';
+          checkBtn.className = 'meyer-btn meyer-btn-action';
+          checkBtn.textContent = 'Check';
+          checkBtn.onclick = () => { if (socket) socket.emit('meyer:action', { type: 'check' }); };
+          actionsEl.appendChild(checkBtn);
+        }
+        const rollBtn = document.createElement('button');
+        rollBtn.type = 'button';
+        rollBtn.className = 'meyer-btn meyer-btn-primary';
+        rollBtn.textContent = 'Rul';
+        rollBtn.onclick = () => { if (socket) socket.emit('meyer:action', { type: 'roll' }); };
+        actionsEl.appendChild(rollBtn);
+        return;
       }
       if (state.canTruth) {
         const btn = document.createElement('button');

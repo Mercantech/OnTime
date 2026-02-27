@@ -114,7 +114,9 @@ function getPublicState(state, userId) {
   const n = state.numPlayers || state.playerIds.length;
   const isMyTurn = state.turnIndex === myIndex;
   const currentRoll = isMyTurn && state.currentRoll ? state.currentRoll : null;
-  const canCheck = state.phase === 'playing' && !state.currentRollHidden && state.turnNumber > 1;
+  const needsRollOrCheck = state.phase === 'playing' && isMyTurn && !state.currentRoll;
+  const canCheck = needsRollOrCheck && state.turnNumber > 1;
+  const canRoll = needsRollOrCheck;
   const canSameOrHigher = state.phase === 'playing' && state.turnNumber > 1 && state.currentRoll && !state.currentRollHidden;
   const bluffOptions = state.phase === 'playing' && state.currentRoll
     ? getPossibleDeclarations(state.currentRoll, state.declaredRoll, state.turnNumber === 1)
@@ -135,6 +137,7 @@ function getPublicState(state, userId) {
     currentRoll,
     currentRollHidden: isMyTurn ? state.currentRollHidden : null,
     canCheck,
+    canRoll,
     canTruth: state.currentRoll && canTruth(state.currentRoll, state.declaredRoll, state.turnNumber === 1),
     canSameOrHigher,
     bluffOptions,
