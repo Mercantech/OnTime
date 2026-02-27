@@ -142,6 +142,15 @@ router.post('/', async (req, res) => {
       const classId = await getUserClassId(client, req.userId);
       if (!classId) return res.status(400).json({ error: 'Klasse ikke fundet' });
 
+      const trimmedTrackId = String(spotify_track_id).trim();
+      const existing = await client.query(
+        'SELECT id FROM song_requests WHERE class_id = $1 AND spotify_track_id = $2 LIMIT 1',
+        [classId, trimmedTrackId]
+      );
+      if (existing.rows.length) {
+        return res.status(409).json({ error: 'Den sang er allerede ønsket i din klasse' });
+      }
+
       const insertRes = await client.query(
         `INSERT INTO song_requests (class_id, requested_by, spotify_track_id, track_name, artist_name, album_art_url, preview_url)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -149,7 +158,7 @@ router.post('/', async (req, res) => {
         [
           classId,
           req.userId,
-          String(spotify_track_id).trim(),
+          trimmedTrackId,
           String(track_name).trim(),
           String(artist_name).trim(),
           album_art_url ? String(album_art_url).trim() : null,

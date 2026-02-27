@@ -19,6 +19,7 @@ const songRequestsRoutes = require('./routes/songRequests');
 const spotifyRoutes = require('./routes/spotify');
 const jokesRoutes = require('./routes/jokes');
 const config = require('./config');
+const { getDbIpRanges } = require('./ipRanges');
 const { run: runMigrations } = require('./migrate');
 const { run: ensureAdmin } = require('./ensureAdmin');
 const { getVersion } = require('./version');
@@ -29,6 +30,15 @@ app.set('trust proxy', 1); // Så klient-IP bruges ved WiFi-tjek bag proxy
 app.use(cors());
 app.use(express.json());
 
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    const first = String(forwarded).split(',')[0].trim();
+    if (first) return first;
+  }
+  return req.ip || req.socket?.remoteAddress || '';
+}
+
 app.use('/api/auth', authRoutes);
 app.use('/api/checkin', checkinRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
@@ -38,12 +48,37 @@ app.use('/api/public/class', classDashboardRoutes);
 app.use('/api/badges', badgesRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/bets', betsRoutes);
-app.use('/api/casino', (req, res, next) => {
-  if (isCasinoClosed()) {
-    return res.status(404).json({ error: 'Casinoet har lukket, da manager er i skole!' });
-  }
-  next();
-}, casinoRoutes);
+app.use('/api/casino',
+  async (req, res, next) => {
+    // Genbrug WiFi/whitelist-logikken fra indstempling:
+    // hvis der er defineret ranges (env eller DB), kræv at klient-IP matcher.
+    try {
+      const envRanges = config.getEnvIpRanges();
+      const dbRanges = await getDbIpRanges();
+      const allRanges = [...envRanges, ...dbRanges];
+      const useWiFiCheck = allRanges.length > 0;
+      if (useWiFiCheck) {
+        const clientIp = getClientIp(req);
+        if (!config.isIpInRanges(clientIp, allRanges)) {
+          return res.status(403).json({
+            error: `Du skal være forbundet til WiFi-netværket ${config.WIFI_NAME} (MAGS-OLC) for at bruge casinoet.`,
+          });
+        }
+      }
+      next();
+    } catch (e) {
+      console.error('Fejl i casino WiFi-tjek', e);
+      return res.status(500).json({ error: 'Serverfejl ved netværkstjek' });
+    }
+  },
+  (req, res, next) => {
+    if (isCasinoClosed()) {
+      return res.status(404).json({ error: 'Casinoet har lukket, da manager er i skole!' });
+    }
+    next();
+  },
+  casinoRoutes
+);
 app.use('/api/poker', pokerRoutes);
 app.use('/api/song-requests', songRequestsRoutes);
 app.use('/api/spotify', spotifyRoutes);
