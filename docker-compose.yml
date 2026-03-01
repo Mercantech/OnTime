@@ -28,6 +28,7 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://ontime:ontime@db:5432/ontime
       JWT_SECRET: ${JWT_SECRET:-skift-mig-i-produktion}
+      ADMIN_SECRET_CODE: ${ADMIN_SECRET_CODE:-}
       ALLOWED_RADIUS_METERS: ${ALLOWED_RADIUS_METERS:-2000}
       # WiFi MAGS-OLC: lokalt net 192.168.1.x, skolens offentlige IP, + Docker-net (172.20.x.x)
       ALLOWED_IP_RANGES: ${ALLOWED_IP_RANGES:-192.168.1.0/24,185.22.75.2/32,172.20.0.0/24}

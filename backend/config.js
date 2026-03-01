@@ -110,9 +110,13 @@ function getWeekdaysUpToToday(year, month) {
   return count;
 }
 
+/** Hemmelig kode for /admin/secret (sessioner). Kun nødvendig hvis sat. */
+const ADMIN_SECRET_CODE = process.env.ADMIN_SECRET_CODE ? String(process.env.ADMIN_SECRET_CODE).trim() : '';
+
 module.exports = {
   port: process.env.PORT || 3000,
   jwtSecret: process.env.JWT_SECRET || 'ontime-dev-secret-skift-i-produktion',
+  adminSecretCode: ADMIN_SECRET_CODE,
   isWithinSchoolArea,
   calculatePoints,
   getWeekdaysInMonth,

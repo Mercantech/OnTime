@@ -120,6 +120,21 @@ app.get('/admin', (req, res) => {
 
 app.get('/admin/secret', (req, res) => {
   noCacheHeaders(res);
+  if (config.adminSecretCode) {
+    const code = (req.query.code && String(req.query.code).trim()) || '';
+    if (code !== config.adminSecretCode) {
+      res.set('Content-Type', 'text/html; charset=utf-8');
+      return res.status(200).send(
+        `<!DOCTYPE html><html lang="da"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Kode</title></head><body style="font-family:system-ui;max-width:360px;margin:3rem auto;padding:1.5rem;background:#1a1a20;color:#e8e8ed;border-radius:14px;">
+        <h1 style="font-size:1.25rem;margin:0 0 1rem;">Hemmelig kode</h1>
+        <form method="get" action="/admin/secret">
+          <input type="text" name="code" placeholder="Indtast kode" required autofocus style="width:100%;padding:0.75rem;margin-bottom:0.75rem;border:1px solid #2e2e38;border-radius:10px;background:#24242c;color:#e8e8ed;font-size:1rem;">
+          <button type="submit" style="padding:0.75rem 1.25rem;background:#22c55e;color:#fff;border:none;border-radius:10px;font-size:1rem;cursor:pointer;">Gå videre</button>
+        </form>
+        </body></html>`
+      );
+    }
+  }
   res.sendFile(path.join(frontendDir, 'admin-secret.html'));
 });
 
