@@ -12,6 +12,15 @@ async function auth(req, res, next) {
     const payload = jwt.verify(token, config.jwtSecret);
     req.userId = payload.userId;
     req.userEmail = payload.email;
+    if (payload.jti) {
+      const sessionRow = await pool.query(
+        'SELECT 1 FROM login_sessions WHERE jti = $1 AND revoked_at IS NULL',
+        [payload.jti]
+      );
+      if (sessionRow.rows.length === 0) {
+        return res.status(403).json({ error: 'Denne session er blevet deaktiveret' });
+      }
+    }
     const banRow = await pool.query(
       'SELECT banned_until FROM user_bans WHERE user_id = $1 AND banned_until > NOW() LIMIT 1',
       [req.userId]

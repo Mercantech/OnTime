@@ -1,9 +1,19 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { pool } = require('../db');
 const config = require('../config');
 const { auth } = require('../middleware/auth');
+
+function getClientIp(req) {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (forwarded) {
+    const first = String(forwarded).split(',')[0].trim();
+    if (first) return first;
+  }
+  return req.ip || req.socket?.remoteAddress || '';
+}
 
 const router = express.Router();
 
@@ -52,10 +62,17 @@ router.post('/login', async (req, res) => {
         bannedUntil: untilStr,
       });
     }
+    const jti = crypto.randomUUID();
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: user.id, email: user.email, jti },
       config.jwtSecret,
       { expiresIn: '7d' }
+    );
+    const ip = getClientIp(req);
+    const userAgent = req.get('User-Agent') || null;
+    await pool.query(
+      'INSERT INTO login_sessions (user_id, jti, ip, user_agent) VALUES ($1, $2, $3, $4)',
+      [user.id, jti, ip || null, userAgent]
     );
     res.json({
       token,

@@ -271,6 +271,22 @@ const MIGRATIONS = [
       );
     `,
   },
+  {
+    name: 'login_sessions',
+    sql: `
+      CREATE TABLE IF NOT EXISTS login_sessions (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        jti TEXT NOT NULL UNIQUE,
+        ip TEXT,
+        user_agent TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        revoked_at TIMESTAMPTZ
+      );
+      CREATE INDEX IF NOT EXISTS idx_login_sessions_user ON login_sessions (user_id);
+      CREATE INDEX IF NOT EXISTS idx_login_sessions_jti ON login_sessions (jti);
+    `,
+  },
 ];
 
 async function run() {

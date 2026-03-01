@@ -577,4 +577,58 @@ router.post('/poker/tables/:id/end', async (req, res) => {
   }
 });
 
+/** Hemmelig admin: sessioner per bruger (JWT jti, IP, enhed) og revoke. Ingen link i appen – kun /admin/secret. */
+router.get('/secret/sessions', async (req, res) => {
+  const userId = req.query.userId;
+  if (!userId) {
+    return res.status(400).json({ error: 'userId kræves' });
+  }
+  const uid = parseInt(userId, 10);
+  if (Number.isNaN(uid)) {
+    return res.status(400).json({ error: 'Ugyldigt userId' });
+  }
+  try {
+    const r = await pool.query(
+      `SELECT id, jti, ip, user_agent, created_at, revoked_at
+       FROM login_sessions
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
+      [uid]
+    );
+    const sessions = (r.rows || []).map((row) => ({
+      id: row.id,
+      jti: row.jti,
+      jtiShort: row.jti ? row.jti.slice(-8) : '',
+      ip: row.ip || '',
+      userAgent: row.user_agent || '',
+      createdAt: row.created_at,
+      revokedAt: row.revoked_at,
+    }));
+    res.json({ sessions });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+router.post('/secret/sessions/:jti/revoke', async (req, res) => {
+  const jti = req.params.jti;
+  if (!jti || jti.length > 64) {
+    return res.status(400).json({ error: 'Ugyldig jti' });
+  }
+  try {
+    const r = await pool.query(
+      'UPDATE login_sessions SET revoked_at = NOW() WHERE jti = $1 AND revoked_at IS NULL RETURNING id',
+      [jti]
+    );
+    if (r.rows.length === 0) {
+      return res.status(404).json({ error: 'Session ikke fundet eller allerede deaktiveret' });
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 module.exports = router;

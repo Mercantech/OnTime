@@ -1,6 +1,7 @@
 const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
 const config = require('./config');
+const { pool } = require('./db');
 
 /**
  * Attach Socket.IO to HTTP server with JWT auth.
@@ -13,13 +14,22 @@ function attachSocket(httpServer) {
     path: '/socket.io',
   });
 
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     const token = socket.handshake.auth?.token || socket.handshake.query?.token;
     if (!token) {
       return next(new Error('Manglende token'));
     }
     try {
       const payload = jwt.verify(token, config.jwtSecret);
+      if (payload.jti) {
+        const r = await pool.query(
+          'SELECT 1 FROM login_sessions WHERE jti = $1 AND revoked_at IS NULL',
+          [payload.jti]
+        );
+        if (r.rows.length === 0) {
+          return next(new Error('Session deaktiveret'));
+        }
+      }
       socket.userId = payload.userId;
       socket.userEmail = payload.email;
       next();

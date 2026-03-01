@@ -118,6 +118,11 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(frontendDir, 'admin.html'));
 });
 
+app.get('/admin/secret', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'admin-secret.html'));
+});
+
 app.get('/klasse/:name', (req, res) => {
   noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'class-dashboard.html'));
