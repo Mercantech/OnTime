@@ -93,14 +93,16 @@ router.get('/users', async (req, res) => {
     let r;
     if (classId) {
       r = await pool.query(
-        `SELECT u.id, u.email, u.name, u.class_id, u.is_admin, c.name AS class_name
+        `SELECT u.id, u.email, u.name, u.class_id, u.is_admin, c.name AS class_name,
+         (SELECT b.banned_until FROM user_bans b WHERE b.user_id = u.id AND b.banned_until > NOW() ORDER BY b.banned_until DESC LIMIT 1) AS banned_until
          FROM users u JOIN classes c ON c.id = u.class_id
          WHERE u.class_id = $1 ORDER BY u.name`,
         [classId]
       );
     } else {
       r = await pool.query(
-        `SELECT u.id, u.email, u.name, u.class_id, u.is_admin, c.name AS class_name
+        `SELECT u.id, u.email, u.name, u.class_id, u.is_admin, c.name AS class_name,
+         (SELECT b.banned_until FROM user_bans b WHERE b.user_id = u.id AND b.banned_until > NOW() ORDER BY b.banned_until DESC LIMIT 1) AS banned_until
          FROM users u JOIN classes c ON c.id = u.class_id
          ORDER BY c.name, u.name`
       );
@@ -112,6 +114,7 @@ router.get('/users', async (req, res) => {
       classId: row.class_id,
       className: row.class_name,
       isAdmin: !!row.is_admin,
+      bannedUntil: row.banned_until ? (row.banned_until instanceof Date ? row.banned_until.toISOString() : String(row.banned_until)) : null,
     })));
   } catch (e) {
     console.error(e);
@@ -242,6 +245,25 @@ router.post('/users/:id/ban', async (req, res) => {
       [userId, bannedUntil, req.userId, reason || 'Offensiv joke (dagens joke)']
     );
     res.json({ ok: true, bannedUntil: bannedUntil.toISOString() });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
+/** DELETE /api/admin/users/:id/ban – ophæv aktive spærringer for brugeren. */
+router.delete('/users/:id/ban', async (req, res) => {
+  const userId = parseInt(req.params.id, 10);
+  if (Number.isNaN(userId)) return res.status(400).json({ error: 'Ugyldigt bruger-id' });
+  try {
+    const r = await pool.query(
+      'DELETE FROM user_bans WHERE user_id = $1 AND banned_until > NOW() RETURNING id',
+      [userId]
+    );
+    if (r.rows.length === 0) {
+      return res.status(404).json({ error: 'Brugeren har ingen aktiv spærring' });
+    }
+    res.json({ ok: true });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Serverfejl' });

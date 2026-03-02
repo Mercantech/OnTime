@@ -323,7 +323,12 @@ function renderUserList(users) {
       adminBtn = u.isAdmin ? '<span class="muted">(dig)</span>' : '';
     }
     const resetPwBtn = '<button type="button" class="btn-reset-password" data-user-id="' + u.id + '" data-user-name="' + escapeHtml(u.name || '') + '">Nulstil adgangskode</button>';
-    return '<tr data-user-id="' + u.id + '"><td class="name">' + u.name + '</td><td class="email">' + u.email + '</td><td class="class">' + u.className + '</td><td>' + (u.isAdmin ? '<span class="badge">Admin</span>' : '') + '</td><td class="actions">' + resetPwBtn + ' ' + adminBtn + ' ' + deleteBtn + '</td></tr>';
+    let banBadge = '';
+    if (u.bannedUntil) {
+      const untilStr = new Date(u.bannedUntil).toLocaleDateString('da-DK', { day: 'numeric', month: 'short', year: 'numeric' });
+      banBadge = '<span class="badge badge-danger" title="Spærret til ' + untilStr + '">Spærret</span> <button type="button" class="btn-unban" data-user-id="' + u.id + '" data-user-name="' + escapeHtml(u.name || '') + '">Ophæv spærring</button>';
+    }
+    return '<tr data-user-id="' + u.id + '"><td class="name">' + u.name + '</td><td class="email">' + u.email + '</td><td class="class">' + u.className + '</td><td>' + (u.isAdmin ? '<span class="badge">Admin</span> ' : '') + banBadge + '</td><td class="actions">' + resetPwBtn + ' ' + adminBtn + ' ' + deleteBtn + '</td></tr>';
   }).join('');
 
   tbody.querySelectorAll('.btn-toggle-admin').forEach(btn => {
@@ -375,6 +380,25 @@ function renderUserList(users) {
       }
       alert('Adgangskode nulstillet for ' + name + '.');
       btn.disabled = false;
+    });
+  });
+
+  tbody.querySelectorAll('.btn-unban').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.getAttribute('data-user-id');
+      const name = btn.getAttribute('data-user-name') || 'brugeren';
+      if (!confirm('Ophæv spærring for ' + name + '?')) return;
+      btn.disabled = true;
+      const res = await api('/api/admin/users/' + id + '/ban', { method: 'DELETE' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data.error || 'Kunne ikke ophæve spærring');
+        btn.disabled = false;
+        return;
+      }
+      const filter = document.getElementById('filter-class').value;
+      const list = await loadUsers(filter ? parseInt(filter, 10) : undefined);
+      renderUserList(list);
     });
   });
 
