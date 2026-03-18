@@ -833,9 +833,9 @@ async function loadWordle() {
 
   let answer = '';
   try {
-    const res = await fetch('/wordle-answers-30d.json');
+    const res = await fetch('/api/games/wordle/answer?date=' + encodeURIComponent(dateKey));
     const data = await res.json().catch(() => ({}));
-    answer = normalizeWordleWord(data[dateKey] || data.default || '');
+    answer = normalizeWordleWord(data.answer || '');
   } catch (e) {
     answer = '';
   }

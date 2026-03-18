@@ -343,6 +343,78 @@ router.post('/flag/capital/guess', auth, async (req, res) => {
   }
 });
 
+function isValidIsoDate(s) {
+  return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+}
+
+function getDailyWordleIndex(dateStr, totalWords) {
+  if (!totalWords) return 0;
+  const hash = crypto.createHash('sha256').update(dateStr).digest();
+  const n = hash.readUInt32BE(0);
+  return n % totalWords;
+}
+
+/**
+ * Hent dagens Wordle-ord.
+ * Hvis det ikke findes endnu, tildeler vi deterministisk et ord baseret på dato og ordlisten,
+ * og persist'er det i databasen.
+ */
+router.get('/wordle/answer', async (req, res) => {
+  try {
+    const qDate = req.query.date ? String(req.query.date) : '';
+    const playDate = isValidIsoDate(qDate) ? qDate : getTodayCopenhagenStr();
+
+    // Hvis vi allerede har låst et ord for datoen, returnér det
+    const existing = await pool.query(
+      'SELECT word FROM wordle_daily_answers WHERE play_date = $1',
+      [playDate]
+    );
+    if (existing.rows[0]?.word) {
+      return res.json({ date: playDate, answer: existing.rows[0].word });
+    }
+
+    const wordsRes = await pool.query('SELECT word FROM wordle_word_bank ORDER BY word ASC');
+    const words = wordsRes.rows.map((r) => r.word).filter(Boolean);
+    if (!words.length) {
+      return res.status(500).json({ error: 'Wordle ordliste mangler i databasen' });
+    }
+
+    // Vælg kun blandt ord der ikke har været brugt før (så vi ikke får gentagelser før banken er tom)
+    const availableRes = await pool.query(
+      `SELECT wb.word
+       FROM wordle_word_bank wb
+       WHERE NOT EXISTS (SELECT 1 FROM wordle_daily_answers da WHERE da.word = wb.word)
+       ORDER BY wb.word ASC`
+    );
+    const available = availableRes.rows.map((r) => r.word).filter(Boolean);
+    if (!available.length) {
+      return res.status(500).json({ error: 'Ingen nye Wordle-ord tilbage i databasen' });
+    }
+
+    const idx = getDailyWordleIndex(playDate, available.length);
+    const chosenWord = available[idx];
+
+    const r = await pool.query(
+      `INSERT INTO wordle_daily_answers (play_date, word)
+       VALUES ($1, $2)
+       ON CONFLICT (play_date) DO NOTHING
+       RETURNING word`,
+      [playDate, chosenWord]
+    );
+
+    // Hvis en anden request nåede at indsætte først, læs værdien igen
+    if (!r.rows[0]?.word) {
+      const again = await pool.query('SELECT word FROM wordle_daily_answers WHERE play_date = $1', [playDate]);
+      return res.json({ date: playDate, answer: again.rows[0]?.word || chosenWord });
+    }
+
+    res.json({ date: playDate, answer: r.rows[0].word });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Serverfejl' });
+  }
+});
+
 router.use(auth);
 
 const COINFLIP_COST = 1;
