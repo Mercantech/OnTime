@@ -70,6 +70,180 @@ const MIGRATIONS = [
     `,
   },
   {
+    name: 'wordle_tables',
+    sql: `
+      -- Wordle dagsord (persistes pr. dato)
+      CREATE TABLE IF NOT EXISTS wordle_word_bank (
+        word TEXT PRIMARY KEY,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CHECK (char_length(word) = 5 AND word ~ '^[a-zæøå]{5}$')
+      );
+
+      CREATE TABLE IF NOT EXISTS wordle_daily_answers (
+        play_date DATE PRIMARY KEY,
+        word TEXT NOT NULL REFERENCES wordle_word_bank(word),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_wordle_daily_answers_word ON wordle_daily_answers (word);
+
+      -- Seed ord (hidtidige 30 dage fra frontend/wordle-answers-30d.json)
+      INSERT INTO wordle_word_bank (word) VALUES
+        ('skole'),
+        ('lærer'),
+        ('bøger'),
+        ('viden'),
+        ('spørg'),
+        ('sprog'),
+        ('regne'),
+        ('noter'),
+        ('tavle'),
+        ('prøve'),
+        ('læser'),
+        ('kloge'),
+        ('tanke'),
+        ('logik'),
+        ('fokus'),
+        ('lærte'),
+        ('tælle'),
+        ('fejle'),
+        ('ønske'),
+        ('vaner'),
+        ('start'),
+        ('pause'),
+        ('tempo'),
+        ('smart'),
+        ('skarp'),
+        ('modig'),
+        ('rolig'),
+        ('stolt'),
+        ('flere'),
+        ('håber')
+      ON CONFLICT (word) DO NOTHING;
+
+      -- Nye ord til de næste 60 dage (ikke brugt i den gamle 30-dages fil)
+      INSERT INTO wordle_word_bank (word) VALUES
+        ('musik'),
+        ('timer'),
+        ('kaffe'),
+        ('teori'),
+        ('skema'),
+        ('bryde'),
+        ('vinde'),
+        ('tjene'),
+        ('holde'),
+        ('spise'),
+        ('smile'),
+        ('hjælp'),
+        ('tøjle'),
+        ('ørken'),
+        ('åbner'),
+        ('ånder'),
+        ('køber'),
+        ('søger'),
+        ('ærlig'),
+        ('bager'),
+        ('natte'),
+        ('lysne'),
+        ('stier'),
+        ('vejen'),
+        ('frisk'),
+        ('sprød'),
+        ('blidt'),
+        ('kraft'),
+        ('storm'),
+        ('flugt'),
+        ('vågen'),
+        ('lager'),
+        ('gange'),
+        ('sidde'),
+        ('ståle'),
+        ('glimt'),
+        ('pragt'),
+        ('klare'),
+        ('tætne'),
+        ('ruter'),
+        ('huset'),
+        ('træer'),
+        ('kører'),
+        ('spore'),
+        ('stave'),
+        ('lænde'),
+        ('hælde'),
+        ('vifte'),
+        ('kaste'),
+        ('ringe'),
+        ('prins'),
+        ('dansk'),
+        ('vinke'),
+        ('vække'),
+        ('fælde'),
+        ('skære'),
+        ('løber'),
+        ('tapet'),
+        ('sømme'),
+        ('varme')
+      ON CONFLICT (word) DO NOTHING;
+
+      -- Bevar eksisterende ord for historiske datoer (så man ikke får nye ord på genindlæsning)
+      INSERT INTO wordle_daily_answers (play_date, word) VALUES
+        ('2026-02-16','skole'),
+        ('2026-02-17','lærer'),
+        ('2026-02-18','bøger'),
+        ('2026-02-19','viden'),
+        ('2026-02-20','spørg'),
+        ('2026-02-21','sprog'),
+        ('2026-02-22','regne'),
+        ('2026-02-23','noter'),
+        ('2026-02-24','tavle'),
+        ('2026-02-25','prøve'),
+        ('2026-02-26','læser'),
+        ('2026-02-27','kloge'),
+        ('2026-02-28','tanke'),
+        ('2026-03-01','logik'),
+        ('2026-03-02','fokus'),
+        ('2026-03-03','lærte'),
+        ('2026-03-04','tælle'),
+        ('2026-03-05','fejle'),
+        ('2026-03-06','ønske'),
+        ('2026-03-07','vaner'),
+        ('2026-03-08','start'),
+        ('2026-03-09','pause'),
+        ('2026-03-10','tempo'),
+        ('2026-03-11','smart'),
+        ('2026-03-12','skarp'),
+        ('2026-03-13','modig'),
+        ('2026-03-14','rolig'),
+        ('2026-03-15','stolt'),
+        ('2026-03-16','flere'),
+        ('2026-03-17','håber')
+      ON CONFLICT (play_date) DO NOTHING;
+
+      -- Forudfyld næste 60 dage fra i dag med uudnyttede ord (så de bliver låst pr. dato)
+      WITH days AS (
+        SELECT (CURRENT_DATE + offs)::date AS play_date,
+               row_number() OVER (ORDER BY offs) - 1 AS rn
+        FROM generate_series(0, 59) AS offs
+      ),
+      avail AS (
+        SELECT wb.word,
+               row_number() OVER (ORDER BY wb.word) - 1 AS rn
+        FROM wordle_word_bank wb
+        WHERE NOT EXISTS (
+          SELECT 1 FROM wordle_daily_answers da WHERE da.word = wb.word
+        )
+      )
+      INSERT INTO wordle_daily_answers (play_date, word)
+      SELECT d.play_date, a.word
+      FROM days d
+      JOIN avail a ON a.rn = d.rn
+      WHERE NOT EXISTS (
+        SELECT 1 FROM wordle_daily_answers da2 WHERE da2.play_date = d.play_date
+      )
+      ON CONFLICT (play_date) DO NOTHING;
+    `,
+  },
+  {
     name: 'bets_core_tables',
     sql: `
       CREATE TABLE IF NOT EXISTS bets (
