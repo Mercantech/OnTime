@@ -109,9 +109,8 @@ async function loadStatus() {
 
     const bjHandsLeftEl = document.getElementById('blackjack-hands-left');
     if (bjHandsLeftEl) {
-      const rem = blackjackData.handsRemainingToday ?? 0;
-      const max = blackjackData.maxHandsPerDay ?? 3;
-      bjHandsLeftEl.textContent = rem > 0 ? `${rem} hænder tilbage i dag (max ${max})` : `Du har brugt alle ${max} hænder i dag.`;
+      const played = blackjackData.handsUsedToday ?? 0;
+      bjHandsLeftEl.textContent = `Ingen daglig grænse. Spillet i dag: ${played}.`;
     }
     const bjStartBtn = document.getElementById('blackjack-start');
     if (bjStartBtn && blackjackRes.ok) bjStartBtn.disabled = !blackjackData.canStart;

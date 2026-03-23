@@ -249,7 +249,6 @@ router.post('/roulette/spin', async (req, res) => {
 // --- Blackjack (robot dealer) ---
 const BLACKJACK_COST = 1;
 const BLACKJACK_WIN_PAYOUT = 2;
-const BLACKJACK_HANDS_PER_DAY = 3;
 const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 const SUITS = ['H', 'D', 'C', 'S'];
 
@@ -314,14 +313,11 @@ router.get('/blackjack/status', async (req, res) => {
         getUserMonthPointsTotal(client, userId),
         getBlackjackHandsToday(client, userId),
       ]);
-      const handsRemaining = Math.max(0, BLACKJACK_HANDS_PER_DAY - handsToday);
       const inGame = blackjackGames.has(userId);
       res.json({
         balance,
-        canStart: balance >= BLACKJACK_COST && handsRemaining > 0 && !inGame,
+        canStart: balance >= BLACKJACK_COST && !inGame,
         handsUsedToday: handsToday,
-        handsRemainingToday: handsRemaining,
-        maxHandsPerDay: BLACKJACK_HANDS_PER_DAY,
         cost: BLACKJACK_COST,
         winPayout: BLACKJACK_WIN_PAYOUT,
         inGame,
@@ -340,18 +336,13 @@ router.post('/blackjack/start', async (req, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const [balance, handsToday] = await Promise.all([
+    const [balance] = await Promise.all([
       getUserMonthPointsTotal(client, userId),
-      getBlackjackHandsToday(client, userId),
     ]);
 
     if (blackjackGames.has(userId)) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'Du har allerede en aktiv hånd. Afslut den først.' });
-    }
-    if (handsToday >= BLACKJACK_HANDS_PER_DAY) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ error: 'Du har brugt alle ' + BLACKJACK_HANDS_PER_DAY + ' blackjack-hænder i dag.' });
     }
     if (balance < BLACKJACK_COST) {
       await client.query('ROLLBACK');
