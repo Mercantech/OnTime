@@ -4,6 +4,7 @@
  * Tidszone: Europe/Copenhagen.
  */
 
+const config = require('./config');
 const TZ = 'Europe/Copenhagen';
 
 /** Lukkeintervaller som minutter fra midnat [start, slut) – slut er eksklusiv */
@@ -29,6 +30,7 @@ function getNowInCopenhagen() {
  * Returnerer true hvis casinoet er lukket lige nu (server tjek, dansk tid).
  */
 function isCasinoClosed() {
+  if (!config.CASINO_TIME_LIMITS_ENABLED) return false;
   const { minutesSinceMidnight, isWeekday } = getNowInCopenhagen();
   if (!isWeekday) return false;
   return CLOSED_MINUTES.some(([start, end]) => minutesSinceMidnight >= start && minutesSinceMidnight < end);
@@ -39,6 +41,7 @@ function isCasinoClosed() {
  * Ellers null.
  */
 function getNextOpenLabel() {
+  if (!config.CASINO_TIME_LIMITS_ENABLED) return null;
   const { minutesSinceMidnight, isWeekday } = getNowInCopenhagen();
   if (!isWeekday) return null;
   for (const [start, end] of CLOSED_MINUTES) {
