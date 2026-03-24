@@ -15,6 +15,7 @@ const ALLOWED_IP_RANGES = process.env.ALLOWED_IP_RANGES
   ? process.env.ALLOWED_IP_RANGES.split(',').map(s => s.trim()).filter(Boolean)
   : [];
 const WIFI_NAME = process.env.WIFI_NAME || 'MAGS-OLC';
+const CASINO_TIME_LIMITS_ENABLED = String(process.env.CASINO_TIME_LIMITS_ENABLED || 'true').toLowerCase() !== 'false';
 
 function ipV4ToNum(ip) {
   const parts = ip.split('.');
@@ -129,4 +130,5 @@ module.exports = {
   SCHOOL_LAT,
   SCHOOL_LNG,
   ALLOWED_RADIUS_METERS,
+  CASINO_TIME_LIMITS_ENABLED,
 };

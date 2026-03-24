@@ -73,7 +73,7 @@ async function loadStatus() {
 
     if (leverBtn) leverBtn.disabled = !slotData.canSpin;
     if (messageEl) {
-      if (slotData.alreadySpunToday) {
+      if (slotData.timeLimitsEnabled && slotData.alreadySpunToday) {
         messageEl.hidden = false;
         messageEl.className = 'slot-message lose';
         messageEl.textContent = 'Du har allerede spillet i dag. Kom tilbage i morgen!';
@@ -86,9 +86,14 @@ async function loadStatus() {
     if (flipBtn) flipBtn.disabled = !coinData.canFlip;
     const flipsLeftEl = document.getElementById('coinflip-flips-left');
     if (flipsLeftEl) {
-      const remaining = coinData.flipsRemainingToday ?? 0;
-      const max = coinData.maxFlipsPerDay ?? 100;
-      flipsLeftEl.textContent = remaining > 0 ? `${remaining} flips tilbage i dag (max ${max})` : `Du har brugt alle ${max} flips i dag.`;
+      if (coinData.timeLimitsEnabled) {
+        const remaining = coinData.flipsRemainingToday ?? 0;
+        const max = coinData.maxFlipsPerDay ?? 100;
+        flipsLeftEl.textContent = remaining > 0 ? `${remaining} flips tilbage i dag (max ${max})` : `Du har brugt alle ${max} flips i dag.`;
+      } else {
+        const played = coinData.flipsUsedToday ?? 0;
+        flipsLeftEl.textContent = `Ingen daglig grænse. Flips i dag: ${played}.`;
+      }
       flipsLeftEl.hidden = false;
     }
     if (flipMessageEl) flipMessageEl.hidden = true;
@@ -102,9 +107,14 @@ async function loadStatus() {
     if (rouletteBetGreen) rouletteBetGreen.disabled = !rouletteCanSpin;
     const rouletteSpinsLeftEl = document.getElementById('roulette-spins-left');
     if (rouletteSpinsLeftEl) {
-      const rem = rouletteData.spinsRemainingToday ?? 0;
-      const max = rouletteData.maxSpinsPerDay ?? 3;
-      rouletteSpinsLeftEl.textContent = rem > 0 ? `${rem} spin tilbage i dag (max ${max})` : `Du har brugt alle ${max} spin i dag.`;
+      if (rouletteData.timeLimitsEnabled) {
+        const rem = rouletteData.spinsRemainingToday ?? 0;
+        const max = rouletteData.maxSpinsPerDay ?? 3;
+        rouletteSpinsLeftEl.textContent = rem > 0 ? `${rem} spin tilbage i dag (max ${max})` : `Du har brugt alle ${max} spin i dag.`;
+      } else {
+        const played = rouletteData.spinsUsedToday ?? 0;
+        rouletteSpinsLeftEl.textContent = `Ingen daglig grænse. Spin i dag: ${played}.`;
+      }
     }
 
     const bjHandsLeftEl = document.getElementById('blackjack-hands-left');

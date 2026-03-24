@@ -1,6 +1,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { auth } = require('../middleware/auth');
+const config = require('../config');
 
 const router = express.Router();
 
@@ -94,8 +95,9 @@ router.get('/status', async (req, res) => {
       ]);
       res.json({
         balance,
-        canSpin: balance >= COST_PER_SPIN && !spunToday,
+        canSpin: balance >= COST_PER_SPIN && (!config.CASINO_TIME_LIMITS_ENABLED || !spunToday),
         alreadySpunToday: spunToday,
+        timeLimitsEnabled: config.CASINO_TIME_LIMITS_ENABLED,
         badgeEarned: !!badgeEarned,
         costPerSpin: COST_PER_SPIN,
       });
@@ -120,7 +122,7 @@ router.post('/spin', async (req, res) => {
       hasBadge(client, userId),
     ]);
 
-    if (spunToday) {
+    if (config.CASINO_TIME_LIMITS_ENABLED && spunToday) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'Du har allerede spillet én gang i dag. Kom tilbage i morgen!' });
     }
@@ -180,10 +182,11 @@ router.get('/roulette/status', async (req, res) => {
       const spinsRemaining = Math.max(0, ROULETTE_SPINS_PER_DAY - spinsToday);
       res.json({
         balance,
-        canSpin: balance >= ROULETTE_COST && spinsRemaining > 0,
+        canSpin: balance >= ROULETTE_COST && (!config.CASINO_TIME_LIMITS_ENABLED || spinsRemaining > 0),
         spinsUsedToday: spinsToday,
         spinsRemainingToday: spinsRemaining,
         maxSpinsPerDay: ROULETTE_SPINS_PER_DAY,
+        timeLimitsEnabled: config.CASINO_TIME_LIMITS_ENABLED,
         cost: ROULETTE_COST,
         winPayout: ROULETTE_WIN_PAYOUT,
         greenPayout: ROULETTE_GREEN_PAYOUT,
@@ -210,7 +213,7 @@ router.post('/roulette/spin', async (req, res) => {
       getRouletteSpinsToday(client, userId),
     ]);
 
-    if (spinsToday >= ROULETTE_SPINS_PER_DAY) {
+    if (config.CASINO_TIME_LIMITS_ENABLED && spinsToday >= ROULETTE_SPINS_PER_DAY) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'Du har brugt alle ' + ROULETTE_SPINS_PER_DAY + ' roulette-spin i dag.' });
     }
@@ -318,6 +321,7 @@ router.get('/blackjack/status', async (req, res) => {
         balance,
         canStart: balance >= BLACKJACK_COST && !inGame,
         handsUsedToday: handsToday,
+        timeLimitsEnabled: config.CASINO_TIME_LIMITS_ENABLED,
         cost: BLACKJACK_COST,
         winPayout: BLACKJACK_WIN_PAYOUT,
         inGame,

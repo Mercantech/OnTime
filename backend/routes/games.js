@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { pool } = require('../db');
 const { auth } = require('../middleware/auth');
+const config = require('../config');
 
 const router = express.Router();
 
@@ -469,13 +470,14 @@ router.get('/coinflip/status', async (req, res) => {
         getFlipCountToday(client, userId),
       ]);
       const flipsRemaining = Math.max(0, COINFLIP_MAX_FLIPS_PER_DAY - flipCountToday);
-      const canFlip = balance >= COINFLIP_COST && flipsRemaining > 0;
+      const canFlip = balance >= COINFLIP_COST && (!config.CASINO_TIME_LIMITS_ENABLED || flipsRemaining > 0);
       res.json({
         balance,
         canFlip,
         flipsUsedToday: flipCountToday,
         flipsRemainingToday: flipsRemaining,
         maxFlipsPerDay: COINFLIP_MAX_FLIPS_PER_DAY,
+        timeLimitsEnabled: config.CASINO_TIME_LIMITS_ENABLED,
         cost: COINFLIP_COST,
       });
     } finally {
@@ -498,7 +500,7 @@ router.post('/coinflip/flip', async (req, res) => {
       getFlipCountToday(client, userId),
     ]);
 
-    if (flipCountToday >= COINFLIP_MAX_FLIPS_PER_DAY) {
+    if (config.CASINO_TIME_LIMITS_ENABLED && flipCountToday >= COINFLIP_MAX_FLIPS_PER_DAY) {
       await client.query('ROLLBACK');
       return res.status(400).json({ error: 'Du har brugt alle ' + COINFLIP_MAX_FLIPS_PER_DAY + ' flips i dag. Kom tilbage i morgen!' });
     }
