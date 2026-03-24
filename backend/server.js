@@ -49,28 +49,7 @@ app.use('/api/badges', badgesRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/bets', betsRoutes);
 app.use('/api/casino',
-  async (req, res, next) => {
-    // Genbrug WiFi/whitelist-logikken fra indstempling:
-    // hvis der er defineret ranges (env eller DB), kræv at klient-IP matcher.
-    try {
-      const envRanges = config.getEnvIpRanges();
-      const dbRanges = await getDbIpRanges();
-      const allRanges = [...envRanges, ...dbRanges];
-      const useWiFiCheck = allRanges.length > 0;
-      if (useWiFiCheck) {
-        const clientIp = getClientIp(req);
-        if (!config.isIpInRanges(clientIp, allRanges)) {
-          return res.status(403).json({
-            error: `Du skal være forbundet til WiFi-netværket ${config.WIFI_NAME} (MAGS-OLC) for at bruge casinoet.`,
-          });
-        }
-      }
-      next();
-    } catch (e) {
-      console.error('Fejl i casino WiFi-tjek', e);
-      return res.status(500).json({ error: 'Serverfejl ved netværkstjek' });
-    }
-  },
+  async (req, res, next) => next(),
   (req, res, next) => {
     if (isCasinoClosed()) {
       return res.status(404).json({ error: 'Casinoet har lukket, da manager er i skole!' });
