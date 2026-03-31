@@ -10,6 +10,7 @@ const leaderboardRoutes = require('./routes/leaderboard');
 const configRoutes = require('./routes/config');
 const adminRoutes = require('./routes/admin');
 const classDashboardRoutes = require('./routes/classDashboard');
+const quizRoutes = require('./routes/quiz');
 const badgesRoutes = require('./routes/badges');
 const gamesRoutes = require('./routes/games');
 const betsRoutes = require('./routes/bets');
@@ -45,6 +46,7 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/public/class', classDashboardRoutes);
+app.use('/api/quizzes', quizRoutes);
 app.use('/api/badges', badgesRoutes);
 app.use('/api/games', gamesRoutes);
 app.use('/api/bets', betsRoutes);
@@ -213,6 +215,11 @@ app.get('/pirat', (req, res) => {
 app.get('/pirat/', (req, res) => {
   noCacheHeaders(res);
   res.sendFile(path.join(frontendDir, 'pirat', 'index.html'));
+});
+
+app.get('/quiz', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'quiz.html'));
 });
 
 app.get('/meyer', (req, res) => {

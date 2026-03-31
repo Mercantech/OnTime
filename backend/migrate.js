@@ -1,4 +1,5 @@
 const { pool } = require('./db');
+const { runQuizMigrations } = require('./migrations_quiz');
 
 const MIGRATIONS = [
   {
@@ -473,6 +474,7 @@ async function run() {
       throw e;
     }
   }
+  await runQuizMigrations();
 }
 
 module.exports = { run };

@@ -338,6 +338,35 @@ function drawBurndownChart(canvas, data) {
       ctx.fillText(label, x(i), pad.top + chartH + 16);
     }
   }
+
+async function updateActiveQuizCard() {
+  const card = document.getElementById('quiz-active-card');
+  const btn = document.getElementById('quiz-active-btn');
+  const textEl = document.getElementById('quiz-active-text');
+  if (!card || !btn) return;
+  try {
+    const res = await api('/api/quizzes/active');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.active || !data.active.id) {
+      card.hidden = true;
+      return;
+    }
+    const sess = data.active;
+    card.hidden = false;
+    if (textEl) {
+      const status = String(sess.status || 'lobby');
+      textEl.textContent =
+        'Der er en live-quiz for din klasse (' +
+        (status === 'lobby' ? 'venter på start' : 'i gang') +
+        ').';
+    }
+    btn.onclick = () => {
+      const url = '/quiz?sessionId=' + encodeURIComponent(String(sess.id));
+      window.location.href = url;
+    };
+  } catch (e) {
+    card.hidden = true;
+  }
 }
 
 const BADGE_ICONS = {
@@ -1224,6 +1253,7 @@ async function init() {
     loadVersion();
     setupBetModal();
     await updateBetTriggerVisibility();
+    await updateActiveQuizCard();
 
     if (locationConfig && locationConfig.useWiFiCheck) {
       showWiFiMode();

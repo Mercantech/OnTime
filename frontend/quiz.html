@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Quiz</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>OnTime – Quiz</h1>
+    <a href="/app" class="admin-link">Tilbage til dashboard</a>
+    <span id="quiz-user-name" class="user-info"></span>
+    <button id="quiz-logout" class="btn-logout">Log ud</button>
+  </header>
+  <main class="app-main dashboard">
+    <section class="card dashboard-hero">
+      <p id="quiz-hero-title" class="hero-greeting">Live-quiz</p>
+      <p id="quiz-hero-sub" class="hero-message">Indlæser…</p>
+    </section>
+
+    <section class="card dashboard-card" id="quiz-join-card">
+      <h2>Deltag i quiz</h2>
+      <p id="quiz-join-status" class="card-hint">Forbinder…</p>
+      <button id="quiz-join-btn" class="btn-primary">Deltag</button>
+    </section>
+
+    <section class="card dashboard-card" id="quiz-question-card" hidden>
+      <h2 id="quiz-question-title">Spørgsmål</h2>
+      <p id="quiz-question-text" class="quiz-question-text"></p>
+      <p id="quiz-timer" class="quiz-timer" aria-live="polite"></p>
+      <div id="quiz-options" class="quiz-options"></div>
+      <p id="quiz-answer-feedback" class="message" hidden></p>
+    </section>
+
+    <section class="card dashboard-card" id="quiz-leaderboard-card" hidden>
+      <h2>Leaderboard</h2>
+      <div id="quiz-leaderboard" class="leaderboard-total">Indlæser…</div>
+    </section>
+  </main>
+  <script src="/js/quiz.js"></script>
+  <script src="/js/debug-issue.js"></script>
+</body>
+</html>
+

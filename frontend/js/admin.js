@@ -104,6 +104,7 @@ async function fillClassSelects() {
   const elBetClass = document.getElementById('bet-class');
   const elBetFilterClass = document.getElementById('bet-filter-class');
   const elResetPointsClass = document.getElementById('reset-points-class');
+  const elQuizClass = document.getElementById('quiz-class');
   if (elUserClass) elUserClass.innerHTML = def + opts;
   if (elFilterClass) elFilterClass.innerHTML = defAll + opts;
   if (elImportClass) {
@@ -123,6 +124,10 @@ async function fillClassSelects() {
   if (elResetPointsClass) {
     elResetPointsClass.innerHTML = def + opts;
     elResetPointsClass.disabled = false;
+  }
+  if (elQuizClass) {
+    elQuizClass.innerHTML = def + opts;
+    elQuizClass.disabled = false;
   }
 }
 
@@ -651,6 +656,7 @@ async function init() {
   if (betFilter && betFilter.value) {
     await loadBetsAdmin(parseInt(betFilter.value, 10));
   }
+  initQuizAdmin();
 }
 init();
 
@@ -706,6 +712,365 @@ loadPokerTables();
     if (loadingEl) { loadingEl.hidden = true; loadingEl.textContent = 'Fejl ved indlæsning'; }
     if (emptyEl) { emptyEl.hidden = false; emptyEl.textContent = 'Kunne ikke hente pokerborde.'; }
   }
+}
+
+// --------- Quiz admin (Kahoot-style) ----------
+async function loadQuizTemplatesForClass(classId) {
+  const listEl = document.getElementById('quiz-list');
+  if (!listEl) return;
+  if (!classId) {
+    listEl.textContent = 'Vælg en klasse for at se quizzer.';
+    return;
+  }
+  listEl.textContent = 'Indlæser…';
+  try {
+    const res = await api('/api/quizzes/templates?classId=' + encodeURIComponent(String(classId)));
+    const data = await res.json().catch(() => []);
+    if (!res.ok) {
+      listEl.textContent = (data && data.error) || 'Kunne ikke hente quizzer.';
+      return;
+    }
+    const templates = Array.isArray(data) ? data : [];
+    if (!templates.length) {
+      listEl.innerHTML = '<p class="muted">Ingen quizzer for denne klasse endnu.</p>';
+      return;
+    }
+    listEl.innerHTML = templates
+      .map(
+        (q) =>
+          '<button type="button" class="quiz-list-item" data-id="' +
+          q.id +
+          '">' +
+          escapeHtml(q.title || '') +
+          '</button>'
+      )
+      .join('');
+    listEl.querySelectorAll('.quiz-list-item').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = parseInt(btn.getAttribute('data-id'), 10);
+        editQuizTemplate(id, classId);
+      });
+    });
+  } catch (e) {
+    console.error('loadQuizTemplatesForClass:', e);
+    listEl.textContent = 'Kunne ikke hente quizzer.';
+  }
+}
+
+async function editQuizTemplate(id, classId) {
+  // Simpel approach: hent template + spørgsmål via eksisterende endpoints
+  const titleEl = document.getElementById('quiz-title');
+  const descEl = document.getElementById('quiz-description');
+  const idEl = document.getElementById('quiz-id');
+  const questionsWrap = document.getElementById('quiz-questions');
+  if (!titleEl || !descEl || !idEl || !questionsWrap) return;
+  try {
+    const resTpl = await api('/api/quizzes/templates?classId=' + encodeURIComponent(String(classId)));
+    const tplList = await resTpl.json().catch(() => []);
+    const tpl = Array.isArray(tplList) ? tplList.find((t) => t.id === id) : null;
+    if (!tpl) return;
+    titleEl.value = tpl.title || '';
+    descEl.value = tpl.description || '';
+    idEl.value = String(tpl.id);
+    // Spørgsmål hentes separat ud fra template-id
+    const resQ = await api('/api/quizzes/sessions/0/state', { method: 'GET' }).catch(() => null);
+    // For at holde det simpelt i MVP holder vi spørgsmål i formen i hukommelsen – vi kan ikke hente dem uden ekstra endpoint,
+    // så nye spørgsmål overskriver eksisterende. Admin kan bygge dem igen.
+    questionsWrap.innerHTML =
+      '<p class="muted">Eksisterende spørgsmål kan endnu ikke hentes – rediger ved at opbygge listen igen og gem.</p>';
+  } catch (e) {
+    console.error('editQuizTemplate:', e);
+  }
+}
+
+function addQuizQuestionRow(text = '', options = ['', ''], correctIndex = 0, timeLimitSeconds = 20) {
+  const wrap = document.getElementById('quiz-questions');
+  if (!wrap) return;
+  const idx = wrap.children.length;
+  const row = document.createElement('div');
+  row.className = 'quiz-question-row';
+  row.innerHTML =
+    '<label>Spørgsmål ' +
+    (idx + 1) +
+    '</label>' +
+    '<input type="text" class="quiz-q-text" placeholder="Spørgsmålstekst" value="' +
+    escapeHtml(text) +
+    '">' +
+    '<div class="quiz-q-options">' +
+    options
+      .map(
+        (opt, i) =>
+          '<div class="quiz-q-option">' +
+          '<input type="radio" name="quiz-q-correct-' +
+          idx +
+          '" ' +
+          (i === correctIndex ? 'checked' : '') +
+          '>' +
+          '<input type="text" class="quiz-q-option-text" placeholder="Svarmulighed" value="' +
+          escapeHtml(opt) +
+          '">' +
+          '</div>'
+      )
+      .join('') +
+    '</div>' +
+    '<div class="quiz-q-meta">' +
+    '<label>Tidsgrænse (sek.) <input type="number" class="quiz-q-time" min="5" max="300" value="' +
+    String(timeLimitSeconds) +
+    '"></label>' +
+    '<button type="button" class="quiz-q-remove">Fjern</button>' +
+    '</div>';
+  wrap.appendChild(row);
+  row.querySelector('.quiz-q-remove')?.addEventListener('click', () => {
+    row.remove();
+  });
+}
+
+function collectQuizForm() {
+  const titleEl = document.getElementById('quiz-title');
+  const descEl = document.getElementById('quiz-description');
+  const idEl = document.getElementById('quiz-id');
+  const classEl = document.getElementById('quiz-class');
+  const questionsWrap = document.getElementById('quiz-questions');
+  if (!titleEl || !classEl || !questionsWrap) return null;
+  const classId = parseInt(classEl.value || '0', 10);
+  if (!classId) return null;
+  const questions = [];
+  questionsWrap.querySelectorAll('.quiz-question-row').forEach((row) => {
+    const text = row.querySelector('.quiz-q-text')?.value.trim();
+    const optEls = row.querySelectorAll('.quiz-q-option');
+    const opts = [];
+    let correctIndex = 0;
+    optEls.forEach((optEl, i) => {
+      const input = optEl.querySelector('.quiz-q-option-text');
+      const radio = optEl.querySelector('input[type="radio"]');
+      const val = input?.value.trim();
+      if (val) {
+        opts.push(val);
+        if (radio && radio.checked) correctIndex = i;
+      }
+    });
+    const timeInput = row.querySelector('.quiz-q-time');
+    const tl = timeInput ? parseInt(timeInput.value || '20', 10) : 20;
+    if (text && opts.length >= 2) {
+      questions.push({
+        text,
+        options: opts,
+        correctOptionIndex: correctIndex,
+        timeLimitSeconds: tl,
+      });
+    }
+  });
+  if (!questions.length) return null;
+  return {
+    id: idEl ? parseInt(idEl.value || '0', 10) || null : null,
+    classId,
+    title: titleEl.value.trim(),
+    description: descEl?.value.trim() || '',
+    questions,
+  };
+}
+
+function initQuizAdmin() {
+  const classSelect = document.getElementById('quiz-class');
+  const addBtn = document.getElementById('quiz-add-question');
+  const form = document.getElementById('quiz-form');
+  const resetBtn = document.getElementById('quiz-reset');
+  const msgEl = document.getElementById('quiz-message');
+  const liveControl = document.getElementById('quiz-live-control');
+  const liveInfo = document.getElementById('quiz-live-info');
+  const btnStart = document.getElementById('quiz-live-start');
+  const btnNext = document.getElementById('quiz-live-next');
+  const btnEnd = document.getElementById('quiz-live-end');
+  if (!classSelect || !addBtn || !form) return;
+
+  classSelect.addEventListener('change', () => {
+    const cid = classSelect.value;
+    document.getElementById('quiz-id').value = '';
+    document.getElementById('quiz-title').value = '';
+    document.getElementById('quiz-description').value = '';
+    document.getElementById('quiz-questions').innerHTML = '';
+    if (msgEl) {
+      msgEl.hidden = true;
+      msgEl.textContent = '';
+    }
+    if (cid) loadQuizTemplatesForClass(parseInt(cid, 10));
+  });
+
+  addBtn.addEventListener('click', () => {
+    addQuizQuestionRow('', ['', ''], 0, 20);
+  });
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      document.getElementById('quiz-id').value = '';
+      document.getElementById('quiz-title').value = '';
+      document.getElementById('quiz-description').value = '';
+      document.getElementById('quiz-questions').innerHTML = '';
+      if (msgEl) {
+        msgEl.hidden = true;
+        msgEl.textContent = '';
+      }
+    });
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (msgEl) {
+      msgEl.hidden = false;
+      msgEl.className = 'message';
+      msgEl.textContent = 'Gemmer…';
+    }
+    const data = collectQuizForm();
+    if (!data || !data.classId || !data.title || !data.questions.length) {
+      if (msgEl) {
+        msgEl.hidden = false;
+        msgEl.className = 'message error';
+        msgEl.textContent = 'Udfyld titel, klasse og mindst ét gyldigt spørgsmål med 2+ svarmuligheder.';
+      }
+      return;
+    }
+    try {
+      const body = {
+        classId: data.classId,
+        title: data.title,
+        description: data.description || undefined,
+        questions: data.questions,
+      };
+      let res;
+      if (data.id) {
+        res = await api('/api/quizzes/templates/' + data.id, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+      } else {
+        res = await api('/api/quizzes/templates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+      }
+      const resp = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (msgEl) {
+          msgEl.hidden = false;
+          msgEl.className = 'message error';
+          msgEl.textContent = resp.error || 'Kunne ikke gemme quiz.';
+        }
+        return;
+      }
+      if (msgEl) {
+        msgEl.hidden = false;
+        msgEl.className = 'message success';
+        msgEl.textContent = 'Quiz gemt ✓';
+      }
+      if (!data.id && resp.id) {
+        document.getElementById('quiz-id').value = String(resp.id);
+      }
+      if (classSelect.value) {
+        await loadQuizTemplatesForClass(parseInt(classSelect.value, 10));
+      }
+    } catch (err) {
+      console.error('quiz save error:', err);
+      if (msgEl) {
+        msgEl.hidden = false;
+        msgEl.className = 'message error';
+        msgEl.textContent = 'Fejl ved gemning.';
+      }
+    }
+  });
+
+  let currentSessionId = null;
+  async function refreshLiveSessionInfo() {
+    if (!liveControl || !liveInfo || !btnStart || !btnNext || !btnEnd) return;
+    if (!currentSessionId) {
+      liveControl.hidden = false;
+      liveInfo.textContent = 'Ingen aktiv session. Vælg en quiz og tryk “Start quiz”.';
+      btnStart.disabled = false;
+      btnNext.disabled = true;
+      btnEnd.disabled = true;
+      return;
+    }
+    try {
+      const res = await api('/api/quizzes/sessions/' + currentSessionId + '/state');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        liveInfo.textContent = 'Session kunne ikke hentes.';
+        btnStart.disabled = false;
+        btnNext.disabled = true;
+        btnEnd.disabled = true;
+        return;
+      }
+      liveControl.hidden = false;
+      const s = data.session || {};
+      const q = data.currentQuestion || null;
+      liveInfo.textContent =
+        'Status: ' +
+        (s.status || 'ukendt') +
+        (q ? ' · Spørgsmål #' + (Number(q.index || 0) + 1) + ': ' + (q.text || '') : '');
+      btnStart.disabled = s.status === 'running';
+      btnNext.disabled = s.status === 'running';
+      btnEnd.disabled = s.status === 'running' || s.status === 'lobby';
+    } catch (e) {
+      liveInfo.textContent = 'Kunne ikke hente live-data.';
+    }
+  }
+
+  btnStart?.addEventListener('click', async () => {
+    const tplId = parseInt(document.getElementById('quiz-id').value || '0', 10);
+    const classId = parseInt(classSelect.value || '0', 10);
+    if (!tplId || !classId) {
+      if (liveInfo) liveInfo.textContent = 'Gem quiz og vælg klasse før du starter.';
+      return;
+    }
+    try {
+      const res = await api('/api/quizzes/templates/' + tplId + '/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (liveInfo) liveInfo.textContent = data.error || 'Kunne ikke starte session.';
+        return;
+      }
+      currentSessionId = data.id;
+      if (liveInfo)
+        liveInfo.textContent =
+          'Quiz klar i lobby (PIN ' +
+          (data.pin_code || data.pinCode || '–') +
+          '). Elever ser “Aktiv quiz” på deres dashboard.';
+      btnStart.disabled = true;
+      btnNext.disabled = false;
+      btnEnd.disabled = false;
+    } catch (e) {
+      if (liveInfo) liveInfo.textContent = 'Fejl ved start.';
+    }
+  });
+
+  btnNext?.addEventListener('click', async () => {
+    if (!currentSessionId) return;
+    try {
+      await api('/api/quizzes/sessions/' + currentSessionId + '/next-question', { method: 'POST' });
+      await refreshLiveSessionInfo();
+    } catch (e) {
+      if (liveInfo) liveInfo.textContent = 'Fejl ved næste spørgsmål.';
+    }
+  });
+
+  btnEnd?.addEventListener('click', async () => {
+    if (!currentSessionId) return;
+    try {
+      await api('/api/quizzes/sessions/' + currentSessionId + '/end', { method: 'POST' });
+      if (liveInfo) liveInfo.textContent = 'Quiz afsluttet.';
+      currentSessionId = null;
+      await refreshLiveSessionInfo();
+    } catch (e) {
+      if (liveInfo) liveInfo.textContent = 'Fejl ved afslutning.';
+    }
+  });
+
+  refreshLiveSessionInfo();
 }
 
 const PIRAT_PHASE_LABELS = {
