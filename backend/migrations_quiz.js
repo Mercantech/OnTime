@@ -24,8 +24,6 @@ async function runQuizMigrations() {
     );
     CREATE INDEX IF NOT EXISTS idx_quiz_questions_template ON quiz_questions (quiz_template_id, order_index, id);
 
-    CREATE TYPE quiz_session_status AS ENUM ('lobby', 'running', 'finished');
-
     DO $$
     BEGIN
       IF NOT EXISTS (
