@@ -104,7 +104,6 @@ async function fillClassSelects() {
   const elBetClass = document.getElementById('bet-class');
   const elBetFilterClass = document.getElementById('bet-filter-class');
   const elResetPointsClass = document.getElementById('reset-points-class');
-  const elQuizClass = document.getElementById('quiz-class');
   if (elUserClass) elUserClass.innerHTML = def + opts;
   if (elFilterClass) elFilterClass.innerHTML = defAll + opts;
   if (elImportClass) {
@@ -124,10 +123,6 @@ async function fillClassSelects() {
   if (elResetPointsClass) {
     elResetPointsClass.innerHTML = def + opts;
     elResetPointsClass.disabled = false;
-  }
-  if (elQuizClass) {
-    elQuizClass.innerHTML = def + opts;
-    elQuizClass.disabled = false;
   }
 }
 
@@ -656,7 +651,6 @@ async function init() {
   if (betFilter && betFilter.value) {
     await loadBetsAdmin(parseInt(betFilter.value, 10));
   }
-  initQuizAdmin();
 }
 init();
 

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnTime – Quiz admin</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <a href="/app" class="header-home">OnTime</a>
+    <span class="admin-link">Quiz admin</span>
+    <span id="quiz-admin-user" class="user-info"></span>
+    <button id="quiz-admin-logout" class="btn-logout">Log ud</button>
+  </header>
+
+  <main class="app-main dashboard quiz-admin-main">
+    <section class="card quiz-admin-hero">
+      <div class="quiz-admin-hero-text">
+        <h2>Live quizzer til din klasse</h2>
+        <p>Opret Kahoot-lignende quizzer til dine klasser og start en live-session. Eleverne får en tydelig “Aktiv quiz”-knap på deres dashboard.</p>
+      </div>
+      <div class="quiz-admin-hero-meta">
+        <div class="quiz-admin-pill"><span class="dot live"></span>Live i klassen</div>
+        <div class="quiz-admin-pill"><span class="dot multi"></span>Flere spørgsmål</div>
+        <div class="quiz-admin-pill"><span class="dot leaderboard"></span>Automatisk leaderboard</div>
+      </div>
+    </section>
+
+    <section class="quiz-admin-layout">
+      <aside class="card quiz-admin-sidebar">
+        <div class="quiz-admin-sidebar-header">
+          <h2>Dine quizzer</h2>
+          <p class="card-hint">Vælg en klasse for at se og redigere quizzer.</p>
+          <label for="quiz-admin-class">Klasse</label>
+          <select id="quiz-admin-class">
+            <option value="">Vælg klasse</option>
+          </select>
+        </div>
+        <div id="quiz-admin-list" class="quiz-admin-list">
+          <p class="muted">Vælg en klasse for at se quizzer.</p>
+        </div>
+        <button type="button" id="quiz-admin-new" class="btn-header-secondary quiz-admin-new-btn">Ny quiz til klassen</button>
+      </aside>
+
+      <section class="quiz-admin-maincol">
+        <section class="card quiz-admin-editor">
+          <h2>Opret eller rediger quiz</h2>
+          <form id="quiz-admin-form" autocomplete="off">
+            <input type="hidden" id="quiz-admin-id">
+            <div class="quiz-admin-field-row">
+              <div class="quiz-admin-field">
+                <label for="quiz-admin-title">Titel</label>
+                <input type="text" id="quiz-admin-title" required placeholder="fx Fredagsquiz uge 12">
+              </div>
+            </div>
+
+            <div class="quiz-admin-field">
+              <label for="quiz-admin-description">Beskrivelse (valgfri)</label>
+              <textarea id="quiz-admin-description" rows="2" placeholder="Kort tekst til dig selv – fx hvad quizzen handler om."></textarea>
+            </div>
+
+            <div class="quiz-questions-header">
+              <div>
+                <span>Spørgsmål</span>
+                <p class="card-hint">Hvert spørgsmål skal have mindst 2 svarmuligheder og ét korrekt svar.</p>
+              </div>
+              <button type="button" id="quiz-admin-add-question" class="btn-header-secondary">Tilføj spørgsmål</button>
+            </div>
+
+            <div id="quiz-admin-questions" class="quiz-questions"></div>
+
+            <p id="quiz-admin-message" class="message" hidden></p>
+
+            <div class="quiz-actions">
+              <button type="submit" class="btn-primary btn-submit-accent">Gem quiz</button>
+              <button type="button" id="quiz-admin-reset" class="btn-secondary">Ryd formular</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="card quiz-admin-live">
+          <h2>Live-session</h2>
+          <p id="quiz-admin-live-info" class="card-hint">Ingen aktiv session. Vælg en quiz og start en live-session, når eleverne er klar.</p>
+          <div class="quiz-live-controls">
+            <div class="quiz-live-buttons">
+              <button type="button" id="quiz-admin-live-start" class="btn-primary" disabled>Start quiz</button>
+              <button type="button" id="quiz-admin-live-next" class="btn-header-secondary" disabled>Næste spørgsmål</button>
+              <button type="button" id="quiz-admin-live-end" class="btn-danger" disabled>Afslut quiz</button>
+            </div>
+            <div id="quiz-admin-live-meta" class="quiz-live-meta" hidden>
+              <div><span class="label">Status:</span> <span id="quiz-admin-live-status">–</span></div>
+              <div><span class="label">Aktuelt spørgsmål:</span> <span id="quiz-admin-live-question">–</span></div>
+              <div><span class="label">PIN:</span> <span id="quiz-admin-live-pin">–</span></div>
+            </div>
+          </div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script src="/js/quiz-admin.js"></script>
+  <script src="/js/debug-issue.js"></script>
+</body>
+</html>
+

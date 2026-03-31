@@ -26,7 +26,7 @@
       <a href="#admin-poker">Poker</a>
       <a href="#admin-pirat">Pirat</a>
       <a href="#admin-users">Brugere</a>
-      <a href="#admin-quiz">Quiz (Kahoot)</a>
+      <a href="/admin/quiz">Quiz admin</a>
     </nav>
     <div class="admin-dashboard">
       <aside class="admin-sidebar">
@@ -160,49 +160,6 @@
               </thead>
               <tbody id="user-list"></tbody>
             </table>
-          </div>
-        </section>
-        <section class="card" id="admin-quiz">
-          <h2>Quizzer (live, Kahoot-style)</h2>
-          <p class="card-hint">Opret quizzer for en klasse og start en live-session. Elever ser en “Aktiv quiz”-knap på deres dashboard.</p>
-          <div class="admin-quiz-layout">
-            <div class="admin-quiz-left">
-              <h3>Dine quizzer</h3>
-              <label for="quiz-class">Klasse</label>
-              <select id="quiz-class" required disabled>
-                <option value="">Indlæser klasser…</option>
-              </select>
-              <div id="quiz-list" class="quiz-list">Vælg en klasse for at se quizzer.</div>
-            </div>
-            <div class="admin-quiz-right">
-              <h3>Opret/rediger quiz</h3>
-              <form id="quiz-form">
-                <input type="hidden" id="quiz-id">
-                <label for="quiz-title">Titel</label>
-                <input type="text" id="quiz-title" required placeholder="fx Fredagsquiz uge 12">
-                <label for="quiz-description">Beskrivelse (valgfri)</label>
-                <textarea id="quiz-description" placeholder="Kort tekst til dig selv…"></textarea>
-                <div class="quiz-questions-header">
-                  <span>Spørgsmål</span>
-                  <button type="button" id="quiz-add-question" class="btn-secondary">Tilføj spørgsmål</button>
-                </div>
-                <div id="quiz-questions" class="quiz-questions"></div>
-                <p id="quiz-message" class="message" hidden></p>
-                <div class="quiz-actions">
-                  <button type="submit" class="btn-primary">Gem quiz</button>
-                  <button type="button" id="quiz-reset" class="btn-secondary">Ny tom quiz</button>
-                </div>
-              </form>
-              <div class="quiz-live-control" id="quiz-live-control" hidden>
-                <h3>Live-session</h3>
-                <p id="quiz-live-info" class="card-hint">Ingen aktiv session.</p>
-                <div class="quiz-live-buttons">
-                  <button type="button" id="quiz-live-start" class="btn-primary">Start quiz</button>
-                  <button type="button" id="quiz-live-next" class="btn-secondary" disabled>Næste spørgsmål</button>
-                  <button type="button" id="quiz-live-end" class="btn-danger" disabled>Afslut quiz</button>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
       </div>

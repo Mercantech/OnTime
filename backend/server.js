@@ -99,6 +99,11 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(frontendDir, 'admin.html'));
 });
 
+app.get('/admin/quiz', (req, res) => {
+  noCacheHeaders(res);
+  res.sendFile(path.join(frontendDir, 'quiz-admin.html'));
+});
+
 app.get('/admin/secret', (req, res) => {
   noCacheHeaders(res);
   if (config.adminSecretCode) {
