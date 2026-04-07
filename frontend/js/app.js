@@ -338,6 +338,7 @@ function drawBurndownChart(canvas, data) {
       ctx.fillText(label, x(i), pad.top + chartH + 16);
     }
   }
+}
 
 async function updateActiveQuizCard() {
   const card = document.getElementById('quiz-active-card');

@@ -646,6 +646,7 @@ async function init() {
   renderUserList(await loadUsers());
   renderIpRangeList(await loadIpRanges());
   loadPokerTables();
+  loadPiratGames();
   setGivePointsDateToToday();
   const betFilter = document.getElementById('bet-filter-class');
   if (betFilter && betFilter.value) {
@@ -697,9 +698,9 @@ async function loadPokerTables() {
             alert(data.error || 'Kunne ikke afslutte bord');
             return;
           }
-loadPokerTables();
-  loadPiratGames();
-  });
+          loadPokerTables();
+          loadPiratGames();
+        });
       });
     }
   } catch (e) {
